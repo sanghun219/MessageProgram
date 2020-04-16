@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.489
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KaKaoProgram", "KaKaoProgram\KaKaoProgram.vcxproj", "{785A885E-14E9-4185-B5D2-38B1C618A85C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "KaKaoServer", "KaKaoServer\KaKaoServer.vcxproj", "{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{785A885E-14E9-4185-B5D2-38B1C618A85C}.Debug|x64.ActiveCfg = Debug|x64
+		{785A885E-14E9-4185-B5D2-38B1C618A85C}.Debug|x64.Build.0 = Debug|x64
+		{785A885E-14E9-4185-B5D2-38B1C618A85C}.Debug|x86.ActiveCfg = Debug|Win32
+		{785A885E-14E9-4185-B5D2-38B1C618A85C}.Debug|x86.Build.0 = Debug|Win32
+		{785A885E-14E9-4185-B5D2-38B1C618A85C}.Release|x64.ActiveCfg = Release|x64
+		{785A885E-14E9-4185-B5D2-38B1C618A85C}.Release|x64.Build.0 = Release|x64
+		{785A885E-14E9-4185-B5D2-38B1C618A85C}.Release|x86.ActiveCfg = Release|Win32
+		{785A885E-14E9-4185-B5D2-38B1C618A85C}.Release|x86.Build.0 = Release|Win32
+		{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}.Debug|x64.ActiveCfg = Debug|x64
+		{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}.Debug|x64.Build.0 = Debug|x64
+		{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}.Debug|x86.ActiveCfg = Debug|Win32
+		{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}.Debug|x86.Build.0 = Debug|Win32
+		{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}.Release|x64.ActiveCfg = Release|x64
+		{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}.Release|x64.Build.0 = Release|x64
+		{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}.Release|x86.ActiveCfg = Release|Win32
+		{762A2468-52B0-4FF6-AAA7-62F4F51F2BD7}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ED4E7AF8-C2A6-4952-B195-850612F73B80}
+	EndGlobalSection
+EndGlobal
