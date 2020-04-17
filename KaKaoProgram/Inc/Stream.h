@@ -4,7 +4,8 @@ class OutputStream
 {
 public:
 	template <typename T>
-	void Read(T* pData, const int dataSize = sizeof(T));
+	void Write(T* pData, const int dataSize = sizeof(T));
+
 	void ReallocBuffer(int BufferCapacity);
 private:
 	int m_head;
@@ -19,7 +20,7 @@ class InputStream
 {
 public:
 	template <typename T>
-	void Write(const T* pData, const int dataSize);
+	void Read(const T* pData, const int dataSize = sizeof(T));
 	void ReallocBuffer(int BufferCapacity);
 	char* GetBuffer()const { return m_buffer; }
 public:
@@ -43,7 +44,7 @@ private:
 };
 
 template<typename T>
-inline void OutputStream::Read(T * pData, const int dataSize)
+inline void InputStream::Read(const T * pData, const int dataSize)
 {
 	static_assert(std::is_arithmetic<T>::value || std::is_enum<T>::value, "해당 데이터는 원시 자료형이 아닙니다!!");
 
@@ -55,7 +56,7 @@ inline void OutputStream::Read(T * pData, const int dataSize)
 }
 
 template<typename T>
-inline void InputStream::Write(const T * pData, const int dataSize)
+inline void OutputStream::Write(T * pData, const int dataSize)
 {
 	static_assert(std::is_arithmetic<T>::value() || std::is_enum<T>::value(), "해당 데이터는 원시 자료형이 아닙니다!!");
 

@@ -6,7 +6,7 @@ protected:
 	static Engine* m_pInst;
 
 public:
-	Engine* GetInst()
+	static Engine* GetInst()
 	{
 		if (m_pInst == nullptr)
 			m_pInst = new Engine();

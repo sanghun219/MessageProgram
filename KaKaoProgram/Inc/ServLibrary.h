@@ -23,6 +23,7 @@
 #include "Config.h"
 #include "Session.h"
 #include "Stream.h"
+#include "Logger.h"
 
 // Define
 #define MAX_IP 32

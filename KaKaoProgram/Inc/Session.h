@@ -13,7 +13,7 @@ struct Session
 		SOCKET = 0;
 	}
 
-	int idx = 0;
+	unsigned int idx = 0;
 	int seq = 0;
 	unsigned int SOCKET = 0;
 	SockAddress* address;

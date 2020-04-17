@@ -123,8 +123,10 @@
   <ItemGroup>
     <ClInclude Include="Inc\Server.h" />
     <ClInclude Include="Inc\NetworkLogic.h" />
+    <ClInclude Include="ProcessManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ProcessManager.cpp" />
     <ClCompile Include="Src\NetworkLogic.cpp" />
     <ClCompile Include="Src\Server.cpp" />
     <ClCompile Include="Src\ServMain.cpp" />

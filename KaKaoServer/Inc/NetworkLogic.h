@@ -13,6 +13,7 @@ private:
 	int GetSessionIdx();
 	void CreateSessionIdx();
 	void pushPakcetInQueue(InputStream& inStream, const int sessionidx);
+	void CloseSession(const int Sessionidx);
 private:
 	Config* m_pConfig;
 	fd_set m_Readfds;

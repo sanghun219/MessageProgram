@@ -70,6 +70,7 @@ bool NetworkLogic::ReceivePacket(fd_set& rd, fd_set& wr)
 
 		pushPakcetInQueue(inStream, session.idx);
 	}
+	return true;
 }
 
 void NetworkLogic::ProcessQueue()
@@ -79,7 +80,7 @@ void NetworkLogic::ProcessQueue()
 	if (!m_queueRecvPacketData.empty())
 	{
 		auto& packet = m_queueRecvPacketData.front();
-
+		m_queueRecvPacketData.pop();
 		// process 과정이 들어가야함. 매니저 클래스를 만들어서 관리하도록하자.
 	}
 }
@@ -124,6 +125,24 @@ void NetworkLogic::pushPakcetInQueue(InputStream& inStream, const int sessionidx
 	rcvpkt.inputStream = &inStream;
 	rcvpkt.sessionID = sessionidx;
 	m_queueRecvPacketData.push(&rcvpkt);
+}
+
+void NetworkLogic::CloseSession(const int Sessionidx)
+{
+	auto& clnt = m_dequeSession.at(Sessionidx);
+
+	for (auto iter = m_dequeSession.begin(); iter != m_dequeSession.end(); ++iter)
+	{
+		if ((*iter).idx == Sessionidx)
+		{
+			m_dequeSession.erase(iter);
+			break;
+		}
+	}
+
+	m_dequeSessionIndex.push_back(clnt.idx);
+	closesocket(clnt.SOCKET);
+	clnt.Clear();
 }
 
 bool NetworkLogic::InitNetworkLogic(Config * pConfig)

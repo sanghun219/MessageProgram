@@ -1,5 +1,6 @@
 #include "Server.h"
 #include "NetworkLogic.h"
+#include "ServLibrary.h"
 void Server::LoadConfig()
 {
 	m_pServerConfig = std::make_unique<Config>();
@@ -18,6 +19,8 @@ void Server::Run()
 	while (m_pNetworkLogic->DoRunLoop())
 	{
 	}
+
+	LOG("서버가 종료되었습니다.");
 }
 
 void Server::StaticInit()

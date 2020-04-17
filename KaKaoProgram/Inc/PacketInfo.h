@@ -4,7 +4,7 @@
 #define PACKETINFO_H
 /*
 	패킷 설계
-	PACKET_ID / SESSION_ID / DATASIZE / DATA
+	PACKET_ID / CLASS_ID / DATASIZE / DATA
 
 */
 
@@ -31,8 +31,8 @@ struct PacketHeader
 	int sessionID;
 	int dataSize;
 };
-int PckHeaderSize = sizeof(PacketHeader);
 
+#define PckHeaderSize sizeof(PacketHeader);
 struct PacketData
 {
 	PacketHeader pkHeader;
