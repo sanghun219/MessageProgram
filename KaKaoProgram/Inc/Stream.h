@@ -18,10 +18,11 @@ public:
 };
 class InputStream
 {
+private:
+	void ReallocBuffer(int BufferCapacity);
 public:
 	template <typename T>
 	void Read(const T* pData, const int dataSize = sizeof(T));
-	void ReallocBuffer(int BufferCapacity);
 	char* GetBuffer()const { return m_buffer; }
 public:
 	InputStream& operator = (const InputStream& stream)

@@ -1,4 +1,3 @@
-#include "KaKaoProgramPCH.h"
 #include "Logger.h"
 #include "ServLibrary.h"
 void Logger::Log(const char * log, ...)

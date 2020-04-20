@@ -18,12 +18,13 @@
 #include <algorithm>
 #include <mutex>
 
+// Define
+#define MAX_IP 32
+#define SESSION_ID unsigned int
+
 // 사용자 라이브러리
 #include "ServErr.h"
 #include "Config.h"
 #include "Session.h"
 #include "Stream.h"
 #include "Logger.h"
-
-// Define
-#define MAX_IP 32

@@ -78,7 +78,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sangh\OneDrive\Desktop\KaKaoProgram\KaKaoServer\Inc;C:\Users\sangh\OneDrive\Desktop\KaKaoProgram\KaKaoProgram\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoServer\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,6 +100,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoServer\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -123,10 +124,12 @@
   <ItemGroup>
     <ClInclude Include="Inc\Server.h" />
     <ClInclude Include="Inc\NetworkLogic.h" />
-    <ClInclude Include="ProcessManager.h" />
+    <ClInclude Include="Inc\ProcessManager.h" />
+    <ClInclude Include="Inc\PacketFactory.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ProcessManager.cpp" />
+    <ClCompile Include="Src\PacketFactory.cpp" />
+    <ClCompile Include="Src\ProcessManager.cpp" />
     <ClCompile Include="Src\NetworkLogic.cpp" />
     <ClCompile Include="Src\Server.cpp" />
     <ClCompile Include="Src\ServMain.cpp" />

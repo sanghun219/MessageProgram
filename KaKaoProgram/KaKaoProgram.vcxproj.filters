@@ -42,9 +42,6 @@
     <ClCompile Include="Src\TCPSocket.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Src\KaKaoProgramPCH.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Inc\Engine.h">
@@ -75,9 +72,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Inc\Session.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Inc\KaKaoProgramPCH.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Inc\Config.h">

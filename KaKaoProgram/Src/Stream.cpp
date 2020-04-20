@@ -1,4 +1,3 @@
-#include "KaKaoProgramPCH.h"
 #include "Stream.h"
 
 OutputStream::OutputStream() :m_head(0), m_buffer(nullptr)

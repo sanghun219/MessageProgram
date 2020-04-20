@@ -21,7 +21,10 @@
     <ClInclude Include="Inc\NetworkLogic.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="ProcessManager.h">
+    <ClInclude Include="Inc\ProcessManager.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Inc\PacketFactory.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,7 +38,10 @@
     <ClCompile Include="Src\NetworkLogic.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="ProcessManager.cpp">
+    <ClCompile Include="Src\ProcessManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\PacketFactory.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

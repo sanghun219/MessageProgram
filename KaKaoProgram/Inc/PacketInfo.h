@@ -19,6 +19,8 @@ enum class PACKET_ID :short
 	PCK_ACCEPT_FRIEND_RES = 5,
 	PCK_CREATE_ROOM_REQ = 6,
 	PCK_CREATE_ROOM_RES = 7,
+
+	PCK_END,
 };
 
 // RPC 수행위한 enum
@@ -41,7 +43,7 @@ struct PacketData
 
 struct RecvPacket
 {
-	int sessionID;
+	Session session;
 	InputStream* inputStream;
 };
 

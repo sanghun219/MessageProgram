@@ -10,6 +10,7 @@
 struct RecvPacket;
 class ProcessManager
 {
+#pragma region SINGLETON
 private:
 	static ProcessManager* m_pInst;
 public:
@@ -19,14 +20,17 @@ public:
 			m_pInst = new ProcessManager();
 		return m_pInst;
 	}
+#pragma endregion
+private:
+
 public:
 	void UnpackPacket(RecvPacket* pRcvPck);
+	void DisconnectSession(const SESSION_ID id);
 private:
-	std::unordered_map<unsigned int, Session> m_IDtoSession;
+	std::unordered_map<SESSION_ID, Session> m_IDtoSession;
+
 private:
 	ProcessManager();
 public:
 	~ProcessManager();
 };
-
-ProcessManager* ProcessManager::m_pInst = nullptr;

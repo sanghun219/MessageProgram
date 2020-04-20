@@ -41,4 +41,29 @@ public:
 		m_Ep.port = s.m_Ep.port;
 		addr = s.addr;
 	}
+
+	bool operator == (const SockAddress& o)
+	{
+		return ((this->addr.sin_family == AF_INET) &&
+			(this->GetAddr().sin_port == o.GetAddr().sin_port) &&
+			(this->GetAddr().sin_addr.S_un.S_addr == o.GetAddr().sin_addr.S_un.S_addr));
+	}
+
+	size_t GetHash()const
+	{
+		return (this->GetAddr().sin_addr.S_un.S_addr) |
+			((static_cast<ULONG>(this->GetAddr().sin_port)) << 13)
+			| this->GetAddr().sin_family;
+	}
 };
+
+namespace std
+{
+	template<> struct hash<SockAddress>
+	{
+		size_t operator()(const SockAddress& inaddr)const
+		{
+			return inaddr.GetHash();
+		}
+	};
+}
