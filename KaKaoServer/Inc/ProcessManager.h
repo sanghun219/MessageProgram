@@ -22,12 +22,13 @@ public:
 	}
 #pragma endregion
 private:
-
+	ERR_CODE SendHelloPacket(RecvPacket*);
+	ERR_CODE InvolveUserinServer(RecvPacket*);
 public:
 	void UnpackPacket(RecvPacket* pRcvPck);
 	void DisconnectSession(const SESSION_ID id);
 private:
-	std::unordered_map<SESSION_ID, Session> m_IDtoSession;
+	std::unordered_map<SESSION_ID, Session*> m_IDtoSession;
 
 private:
 	ProcessManager();

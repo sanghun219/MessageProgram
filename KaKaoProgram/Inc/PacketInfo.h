@@ -43,7 +43,7 @@ struct PacketData
 
 struct RecvPacket
 {
-	Session session;
+	Session* session;
 	InputStream* inputStream;
 };
 

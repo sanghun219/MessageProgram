@@ -21,6 +21,7 @@
 // Define
 #define MAX_IP 32
 #define SESSION_ID unsigned int
+#define USER_ID_MAX 32
 
 // 사용자 라이브러리
 #include "ServErr.h"

@@ -14,5 +14,6 @@ enum class ERR_CODE :short
 	ERR_RECV = 8,
 	ERR_SEND_DISCONNECT = 9,
 
-	// LOGIC ERROR : 21~
+	// PACKET ERROR : 21~
+	ERR_PCK_NOTHELLO = 21,
 };

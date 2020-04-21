@@ -125,7 +125,7 @@ void NetworkLogic::pushPakcetInQueue(InputStream& inStream, const int sessionidx
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	RecvPacket rcvpkt;
 	rcvpkt.inputStream = &inStream;
-	rcvpkt.session = m_dequeSession[sessionidx];
+	rcvpkt.session = &m_dequeSession[sessionidx];
 	m_queueRecvPacketData.push(&rcvpkt);
 }
 
@@ -203,6 +203,8 @@ bool NetworkLogic::DoRunLoop()
 	{
 		ReceiveSession();
 	}
+
+	//TODO : 패킷 수신 / 패킷 큐 처리 / 패킷 에러 체크 / (패킷 송수신시 특정 데이터 검사용)
 
 	ReceivePacket(fd_read, fd_write);
 	ProcessQueue();

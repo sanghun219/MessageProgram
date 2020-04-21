@@ -10,6 +10,16 @@ OutputStream::~OutputStream()
 	std::free(m_buffer);
 }
 
+void OutputStream::Write(const std::string inString)
+{
+	unsigned int elemCount = static_cast<unsigned int>(inString.size());
+	Write(&elemCount, sizeof(elemCount));
+	for (const auto& elem : inString)
+	{
+		Write(&elem, sizeof(elem));
+	}
+}
+
 void OutputStream::ReallocBuffer(int BufferCapacity)
 {
 	char* copyBuffer = new char[BufferCapacity];
@@ -37,6 +47,17 @@ void InputStream::ReallocBuffer(int BufferCapacity)
 		memcpy(copyBuffer, m_buffer, m_head);
 		std::free(m_buffer);
 		m_buffer = copyBuffer;
+	}
+}
+
+void InputStream::Read(std::string& inString)
+{
+	unsigned int dataSize = 0;
+	Read(&dataSize, inString.size());
+	inString.resize(dataSize);
+	for (auto& elem : inString)
+	{
+		Read(&elem, sizeof(elem));
 	}
 }
 

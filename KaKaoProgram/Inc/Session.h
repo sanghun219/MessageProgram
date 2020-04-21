@@ -11,12 +11,14 @@ struct Session
 		seq = 0;
 		std::free(address);
 		SOCKET = 0;
+		UserID.clear();
 	}
 
 	SESSION_ID idx = 0;
 	int seq = 0;
 	unsigned int SOCKET = 0;
 	SockAddress* address;
+	std::string UserID;
 
 	//TODO : User LoginIDµµ ÇÊ¿ä.
 };

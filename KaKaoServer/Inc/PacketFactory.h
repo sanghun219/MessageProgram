@@ -1,6 +1,10 @@
 #pragma once
 #include "ServLibrary.h"
 #include "PacketInfo.h"
+
+using PacketFunc = ERR_CODE(*)();
+using PacketFuncTable = std::unordered_map<PACKET_ID, PacketFunc>;
+
 class PacketFactory
 {
 #pragma region SINGLETON
@@ -19,6 +23,6 @@ public:
 	void PacketProcess();
 
 private:
-	using PacketFunc = ERR_CODE(*)();
-	PacketFunc m_PacketFuncArr[int(PACKET_ID::PCK_END)];
+
+	PacketFuncTable m_PacketFuncTable;
 };
