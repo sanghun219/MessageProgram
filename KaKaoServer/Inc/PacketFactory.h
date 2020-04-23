@@ -20,7 +20,7 @@ public:
 #pragma endregion
 public:
 	void InitPacketFunc();
-	void PacketProcess();
+	void PacketProcess(const RecvPacket& rcvPacket);
 
 private:
 

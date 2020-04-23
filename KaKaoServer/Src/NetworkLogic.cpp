@@ -9,7 +9,7 @@
 void NetworkLogic::ReceiveSession()
 {
 	SOCKET client;
-	SockAddress clnt_addr(nullptr, AF_INET, 0);
+	SockAddress clnt_addr(0, AF_INET, 0);
 	TCPSocket clientSocket(client, clnt_addr);
 
 	auto retErr = m_PtcpSocket->Accept();
@@ -17,6 +17,7 @@ void NetworkLogic::ReceiveSession()
 	{
 		if (retErr == ERR_CODE::ERR_WOULDBLOCK)
 		{
+			SocketUtil::ReportError("NetworkLogic::ERR_WOULDBLOCK");
 			return;
 		}
 		else
@@ -80,9 +81,8 @@ void NetworkLogic::ProcessQueue()
 
 	if (!m_queueRecvPacketData.empty())
 	{
-		auto& packet = m_queueRecvPacketData.front();
+		auto packet = m_queueRecvPacketData.front();
 		m_queueRecvPacketData.pop();
-		//TODO : process 과정이 들어가야함. 매니저 클래스를 만들어서 관리하도록하자.
 		ProcessManager::GetInst()->UnpackPacket(packet);
 	}
 }
@@ -124,9 +124,9 @@ void NetworkLogic::pushPakcetInQueue(InputStream& inStream, const int sessionidx
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	RecvPacket rcvpkt;
-	rcvpkt.inputStream = &inStream;
 	rcvpkt.session = &m_dequeSession[sessionidx];
-	m_queueRecvPacketData.push(&rcvpkt);
+	rcvpkt.session->inStream = &inStream;
+	m_queueRecvPacketData.push(rcvpkt);
 }
 
 void NetworkLogic::CloseSession(const int Sessionidx)
@@ -145,19 +145,24 @@ void NetworkLogic::CloseSession(const int Sessionidx)
 	m_dequeSessionIndex.push_back(clnt.idx);
 	closesocket(clnt.SOCKET);
 	clnt.Clear();
-
-	ProcessManager::GetInst()->DisconnectSession(Sessionidx);
 }
 
 bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 {
+	WSAData wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		SocketUtil::ReportError("WSAStartup Error!");
+		return false;
+	}
+
 	m_pConfig = pConfig;
 	SockAddress serv_addr(INADDR_ANY, AF_INET, m_pConfig->port);
 
 	m_PtcpSocket = std::make_shared<TCPSocket>(m_ServSocket, serv_addr);
 	auto retErr = m_PtcpSocket->Listen();
 
-	if (retErr != ERR_CODE::ERR_NONE)
+	if ((retErr != ERR_CODE::ERR_NONE) && (retErr != ERR_CODE::ERR_WOULDBLOCK))
 		return false;
 	retErr = m_PtcpSocket->Bind();
 	if (retErr != ERR_CODE::ERR_NONE)

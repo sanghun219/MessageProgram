@@ -1,12 +1,7 @@
 #pragma once
 #include "ServLibrary.h"
 #include "PacketInfo.h"
-/*
-	NetworkLogic은 나중에 이름바꾸자고.
-	NetworkLogic은 세션과 소켓을 연결하고 데이터를 수신(아직 패킷형태로 가공해서 받아들이지않음)
 
-	ProcessManager는 패킷을 가공시켜 로직에 얹어주는 느낌임
-*/
 struct RecvPacket;
 class ProcessManager
 {
@@ -22,13 +17,13 @@ public:
 	}
 #pragma endregion
 private:
-	ERR_CODE SendHelloPacket(RecvPacket*);
-	ERR_CODE InvolveUserinServer(RecvPacket*);
+
 public:
-	void UnpackPacket(RecvPacket* pRcvPck);
-	void DisconnectSession(const SESSION_ID id);
+	void UnpackPacket(const RecvPacket& pRcvPck);
+	// TODO : DB : 매개변수로 DBINFO 들어와야함. Server에서 초기화 시켜준다.
+	void StaticInit();
 private:
-	std::unordered_map<SESSION_ID, Session*> m_IDtoSession;
+	std::unordered_map<std::string, Session*> m_userIDtoSession;
 
 private:
 	ProcessManager();

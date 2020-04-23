@@ -1,6 +1,9 @@
 #include "Server.h"
-#include "NetworkLogic.h"
 #include "ServLibrary.h"
+#include "ProcessManager.h"
+
+Server* Server::m_pInst = nullptr;
+
 void Server::LoadConfig()
 {
 	m_pServerConfig = std::make_unique<Config>();
@@ -23,16 +26,10 @@ void Server::Run()
 	LOG("서버가 종료되었습니다.");
 }
 
-void Server::StaticInit()
-{
-	m_pInst = new Server();
-}
-
 void Server::InitServer()
 {
 	// TODO : 나중에 데이터베이스 초기화 및 서버 구동에필요한 초기화는 여기서 이루어진다.
 	LoadConfig();
-
 	m_pNetworkLogic = std::make_unique<NetworkLogic>();
 	m_pNetworkLogic->InitNetworkLogic(m_pServerConfig.get());
 

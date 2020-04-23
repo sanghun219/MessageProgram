@@ -42,6 +42,10 @@ ERR_CODE TCPSocket::Listen()
 	int retErr = listen(m_Socket, m_addr.GetBackLog());
 	if (retErr == SOCKET_ERROR)
 	{
+		if (retErr == EWOULDBLOCK)
+		{
+			return ERR_CODE::ERR_WOULDBLOCK;
+		}
 		REPORT_ERROR("TCPSocket::Listen");
 		return ERR_CODE::ERR_LISTN;
 	}

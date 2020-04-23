@@ -1,8 +1,7 @@
 #pragma once
 #include "TCPSocket.h"
 #include "ServLibrary.h"
-#include <mutex>
-struct RecvPacket;
+#include "PacketInfo.h"
 class NetworkLogic
 {
 private:
@@ -20,7 +19,7 @@ private:
 	SOCKET m_ServSocket;
 	std::deque<int> m_dequeSessionIndex;
 	std::deque<Session> m_dequeSession;
-	std::queue<RecvPacket*> m_queueRecvPacketData;
+	std::queue<RecvPacket> m_queueRecvPacketData;
 	PtrTCPSocket m_PtcpSocket;
 	std::recursive_mutex m_rm;
 

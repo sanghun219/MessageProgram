@@ -1,61 +1,35 @@
 #include "ProcessManager.h"
 #include "TCPSocket.h"
+#include "PacketFactory.h"
 
 ProcessManager* ProcessManager::m_pInst = nullptr;
-ERR_CODE ProcessManager::SendHelloPacket(RecvPacket * pRcvPck)
-{
-	short pk_id = 0;
-	pRcvPck->inputStream->Read(pk_id);
-	auto reterr = ERR_CODE::ERR_NONE;
-	switch (pk_id)
-	{
-	case (short)PACKET_ID::PCK_LOGIN_REQ:
-		reterr = InvolveUserinServer(pRcvPck);
-		break;
-	default:
-		LOG("잘못된 패킷 전달");
-		reterr = ERR_CODE::ERR_PCK_NOTHELLO;
-		break;
-	}
 
-	return reterr;
-}
-ERR_CODE ProcessManager::InvolveUserinServer(RecvPacket *pRcvPck)
+void ProcessManager::UnpackPacket(const RecvPacket& pRcvPck)
 {
-	int dataSize = 0;
-	std::string userID;
-	pRcvPck->inputStream->Read(dataSize);
-	//TODO : 나중에 확인한 번해봐라 USER_ID_MAX 인지 -1인지
-	pRcvPck->inputStream->Read(userID);
-	memcpy((void*)&pRcvPck->session->UserID, (void*)&userID, USER_ID_MAX - 1);
+	std::string userid;
+	pRcvPck.session->inStream->Read(userid);
 
-	return ERR_CODE();
-}
-void ProcessManager::UnpackPacket(RecvPacket * pRcvPck)
-{
-	//TODO : PacketFactory의 Wrapper함수들 정의, 패킷을 뜯는건 여기서, 처리는 PacketFactory에서
-	if (m_IDtoSession.find(pRcvPck->session->idx) == m_IDtoSession.end())
+	// 처음 접속하는 경우
+	if (m_userIDtoSession.find(userid) == m_userIDtoSession.end())
 	{
-		//여기서 받아올 데이터도 클라이언트에서 처음으로 보내는 데이터
-		m_IDtoSession[pRcvPck->session->idx] = (pRcvPck->session);
-		SendHelloPacket(pRcvPck);
+		// StaticInit에 의해서 여기는 이미 hashmap에 userid가 할당됨.
+		// TODO : DB : 중복 ID 검사, 중복 없으면 생성, 있으면 충돌처리 (어떻든간 SEND함수호출됨)
+
+		m_userIDtoSession[userid] = pRcvPck.session;
+		m_userIDtoSession[userid]->UserID = userid;
 	}
+	// 이미 아이디가 있는경우 PacketProcess 호출시킴
 	else
 	{
-		// 이미 연결된 세션에대한 로직처리 -
+		PacketFactory::GetInst()->PacketProcess(pRcvPck);
 	}
 }
 
-void ProcessManager::DisconnectSession(const SESSION_ID id)
+void ProcessManager::StaticInit()
 {
-	if (m_IDtoSession.find(id) != m_IDtoSession.end())
-	{
-		m_IDtoSession.erase(id);
-	}
-	else
-	{
-		LOG("%d 번째 인덱스에 해당하는 session이 존재하지 않습니다.", id);
-	}
+	/*
+		TODO : DB : DBINFO로 db정보 가져와서 hashmap에 id 다 넣어줘야함.
+	*/
 }
 
 ProcessManager::ProcessManager()
@@ -64,4 +38,8 @@ ProcessManager::ProcessManager()
 
 ProcessManager::~ProcessManager()
 {
+	for (auto iter = m_userIDtoSession.begin(); iter != m_userIDtoSession.end(); ++iter)
+	{
+		iter->second->Clear();
+	}
 }

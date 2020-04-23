@@ -4,17 +4,18 @@
 
 void SocketUtil::ReportError(const char * DescFuncName)
 {
-	char Message[1024];
+	LPVOID lpMsgBuf;
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
 		NULL,
-		GetLastError(),
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(TCHAR*)&Message,
+		WSAGetLastError(),
+		MAKELANGID(LANG_KOREAN, SUBLANG_DEFAULT),
+		(LPTSTR)&lpMsgBuf,
 		0,
 		nullptr
 	);
+	LOG("DESC : %s , Error : %d - %s", DescFuncName, WSAGetLastError(), (LPCTSTR)lpMsgBuf);
 
-	LOG("[ERROR!!] DESC : %s , Error : %d - %s", DescFuncName, GetLastError(), Message);
+	LocalFree(&lpMsgBuf);
 }
 
 void SocketUtil::SetSocketOption(SOCKET & socket)

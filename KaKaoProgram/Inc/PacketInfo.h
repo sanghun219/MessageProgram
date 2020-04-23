@@ -44,7 +44,6 @@ struct PacketData
 struct RecvPacket
 {
 	Session* session;
-	InputStream* inputStream;
 };
 
 #pragma pack(pop)

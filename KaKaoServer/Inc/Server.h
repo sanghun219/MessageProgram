@@ -1,14 +1,20 @@
 #pragma once
 #include "Engine.h"
-
-class NetworkLogic;
+#include "NetworkLogic.h"
 class Server : public Engine
 {
 private:
 	void LoadConfig();
 	void Run();
+
+	static Server* m_pInst;
 public:
-	static void StaticInit();
+	static Server* GetInst()
+	{
+		if (m_pInst == nullptr)
+			m_pInst = new Server();
+		return m_pInst;
+	}
 	void InitServer();
 private:
 	std::unique_ptr<Config> m_pServerConfig;
