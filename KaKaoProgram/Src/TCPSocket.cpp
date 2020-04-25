@@ -37,19 +37,19 @@ ERR_CODE TCPSocket::Bind()
 	return ERR_CODE::ERR_NONE;
 }
 
-ERR_CODE TCPSocket::Listen()
+ERR_CODE TCPSocket::Listen(int BackLog)
 {
-	int retErr = listen(m_Socket, m_addr.GetBackLog());
+	int retErr = listen(m_Socket, backLog);
 	if (retErr == SOCKET_ERROR)
 	{
-		if (retErr == EWOULDBLOCK)
+		/*if (retErr == EWOULDBLOCK)
 		{
 			return ERR_CODE::ERR_WOULDBLOCK;
-		}
+		}*/
 		REPORT_ERROR("TCPSocket::Listen");
 		return ERR_CODE::ERR_LISTN;
 	}
-	return ERR_CODE();
+	return ERR_CODE::ERR_NONE;
 }
 
 ERR_CODE TCPSocket::Accept()

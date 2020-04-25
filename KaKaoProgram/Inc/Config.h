@@ -4,6 +4,7 @@
 struct Config
 {
 	int maxConnectSession;
-	int port;
+	unsigned short port;
+	int backlog;
 	//... 추가될것들
 };

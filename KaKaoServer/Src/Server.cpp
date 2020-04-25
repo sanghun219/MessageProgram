@@ -1,20 +1,23 @@
 #include "Server.h"
 #include "ServLibrary.h"
-#include "ProcessManager.h"
 
 Server* Server::m_pInst = nullptr;
 
 void Server::LoadConfig()
 {
 	m_pServerConfig = std::make_unique<Config>();
-	wchar_t sPath[MAX_PATH] = { 0, };
+	TCHAR sPath[MAX_PATH] = { 0, };
 	::GetCurrentDirectory(MAX_PATH, sPath);
+	std::cout << (char*)sPath << std::endl;
+	char sIniPath[MAX_PATH] = { 0, };
+	sprintf_s(sIniPath, "%s\\InitServer.ini", sPath);
 
-	wchar_t sIniPath[MAX_PATH] = { 0, };
-
-	_snwprintf_s(sIniPath, _countof(sIniPath), _TRUNCATE, L"%s\\InitServer.ini", sPath);
-
+	std::cout << (char*)sIniPath << std::endl;
 	// 밑에 초기화과정을 거친다.
+
+	m_pServerConfig->port = (unsigned short)GetPrivateProfileInt("Config", "port", 0, sIniPath);
+	m_pServerConfig->backlog = GetPrivateProfileInt("Config", "backlog", 0, sIniPath);
+	m_pServerConfig->maxConnectSession = GetPrivateProfileInt("Config", "maxConnectSession", 0, sIniPath);
 }
 
 void Server::Run()
@@ -34,6 +37,7 @@ void Server::InitServer()
 	m_pNetworkLogic->InitNetworkLogic(m_pServerConfig.get());
 
 	// 여기 위에까지 초기화 할 것들을 다 해둔다.
+
 	Run();
 }
 

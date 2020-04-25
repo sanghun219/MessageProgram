@@ -4,13 +4,12 @@
 #include "Session.h"
 #include "Logger.h"
 #include "PacketInfo.h"
-#include "ProcessManager.h"
 
 void NetworkLogic::ReceiveSession()
 {
-	SOCKET client;
+	SOCKET socket = INVALID_SOCKET;
 	SockAddress clnt_addr(0, AF_INET, 0);
-	TCPSocket clientSocket(client, clnt_addr);
+	TCPSocket clientSocket(socket, clnt_addr);
 
 	auto retErr = m_PtcpSocket->Accept();
 	if (retErr != ERR_CODE::ERR_NONE)
@@ -37,7 +36,7 @@ void NetworkLogic::ReceiveSession()
 
 	char IP[MAX_IP] = { 0, };
 	inet_ntop(AF_INET, (const void*)&clnt_addr.GetAddr(), IP, MAX_IP - 1);
-	ConnectSessionNClient(clnt_addr, client, ClientIdx);
+	ConnectSessionNClient(clnt_addr, clientSocket.GetSocket(), ClientIdx);
 }
 
 bool NetworkLogic::ReceivePacket(fd_set& rd, fd_set& wr)
@@ -83,7 +82,6 @@ void NetworkLogic::ProcessQueue()
 	{
 		auto packet = m_queueRecvPacketData.front();
 		m_queueRecvPacketData.pop();
-		ProcessManager::GetInst()->UnpackPacket(packet);
 	}
 }
 
@@ -156,15 +154,22 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 		return false;
 	}
 
+	m_ServSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (m_ServSocket == INVALID_SOCKET)
+	{
+		SocketUtil::ReportError("socket Error!");
+		return false;
+	}
+
 	m_pConfig = pConfig;
 	SockAddress serv_addr(INADDR_ANY, AF_INET, m_pConfig->port);
 
 	m_PtcpSocket = std::make_shared<TCPSocket>(m_ServSocket, serv_addr);
-	auto retErr = m_PtcpSocket->Listen();
+	auto retErr = m_PtcpSocket->Bind();
 
-	if ((retErr != ERR_CODE::ERR_NONE) && (retErr != ERR_CODE::ERR_WOULDBLOCK))
+	if ((retErr != ERR_CODE::ERR_NONE))
 		return false;
-	retErr = m_PtcpSocket->Bind();
+	retErr = m_PtcpSocket->Listen(m_pConfig->backlog);
 	if (retErr != ERR_CODE::ERR_NONE)
 		return false;
 

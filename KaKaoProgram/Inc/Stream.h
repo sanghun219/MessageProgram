@@ -2,13 +2,13 @@
 #include "ServLibrary.h"
 
 #define SHORT_SIZE sizeof(short)
-#define INT_SIZE sizeof(int)
+#define INT_SIZE sizeof(int32_t)
 
 class OutputStream
 {
 public:
 
-	void Write(const void* pData, const int dataSize)
+	void Write(const char* pData, const int dataSize)
 	{
 		int next = m_head + dataSize;
 		const char* copyData = static_cast<const char*>(pData);
@@ -21,9 +21,9 @@ public:
 		m_head += dataSize;
 	}
 	void Write(const std::string inString);
-	void Write(const short data, const int dataSize = SHORT_SIZE) { Write((const void*)data, dataSize); }
-	void Write(const int data, const int dataSize = INT_SIZE) { Write((const void*)data, dataSize); }
-	void ReallocBuffer(int BufferCapacity);
+	void Write(const short data, const int32_t dataSize = SHORT_SIZE) { Write((const char*)data, dataSize); }
+	void Write(const int32_t data, const int32_t dataSize = INT_SIZE) { Write((const char*)data, dataSize); }
+	void ReallocBuffer(int32_t BufferCapacity);
 private:
 	int m_head;
 	int m_capacity;
@@ -36,10 +36,10 @@ public:
 class InputStream
 {
 private:
-	void ReallocBuffer(int BufferCapacity);
+	void ReallocBuffer(int32_t BufferCapacity);
 public:
 
-	void Read(void* pData, const int dataSize)
+	void Read(char* pData, const int32_t dataSize)
 	{
 		int next = m_head + dataSize;
 		const char* copyData = reinterpret_cast<const char*>(pData);
@@ -48,8 +48,8 @@ public:
 		m_head = next;
 	}
 	void Read(std::string& inString);
-	void Read(short data, const int dataSize = SHORT_SIZE) { Read((void*)data, dataSize); }
-	void Read(int data, const int dataSize = INT_SIZE) { Read((void*)data, dataSize); }
+	void Read(short data, const int32_t dataSize = SHORT_SIZE) { Read((char*)data, dataSize); }
+	void Read(int32_t data, const int32_t dataSize = INT_SIZE) { Read((char*)data, dataSize); }
 
 	char* GetBuffer()const { return m_buffer; }
 public:
@@ -64,10 +64,10 @@ public:
 		return *this;
 	}
 public:
-	InputStream(const int Capacity, char* buffer);
+	InputStream(const int32_t Capacity, char* buffer);
 	~InputStream();
 private:
-	int m_head;
-	int m_capacity;
+	int32_t m_head;
+	int32_t m_capacity;
 	char* m_buffer;
 };

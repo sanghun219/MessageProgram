@@ -12,13 +12,12 @@ private:
 
 	SOCKET_TYPE m_SockType;
 	SOCKADDR_IN addr;
-	int backlog;
 public:
 
 	SOCKET_TYPE GetSocketType()const { return m_SockType; }
 	SOCKADDR_IN GetAddr()const { return addr; }
 	int GetSizeOfAddr()const { return sizeof(addr); }
-	int GetBackLog()const { return backlog; }
+
 public:
 	SockAddress(ULONG Inaddr, int af, short port)
 	{

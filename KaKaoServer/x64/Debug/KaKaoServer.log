@@ -1,0 +1,12 @@
+﻿  NetworkLogic.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\inc\stream.h(25): warning C4312: '형식 캐스트': 'const int32_t'에서 더 큰 'const char *'(으)로의 변환입니다.
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\inc\stream.h(52): warning C4312: '형식 캐스트': 'int32_t'에서 더 큰 'char *'(으)로의 변환입니다.
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoserver\src\networklogic.cpp(94): warning C4244: '=': 'SOCKET'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  ServMain.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\inc\stream.h(25): warning C4312: '형식 캐스트': 'const int32_t'에서 더 큰 'const char *'(으)로의 변환입니다.
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\inc\stream.h(52): warning C4312: '형식 캐스트': 'int32_t'에서 더 큰 'char *'(으)로의 변환입니다.
+  Server.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\inc\stream.h(25): warning C4312: '형식 캐스트': 'const int32_t'에서 더 큰 'const char *'(으)로의 변환입니다.
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\inc\stream.h(52): warning C4312: '형식 캐스트': 'int32_t'에서 더 큰 'char *'(으)로의 변환입니다.
+  코드를 생성하고 있습니다...
+  KaKaoServer.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\x64\Debug\KaKaoServer.exe

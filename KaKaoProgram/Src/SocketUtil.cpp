@@ -1,21 +1,29 @@
 #include "SocketUtil.h"
 #include "Logger.h"
 #include "ServLibrary.h"
+#include <tchar.h>
+#include <Windows.h>
+#include <locale.h>
+#include <stdlib.h>
 
 void SocketUtil::ReportError(const char * DescFuncName)
 {
-	LPVOID lpMsgBuf;
+	LPVOID message = nullptr;
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER,
 		NULL,
 		WSAGetLastError(),
-		MAKELANGID(LANG_KOREAN, SUBLANG_DEFAULT),
-		(LPTSTR)&lpMsgBuf,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPTSTR)&message,
 		0,
 		nullptr
 	);
-	LOG("DESC : %s , Error : %d - %s", DescFuncName, WSAGetLastError(), (LPCTSTR)lpMsgBuf);
+	wchar_t subMessage[100];
+	_snwprintf_s((wchar_t*)subMessage, _countof(subMessage), 100, L"DESC : %hs , Error NO : %d ", DescFuncName, WSAGetLastError());
 
-	LocalFree(&lpMsgBuf);
+	MessageBox(NULL, (LPCTSTR)message, (LPCTSTR)subMessage, MB_ICONERROR);
+
+	if (message != nullptr)
+		LocalFree(&message);
 }
 
 void SocketUtil::SetSocketOption(SOCKET & socket)

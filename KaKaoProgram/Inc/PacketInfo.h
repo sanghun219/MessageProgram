@@ -30,15 +30,13 @@ enum class PACKET_ID :short
 struct PacketHeader
 {
 	PACKET_ID id;
-	int sessionID;
-	int dataSize;
+	Session* session;
 };
 
 #define PckHeaderSize sizeof(PacketHeader);
 struct PacketData
 {
 	PacketHeader pkHeader;
-	char* pData;
 };
 
 struct RecvPacket
