@@ -1,5 +1,6 @@
 #include "Server.h"
 #include "ServLibrary.h"
+#include "DBManager.h"
 
 Server* Server::m_pInst = nullptr;
 
@@ -35,7 +36,7 @@ void Server::InitServer()
 	LoadConfig();
 	m_pNetworkLogic = std::make_unique<NetworkLogic>();
 	m_pNetworkLogic->InitNetworkLogic(m_pServerConfig.get());
-
+	DBManager::GetInst()->InitDBManager();
 	// 여기 위에까지 초기화 할 것들을 다 해둔다.
 
 	Run();

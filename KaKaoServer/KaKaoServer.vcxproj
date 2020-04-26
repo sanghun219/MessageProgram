@@ -145,6 +145,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\DBInfo.h" />
     <ClInclude Include="Inc\DBManager.h" />
     <ClInclude Include="Inc\Server.h" />
     <ClInclude Include="Inc\NetworkLogic.h" />

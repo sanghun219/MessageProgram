@@ -18,7 +18,7 @@ struct Session
 
 	SESSION_ID idx = 0;
 	int seq = 0;
-	unsigned int SOCKET = 0;
+	SOCKET SOCKET = 0;
 	SockAddress* address;
 	InputStream* inStream = nullptr;
 	std::string UserID;
