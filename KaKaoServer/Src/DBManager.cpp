@@ -54,10 +54,18 @@ int DBManager::InitDBManager()
 }
 
 // TODO : DB : Write인 경우는 반환값이 의미는 없음, read는 반환값을 토대로 구조체를 만들어줘야함.
-int DBManager::ProcessQuery(const char * query)
+int DBManager::ProcessQuery(const char* query, ...)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
-	bool retErr = CheckQueryErr(query);
+
+	static char copyQuery[1024];
+	va_list ap;
+	va_start(ap, query);
+	vsprintf_s(copyQuery + strlen(copyQuery), sizeof(copyQuery), query, ap);
+	va_end(ap);
+	bool retErr = CheckQueryErr(copyQuery);
+	copyQuery[0] = { 0, };
+
 	if (!retErr)
 	{
 		LOG("CheckQueryErr!");

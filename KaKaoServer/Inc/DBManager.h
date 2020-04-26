@@ -19,7 +19,7 @@ private:
 	bool CheckQueryErr(const char* query);
 public:
 	int InitDBManager();
-	int ProcessQuery(const char* query);
+	int ProcessQuery(const char* query, ...);
 	MYSQL_ROW GetsqlRow()const { return sql_row; }
 	MYSQL_RES* GetsqlRes()const;
 private:

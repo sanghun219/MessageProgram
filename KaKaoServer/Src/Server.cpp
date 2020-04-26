@@ -39,6 +39,9 @@ void Server::InitServer()
 	DBManager::GetInst()->InitDBManager();
 	// 여기 위에까지 초기화 할 것들을 다 해둔다.
 
+	const char* t1 = "test";
+	DBManager::GetInst()->ProcessQuery("SELECT * FROM %s", t1);
+
 	Run();
 }
 
