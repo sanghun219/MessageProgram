@@ -4,6 +4,7 @@
 #include "Session.h"
 #include "Logger.h"
 #include "PacketInfo.h"
+#include "PckProcessor.h"
 
 void NetworkLogic::ReceiveSession()
 {
@@ -39,13 +40,13 @@ void NetworkLogic::ReceiveSession()
 	ConnectSessionNClient(clnt_addr, clientSocket.GetSocket(), ClientIdx);
 }
 
-bool NetworkLogic::ReceivePacket(fd_set& rd, fd_set& wr)
+bool NetworkLogic::ReceivePacket(fd_set& rd)
 {
 	for (int i = 0; i < m_dequeSession.size(); i++)
 	{
 		auto& session = m_dequeSession[i];
 		SOCKET fd = session.SOCKET;
-		if (!FD_ISSET(fd, &rd))
+		if (session.IsConnect() == false)
 			continue;
 
 		session.seq++;
@@ -56,6 +57,12 @@ bool NetworkLogic::ReceivePacket(fd_set& rd, fd_set& wr)
 
 		// recv에 buf를 넘기는 순간 데이터를 받아옴.
 		auto retSize = m_PtcpSocket->Recv(Packet, 1500);
+
+		/*
+			packet으로 분리시킬수 있는 부분을 생각해보자.
+			패킷 = 패킷 종류 / user id / 데이터 크기 / 데이터
+		*/
+
 		if (retSize == SOCKET_ERROR)
 		{
 			if (retSize == WSAEWOULDBLOCK)
@@ -74,14 +81,15 @@ bool NetworkLogic::ReceivePacket(fd_set& rd, fd_set& wr)
 	return true;
 }
 
-void NetworkLogic::ProcessQueue()
+void NetworkLogic::ProcessRecvQueue()
 {
 	// queue에 데이터가 있으면 처리한다.
-
+	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	if (!m_queueRecvPacketData.empty())
 	{
 		auto packet = m_queueRecvPacketData.front();
 		m_queueRecvPacketData.pop();
+		PckProcessor::GetInst()->Process(packet);
 	}
 }
 
@@ -121,9 +129,30 @@ void NetworkLogic::CreateSessionIdx()
 void NetworkLogic::pushPakcetInQueue(InputStream& inStream, const int sessionidx)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
-	RecvPacket rcvpkt;
+
+	// 패킷을 까고 채워넣을건 채워넣자
+	PACKET_ID pkId = PACKET_ID::PCK_END;
+	int64_t pkheadSize = 0;
+	int64_t datasize = 0;
+	char data[1500] = { 0, };
+
+	PacketData pckData;
+	inStream.Read((short)pkId);
+	inStream.Read((int64_t)pkheadSize);
+
+	inStream.Read((int64_t)datasize);
+	inStream.Read(data, 1500);
+
+	pckData.pkHeader.id = pkId;
+	pckData.pkHeader.HeaderSize = pkheadSize;
+	pckData.dataSize = datasize;
+	memcpy(&pckData.data[0], &data[0], sizeof(data) - 1);
+
+	Packet rcvpkt;
+	rcvpkt.dir = PACKET_DIR::RECV;
 	rcvpkt.session = &m_dequeSession[sessionidx];
 	rcvpkt.session->inStream = &inStream;
+	rcvpkt.pckData = pckData;
 	m_queueRecvPacketData.push(rcvpkt);
 }
 
@@ -145,6 +174,20 @@ void NetworkLogic::CloseSession(const int Sessionidx)
 	clnt.Clear();
 }
 
+void NetworkLogic::SndPacket(fd_set & wr)
+{
+	for (int i = 0; i < m_dequeSession.size(); i++)
+	{
+		auto& session = m_dequeSession[i];
+		SOCKET fd = session.SOCKET;
+
+		if (session.IsConnect() == false)
+		{
+			continue;
+		}
+	}
+}
+
 bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 {
 	WSAData wsaData;
@@ -164,6 +207,12 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 	m_pConfig = pConfig;
 	SockAddress serv_addr(INADDR_ANY, AF_INET, m_pConfig->port);
 
+	SocketUtil::SetSocketOption(m_ServSocket);
+	SocketUtil::SetSocketNonblock(m_ServSocket, true);
+
+	PckProcessor::GetInst()->InitPckInfo();
+	PckProcessor::GetInst()->SetSendPacketQueue(m_queueSendPacketData);
+
 	m_PtcpSocket = std::make_shared<TCPSocket>(m_ServSocket, serv_addr);
 	auto retErr = m_PtcpSocket->Bind();
 
@@ -172,19 +221,14 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 	retErr = m_PtcpSocket->Listen(m_pConfig->backlog);
 	if (retErr != ERR_CODE::ERR_NONE)
 		return false;
-
 	FD_ZERO(&m_Readfds);
-	FD_SET(m_ServSocket, &m_Readfds);
+	FD_SET(m_PtcpSocket->GetSocket(), &m_Readfds);
 
-	SocketUtil::SetSocketOption(m_ServSocket);
-	SocketUtil::SetSocketNonblock(m_ServSocket, true);
-
-	if (FD_ISSET(m_ServSocket, &m_Readfds) == false)
+	if (FD_ISSET(m_PtcpSocket->GetSocket(), &m_Readfds) == false)
 	{
 		SocketUtil::ReportError("NetworkLogic::InitNetworkLogic::fd_isset");
 		return false;
 	}
-
 	CreateSessionIdx();
 
 	LOG("InitNetworkLogic Complete!");
@@ -209,15 +253,18 @@ bool NetworkLogic::DoRunLoop()
 
 	// receive packet
 	// TODO : FD_ISSET이 server 소켓이 fd_read에 담겨있으므로 무조건 true를 반환하는지 알아봐야함.
-	if (FD_ISSET(m_ServSocket, &fd_read))
+	if (FD_ISSET(m_PtcpSocket->GetSocket(), &fd_read))
 	{
 		ReceiveSession();
+		ReceivePacket(fd_read);
+		ProcessRecvQueue();
 	}
 
-	//TODO : 패킷 수신 / 패킷 큐 처리 / 패킷 에러 체크 / (패킷 송수신시 특정 데이터 검사용)
+	if (FD_ISSET(m_PtcpSocket->GetSocket(), &fd_write))
+	{
+		SndPacket(fd_write);
+	}
 
-	ReceivePacket(fd_read, fd_write);
-	ProcessQueue();
 	return true;
 }
 

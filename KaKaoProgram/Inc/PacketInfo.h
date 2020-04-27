@@ -19,8 +19,15 @@ enum class PACKET_ID :short
 	PCK_ACCEPT_FRIEND_RES = 5,
 	PCK_CREATE_ROOM_REQ = 6,
 	PCK_CREATE_ROOM_RES = 7,
+	PCK_FIRST_LOGIN_RES = 8,
 
 	PCK_END,
+};
+
+enum class PACKET_DIR
+{
+	SEND,
+	RECV,
 };
 
 // RPC 수행위한 enum
@@ -30,18 +37,22 @@ enum class PACKET_ID :short
 struct PacketHeader
 {
 	PACKET_ID id;
-	Session* session;
+	int64_t HeaderSize;
 };
 
 #define PckHeaderSize sizeof(PacketHeader);
 struct PacketData
 {
 	PacketHeader pkHeader;
+	int64_t dataSize;
+	char data[1500];
 };
-
-struct RecvPacket
+#define PckDataSize sizeof(PacketData);
+struct Packet
 {
+	PACKET_DIR dir;
 	Session* session;
+	PacketData pckData;
 };
 
 #pragma pack(pop)

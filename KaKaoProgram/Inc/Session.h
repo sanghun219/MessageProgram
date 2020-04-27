@@ -2,6 +2,7 @@
 #include "ServLibrary.h"
 class SockAddress;
 class InputStream;
+class OutputStream;
 struct Session
 {
 	bool IsConnect() { return (SOCKET != 0) ? true : false; }
@@ -14,6 +15,7 @@ struct Session
 		SOCKET = 0;
 		UserID.clear();
 		ZeroMemory(&inStream, sizeof(inStream));
+		ZeroMemory(&outStream, sizeof(outStream));
 	}
 
 	SESSION_ID idx = 0;
@@ -21,11 +23,6 @@ struct Session
 	SOCKET SOCKET = 0;
 	SockAddress* address;
 	InputStream* inStream = nullptr;
+	OutputStream* outStream = nullptr;
 	std::string UserID;
-};
-
-// TODO : DB : DB랑 맞춰서 변수 설정하자.
-struct UserInfo
-{
-	std::string userID;
 };

@@ -17,7 +17,7 @@ public:
 	ERR_CODE Connect();
 
 	const SockAddress& GetSockAddr()const { return m_addr; }
-	const SOCKET& GetSocket()const { return m_Socket; }
+	SOCKET& GetSocket() { return m_Socket; }
 	const int GetBackLog()const { return backLog; }
 public:
 	TCPSocket(SOCKET inSocket, const SockAddress& addr) :

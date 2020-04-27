@@ -35,12 +35,17 @@ void Server::InitServer()
 	// TODO : 나중에 데이터베이스 초기화 및 서버 구동에필요한 초기화는 여기서 이루어진다.
 	LoadConfig();
 	m_pNetworkLogic = std::make_unique<NetworkLogic>();
-	m_pNetworkLogic->InitNetworkLogic(m_pServerConfig.get());
-	DBManager::GetInst()->InitDBManager();
-	// 여기 위에까지 초기화 할 것들을 다 해둔다.
+	auto retErr = m_pNetworkLogic->InitNetworkLogic(m_pServerConfig.get());
 
-	const char* t1 = "test";
-	DBManager::GetInst()->ProcessQuery("SELECT * FROM %s", t1);
+	if (!retErr)
+	{
+		LOG("InitNetworkLogic Err");
+		return;
+	}
+
+	DBManager::GetInst()->InitDBManager();
+
+	// 여기 위에까지 초기화 할 것들을 다 해둔다.
 
 	Run();
 }

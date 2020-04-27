@@ -6,6 +6,7 @@ class PckProcessor
 {
 private:
 	static PckProcessor* m_pInst;
+public:
 	static PckProcessor* GetInst()
 	{
 		if (m_pInst == nullptr)
@@ -13,16 +14,18 @@ private:
 		return m_pInst;
 	}
 
+public:
+	void InitPckInfo();
+
+	void SetSendPacketQueue(const std::queue<Packet>& sendpckQueue) { this->m_sendpckQueue = sendpckQueue; }
+	ERR_CODE Process(const Packet& inPacket);
 private:
-	void InitPckInfo(SOCKET& socket);
-	ERR_CODE Process(PacketData inPacket);
-	ERR_CODE Process_LOGIN_REQ(PacketData packData);
+	ERR_CODE Process_LOGIN_REQ(const Packet& packData);
 	std::recursive_mutex m_rm;
 private:
-	typedef ERR_CODE(PckProcessor::*PckProcessFunction)(PacketData);
+	typedef ERR_CODE(PckProcessor::*PckProcessFunction)(const Packet&);
 	std::unordered_map < short, PckProcessFunction> m_PckIDtoFunc;
-	PtrTCPSocket m_pservSocket;
-
+	std::queue<Packet> m_sendpckQueue;
 private:
 	~PckProcessor() {}
 };

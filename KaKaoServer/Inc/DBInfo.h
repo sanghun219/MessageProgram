@@ -6,3 +6,6 @@
 struct UserDB
 {
 };
+
+struct PublicUserDB {};
+struct PrivatUserDB {};

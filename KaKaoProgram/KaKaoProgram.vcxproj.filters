@@ -83,5 +83,8 @@
     <ClInclude Include="Inc\PckProcessor.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Inc\PacketInnerFunction.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
