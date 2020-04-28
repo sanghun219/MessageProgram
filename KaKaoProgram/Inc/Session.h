@@ -3,26 +3,20 @@
 class SockAddress;
 class InputStream;
 class OutputStream;
-struct Session
+class TCPSocket;
+
+class Session
 {
-	bool IsConnect() { return (SOCKET != 0) ? true : false; }
+public:
+	void Clear();
 
-	void Clear()
-	{
-		idx = 0;
-		seq = 0;
-		std::free(address);
-		SOCKET = 0;
-		UserID.clear();
-		ZeroMemory(&inStream, sizeof(inStream));
-		ZeroMemory(&outStream, sizeof(outStream));
-	}
-
-	SESSION_ID idx = 0;
+	unsigned int idx = 0;
 	int seq = 0;
-	SOCKET SOCKET = 0;
+	TCPSocket* fd = nullptr;
 	SockAddress* address;
 	InputStream* inStream = nullptr;
 	OutputStream* outStream = nullptr;
 	std::string UserID;
+
+	bool IsConnect();
 };

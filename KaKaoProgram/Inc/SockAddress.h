@@ -21,6 +21,7 @@ public:
 public:
 	SockAddress(ULONG Inaddr, int af, short port)
 	{
+		ZeroMemory(&addr, sizeof(addr));
 		addr.sin_addr.S_un.S_addr = htonl(Inaddr);
 		addr.sin_family = af;
 		addr.sin_port = htons(port);
@@ -28,7 +29,11 @@ public:
 
 	SockAddress& operator = (const SockAddress& s)
 	{
-		addr = s.addr;
+		this->addr.sin_addr.S_un.S_addr = s.addr.sin_addr.S_un.S_addr;
+		this->addr.sin_family = s.addr.sin_family;
+		this->addr.sin_port = s.addr.sin_port;
+
+		return *this;
 	}
 
 	bool operator == (const SockAddress& o)

@@ -1,5 +1,6 @@
 #pragma once
 #include "ServLibrary.h"
+class Session;
 #ifndef PACKETINFO_H
 #define PACKETINFO_H
 /*
@@ -20,14 +21,16 @@ enum class PACKET_ID :short
 	PCK_CREATE_ROOM_REQ = 6,
 	PCK_CREATE_ROOM_RES = 7,
 	PCK_FIRST_LOGIN_RES = 8,
+	PCK_MAKE_ID_RES = 9,
 
 	PCK_END,
 };
 
-enum class PACKET_DIR
+enum class PACKET_DIR : short
 {
 	SEND,
 	RECV,
+	END,
 };
 
 // RPC 수행위한 enum
@@ -37,7 +40,7 @@ enum class PACKET_DIR
 struct PacketHeader
 {
 	PACKET_ID id;
-	int64_t HeaderSize;
+	PACKET_DIR dir;
 };
 
 #define PckHeaderSize sizeof(PacketHeader);
@@ -50,7 +53,6 @@ struct PacketData
 #define PckDataSize sizeof(PacketData);
 struct Packet
 {
-	PACKET_DIR dir;
 	Session* session;
 	PacketData pckData;
 };

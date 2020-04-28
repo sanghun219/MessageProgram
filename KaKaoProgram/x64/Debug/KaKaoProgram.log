@@ -1,4 +1,6 @@
-﻿  PckProcessor.cpp
+﻿  LoginProcess.cpp
+  PckProcessor.cpp
+  코드를 생성하고 있습니다...
 SockAddress.obj : warning LNK4221: 이 개체 파일은 이전에 정의되지 않은 공용 기호를 정의하지 않으므로 이 라이브러리를 사용하는 어떠한 링크 작업에도 사용되지 않습니다.
 Engine.obj : warning LNK4221: 이 개체 파일은 이전에 정의되지 않은 공용 기호를 정의하지 않으므로 이 라이브러리를 사용하는 어떠한 링크 작업에도 사용되지 않습니다.
   KaKaoProgram.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\x64\Debug\KaKaoProgram.lib

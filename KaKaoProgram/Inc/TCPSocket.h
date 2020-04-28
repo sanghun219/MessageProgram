@@ -1,12 +1,11 @@
 #pragma once
 #include "ServLibrary.h"
-#include "SockAddress.h"
-
+class SockAddress;
 class TCPSocket
 {
 private:
 	SOCKET m_Socket;
-	SockAddress m_addr;
+	SockAddress* m_addr;
 	int backLog;
 public:
 	int Send(const char* buf, const int bufSize);
@@ -16,15 +15,11 @@ public:
 	ERR_CODE Accept();
 	ERR_CODE Connect();
 
-	const SockAddress& GetSockAddr()const { return m_addr; }
-	SOCKET& GetSocket() { return m_Socket; }
+	const SockAddress& GetSockAddr()const { return *m_addr; }
+	SOCKET GetSocket() { return m_Socket; }
 	const int GetBackLog()const { return backLog; }
 public:
-	TCPSocket(SOCKET inSocket, const SockAddress& addr) :
-		m_addr(addr.GetAddr().sin_addr.S_un.S_addr,
-			addr.GetAddr().sin_family,
-			addr.GetAddr().sin_port), m_Socket(inSocket) {
-	};
+	TCPSocket(SOCKET& inSocket, SockAddress& addr);
 	~TCPSocket();
 };
 

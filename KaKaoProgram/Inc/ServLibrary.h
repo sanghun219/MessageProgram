@@ -31,3 +31,8 @@
 #include "Session.h"
 #include "Stream.h"
 #include "Logger.h"
+#include "SocketUtil.h"
+#include "PacketInfo.h"
+#include "SockAddress.h"
+#include "TCPSocket.h"
+#include "PacketInfo.h"

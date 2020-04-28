@@ -1,5 +1,5 @@
 #include "Stream.h"
-
+#include "ServLibrary.h"
 OutputStream::OutputStream() :m_head(0), m_buffer(nullptr)
 {
 	ReallocBuffer(1500 * 8);

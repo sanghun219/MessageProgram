@@ -1,5 +1,6 @@
 #include "TCPSocket.h"
-#include "SocketUtil.h"
+#include "ServLibrary.h"
+
 int TCPSocket::Send(const char* buf, const int bufSize)
 {
 	int sendSize = send(m_Socket, buf, bufSize, 0);
@@ -27,7 +28,7 @@ int TCPSocket::Recv(char* buf, const int bufSize)
 }
 ERR_CODE TCPSocket::Bind()
 {
-	int retErr = bind(m_Socket, (const sockaddr*)&m_addr.GetAddr(), m_addr.GetSizeOfAddr());
+	int retErr = bind(m_Socket, (const sockaddr*)&m_addr->GetAddr(), m_addr->GetSizeOfAddr());
 	if (retErr == SOCKET_ERROR)
 	{
 		SocketUtil::ReportError("TCPSocket::Bind");
@@ -54,8 +55,8 @@ ERR_CODE TCPSocket::Listen(int BackLog)
 
 ERR_CODE TCPSocket::Accept()
 {
-	int clnt_size = m_addr.GetSizeOfAddr();
-	m_Socket = accept(m_Socket, (sockaddr*)&m_addr.GetAddr(), &clnt_size);
+	int clnt_size = m_addr->GetSizeOfAddr();
+	m_Socket = accept(m_Socket, (sockaddr*)&m_addr->GetAddr(), &clnt_size);
 	if (m_Socket == INVALID_SOCKET)
 	{
 		REPORT_ERROR("TCPSocket::Accept");
@@ -74,6 +75,12 @@ ERR_CODE TCPSocket::Connect()
 		return ERR_CODE::ERR_CONNECT;
 	}
 	return ERR_CODE::ERR_NONE;
+}
+
+TCPSocket::TCPSocket(SOCKET & inSocket, SockAddress& addr)
+{
+	m_Socket = inSocket;
+	m_addr = &addr;
 }
 
 TCPSocket::~TCPSocket()

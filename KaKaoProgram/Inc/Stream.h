@@ -1,6 +1,5 @@
 #pragma once
 #include "ServLibrary.h"
-
 #define SHORT_SIZE sizeof(short)
 #define INT_SIZE sizeof(int64_t)
 
@@ -23,11 +22,13 @@ public:
 	void Write(const std::string inString);
 	void Write(const short data, const int64_t dataSize = SHORT_SIZE) { Write((const char*)data, dataSize); }
 	void Write(const int64_t data, const int64_t dataSize = INT_SIZE) { Write((const char*)data, dataSize); }
-	void ReallocBuffer(int64_t BufferCapacity);
+	char* GetBuffer()const { return m_buffer; }
+	int64_t GetBufferSize()const { return sizeof(m_buffer); }
 private:
 	int64_t m_head;
 	int64_t m_capacity;
 	char* m_buffer;
+	void ReallocBuffer(int64_t BufferCapacity);
 public:
 	/// Capcaity는 최대한 패킷크기보다 훨신 큰 크기로 잡아준다.
 	OutputStream();
