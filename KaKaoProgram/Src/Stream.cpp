@@ -20,7 +20,21 @@ void OutputStream::Write(const std::string inString)
 	}
 }
 
-void OutputStream::ReallocBuffer(int64_t BufferCapacity)
+void OutputStream::Write(const Packet & pck)
+{
+	short pk_id = static_cast<short>(pck.pckData.pkHeader.id);
+	short pk_dir = static_cast<short>(pck.pckData.pkHeader.dir);
+	int pk_size = pck.pckData.dataSize;
+	char* pk_data = nullptr;
+	memcpy(&pk_data[0], &pck.pckData.data[0], sizeof(pck.pckData.data));
+
+	Write(pk_dir);
+	Write(pk_id);
+	Write(pk_size);
+	Write(pk_data, pk_size);
+}
+
+void OutputStream::ReallocBuffer(int BufferCapacity)
 {
 	char* copyBuffer = new char[BufferCapacity];
 	if (m_buffer == nullptr)
@@ -35,7 +49,7 @@ void OutputStream::ReallocBuffer(int64_t BufferCapacity)
 	}
 }
 
-void InputStream::ReallocBuffer(int64_t BufferCapacity)
+void InputStream::ReallocBuffer(int BufferCapacity)
 {
 	char* copyBuffer = new char[BufferCapacity];
 	if (m_buffer == nullptr)
@@ -52,7 +66,7 @@ void InputStream::ReallocBuffer(int64_t BufferCapacity)
 
 void InputStream::Read(std::string& inString)
 {
-	int64_t dataSize = 0;
+	int dataSize = 0;
 	Read((char*)&dataSize, inString.size());
 	inString.resize(dataSize);
 	for (auto& elem : inString)
@@ -61,7 +75,7 @@ void InputStream::Read(std::string& inString)
 	}
 }
 
-InputStream::InputStream(const int64_t Capacity, char* buffer) :m_head(0), m_capacity(Capacity), m_buffer(buffer)
+InputStream::InputStream(const int Capacity, char* buffer) :m_head(0), m_capacity(Capacity), m_buffer(buffer)
 {
 	ReallocBuffer(Capacity);
 }

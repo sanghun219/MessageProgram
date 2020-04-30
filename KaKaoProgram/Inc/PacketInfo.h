@@ -28,8 +28,8 @@ enum class PACKET_ID :short
 
 enum class PACKET_DIR : short
 {
-	SEND,
-	RECV,
+	StoC,
+	CtoS,
 	END,
 };
 
@@ -47,7 +47,7 @@ struct PacketHeader
 struct PacketData
 {
 	PacketHeader pkHeader;
-	int64_t dataSize;
+	int dataSize;
 	char data[1500];
 };
 #define PckDataSize sizeof(PacketData);
@@ -58,5 +58,17 @@ struct Packet
 };
 
 #pragma pack(pop)
+
+inline Packet GetPacketSettingParam(const PACKET_ID pk_id, const PACKET_DIR pk_dir,
+	const int size, const char* data, Session* session)
+{
+	Packet pk;
+	pk.pckData.pkHeader.dir = pk_dir;
+	pk.pckData.pkHeader.id = pk_id;
+	pk.pckData.dataSize = size;
+	memcpy(pk.pckData.data, data, sizeof(data));
+	pk.session = session;
+	return pk;
+}
 
 #endif

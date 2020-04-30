@@ -1,7 +1,7 @@
 #include "Server.h"
-
+#include "Singleton.h"
 int main(void)
 {
-	Server::GetInst()->InitServer();
+	Singleton<Server>::GetInst()->InitServer();
 	return 0;
 }

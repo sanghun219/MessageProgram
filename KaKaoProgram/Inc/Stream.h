@@ -1,34 +1,35 @@
 #pragma once
 #include "ServLibrary.h"
 #define SHORT_SIZE sizeof(short)
-#define INT_SIZE sizeof(int64_t)
-
+#define INT_SIZE sizeof(int)
+struct Packet;
 class OutputStream
 {
 public:
 
-	void Write(const char* pData, const int64_t dataSize)
+	void Write(const char* pData, const int dataSize)
 	{
-		int64_t next = m_head + dataSize;
+		int next = m_head + dataSize;
 		const char* copyData = static_cast<const char*>(pData);
 		if (next > m_capacity)
 		{
-			ReallocBuffer(std::max<int64_t>(m_capacity * 2, next));
+			ReallocBuffer(std::max<int>(m_capacity * 2, next));
 		}
 
 		memcpy(&m_buffer[m_head], &copyData[0], dataSize);
 		m_head += dataSize;
 	}
 	void Write(const std::string inString);
-	void Write(const short data, const int64_t dataSize = SHORT_SIZE) { Write((const char*)data, dataSize); }
-	void Write(const int64_t data, const int64_t dataSize = INT_SIZE) { Write((const char*)data, dataSize); }
+	void Write(const Packet& pck);
+	void Write(const short data, const int dataSize = SHORT_SIZE) { Write((const char*)data, dataSize); }
+	void Write(const int data, const int dataSize = INT_SIZE) { Write((const char*)data, dataSize); }
 	char* GetBuffer()const { return m_buffer; }
-	int64_t GetBufferSize()const { return sizeof(m_buffer); }
+	int GetBufferSize()const { return sizeof(m_buffer); }
 private:
-	int64_t m_head;
-	int64_t m_capacity;
+	int m_head;
+	int m_capacity;
 	char* m_buffer;
-	void ReallocBuffer(int64_t BufferCapacity);
+	void ReallocBuffer(int BufferCapacity);
 public:
 	/// Capcaity는 최대한 패킷크기보다 훨신 큰 크기로 잡아준다.
 	OutputStream();
@@ -37,20 +38,20 @@ public:
 class InputStream
 {
 private:
-	void ReallocBuffer(int64_t BufferCapacity);
+	void ReallocBuffer(int BufferCapacity);
 public:
 
-	void Read(char* pData, const int64_t dataSize)
+	void Read(char* pData, const int dataSize)
 	{
-		int64_t next = m_head + dataSize;
+		int next = m_head + dataSize;
 		const char* copyData = reinterpret_cast<const char*>(pData);
 
 		memcpy((void*)&copyData[0], &m_buffer[m_head], dataSize);
 		m_head = next;
 	}
 	void Read(std::string& inString);
-	void Read(short data, const int64_t dataSize = SHORT_SIZE) { Read((char*)data, dataSize); }
-	void Read(int64_t data, const int64_t dataSize = INT_SIZE) { Read((char*)data, dataSize); }
+	void Read(short data, const int dataSize = SHORT_SIZE) { Read((char*)data, dataSize); }
+	void Read(int data, const int dataSize = INT_SIZE) { Read((char*)data, dataSize); }
 
 	char* GetBuffer()const { return m_buffer; }
 public:
@@ -65,10 +66,10 @@ public:
 		return *this;
 	}
 public:
-	InputStream(const int64_t Capacity, char* buffer);
+	InputStream(const int Capacity, char* buffer);
 	~InputStream();
 private:
-	int64_t m_head;
-	int64_t m_capacity;
+	int m_head;
+	int m_capacity;
 	char* m_buffer;
 };

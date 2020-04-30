@@ -1,24 +1,24 @@
 #include "Server.h"
 #include "ServLibrary.h"
 #include "DBManager.h"
-
-Server* Server::m_pInst = nullptr;
+#include "Singleton.h"
 
 void Server::LoadConfig()
 {
+	setlocale(LC_ALL, "");
 	m_pServerConfig = std::make_unique<Config>();
-	TCHAR sPath[MAX_PATH] = { 0, };
+	wchar_t sPath[MAX_PATH] = { 0, };
 	::GetCurrentDirectory(MAX_PATH, sPath);
-	std::cout << (char*)sPath << std::endl;
-	char sIniPath[MAX_PATH] = { 0, };
-	sprintf_s(sIniPath, "%s\\InitServer.ini", sPath);
 
-	std::cout << (char*)sIniPath << std::endl;
+	wchar_t sIniPath[MAX_PATH] = { 0, };
+	_snwprintf_s(sIniPath, _countof(sIniPath), L"%ws\\InitServer.ini", sPath);
+	wprintf_s(L"%ws\n", sIniPath);
+
 	// 밑에 초기화과정을 거친다.
 
-	m_pServerConfig->port = (unsigned short)GetPrivateProfileInt("Config", "port", 0, sIniPath);
-	m_pServerConfig->backlog = GetPrivateProfileInt("Config", "backlog", 0, sIniPath);
-	m_pServerConfig->maxConnectSession = GetPrivateProfileInt("Config", "maxConnectSession", 0, sIniPath);
+	m_pServerConfig->port = (unsigned short)GetPrivateProfileInt(L"Config", L"port", 0, sIniPath);
+	m_pServerConfig->backlog = GetPrivateProfileInt(L"Config", L"backlog", 0, sIniPath);
+	m_pServerConfig->maxConnectSession = GetPrivateProfileInt(L"Config", L"maxConnectSession", 0, sIniPath);
 }
 
 void Server::Run()
@@ -43,13 +43,9 @@ void Server::InitServer()
 		return;
 	}
 
-	DBManager::GetInst()->InitDBManager();
+	Singleton<DBManager>::GetInst()->InitDBManager();
 
 	// 여기 위에까지 초기화 할 것들을 다 해둔다.
 
 	Run();
-}
-
-Server::~Server()
-{
 }

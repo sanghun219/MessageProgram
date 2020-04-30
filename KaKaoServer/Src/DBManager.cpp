@@ -1,8 +1,6 @@
 #include "DBManager.h"
 #pragma comment (lib,"libmySQL.lib")
 
-DBManager* DBManager::m_pInst = nullptr;
-
 bool DBManager::CheckQueryErr(const char * query)
 {
 	if (connection == nullptr && !isConnect())
@@ -19,6 +17,10 @@ bool DBManager::CheckQueryErr(const char * query)
 }
 int DBManager::InitDBManager()
 {
+	isconnect = false;
+	connection = nullptr;
+	sql_result = nullptr;
+
 	const char* host = "localhost";
 	const char* user = "root";
 	const char* pw = "Yongil1792!";
@@ -51,6 +53,15 @@ int DBManager::InitDBManager()
 	mysql_query(connection, "set session character_set_client=euckr;");
 	isconnect = true;
 	return 0;
+}
+
+void DBManager::CloseDBManager()
+{
+	if (connection != nullptr)
+	{
+		mysql_close(connection);
+		isconnect = false;
+	}
 }
 
 // TODO : DB : Write인 경우는 반환값이 의미는 없음, read는 반환값을 토대로 구조체를 만들어줘야함.

@@ -15,7 +15,7 @@ public:
 	ERR_CODE Accept();
 	ERR_CODE Connect();
 
-	const SockAddress& GetSockAddr()const { return *m_addr; }
+	const SockAddress& GetSockAddr() { return *m_addr; }
 	SOCKET GetSocket() { return m_Socket; }
 	const int GetBackLog()const { return backLog; }
 public:

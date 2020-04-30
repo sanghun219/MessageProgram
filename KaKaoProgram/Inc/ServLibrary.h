@@ -18,8 +18,6 @@
 #include <algorithm>
 #include <mutex>
 
-#include <mysql.h>
-
 // Define
 #define MAX_IP 32
 #define SESSION_ID unsigned int

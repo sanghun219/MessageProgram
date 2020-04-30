@@ -1,5 +1,4 @@
 #include "NetworkLogic.h"
-#include "PckProcessor.h"
 
 void NetworkLogic::ReceiveSession()
 {
@@ -40,11 +39,11 @@ bool NetworkLogic::ReceivePacket(fd_set& rd)
 	for (int i = 0; i < m_dequeSession.size(); i++)
 	{
 		auto& session = m_dequeSession[i];
-		SOCKET fd = session->fd->GetSocket();
-		if (session->IsConnect() == false)
+		SOCKET fd = session.fd->GetSocket();
+		if (session.IsConnect() == false)
 			continue;
 
-		session->seq++;
+		session.seq++;
 
 		char Packet[1500] = { 0, };
 		const int packetSize = sizeof(Packet);
@@ -66,7 +65,7 @@ bool NetworkLogic::ReceivePacket(fd_set& rd)
 			}
 		}
 
-		pushPakcetInQueue(inStream, session->idx);
+		pushPakcetInQueue(inStream, session.idx);
 	}
 	return true;
 }
@@ -79,8 +78,8 @@ void NetworkLogic::ProcessRecvQueue()
 	{
 		auto packet = m_queueRecvPacketData.front();
 		m_queueRecvPacketData.pop();
-		// TODO : 이거 정적 아닌버젼으로 다시만들라.
-		//PckProcessor::GetInst()->Process(*packet);
+
+		m_pckProcessor->Process(packet);
 	}
 }
 
@@ -92,7 +91,7 @@ void NetworkLogic::ConnectSessionNClient(SockAddress& addr, TCPSocket& client, c
 	session.idx = idx;
 	session.fd = &client;
 
-	m_dequeSession.push_back(&session);
+	m_dequeSession.push_back(session);
 	LOG("%d 세션이 연결되었습니다", session.idx);
 }
 
@@ -124,15 +123,15 @@ void NetworkLogic::pushPakcetInQueue(InputStream& inStream, const int sessionidx
 	// 패킷을 까고 채워넣을건 채워넣자
 	PACKET_DIR pkdir = PACKET_DIR::END;
 	PACKET_ID pkId = PACKET_ID::PCK_END;
-	int64_t pkheadSize = 0;
-	int64_t datasize = 0;
+	int pkheadSize = 0;
+	int datasize = 0;
 	char data[1500] = { 0, };
 
 	PacketData pckData;
 	inStream.Read((short)pkdir);
 	inStream.Read((short)pkId);
 
-	inStream.Read((int64_t)datasize);
+	inStream.Read((int)datasize);
 	inStream.Read(data, 1500);
 
 	pckData.pkHeader.dir = pkdir;
@@ -141,10 +140,10 @@ void NetworkLogic::pushPakcetInQueue(InputStream& inStream, const int sessionidx
 	memcpy(&pckData.data[0], &data[0], sizeof(data) - 1);
 
 	Packet rcvpkt;
-	rcvpkt.session = m_dequeSession[sessionidx];
+	rcvpkt.session = &m_dequeSession[sessionidx];
 	rcvpkt.session->inStream = &inStream;
 	rcvpkt.pckData = pckData;
-	m_queueRecvPacketData.push(&rcvpkt);
+	m_queueRecvPacketData.push(rcvpkt);
 }
 
 void NetworkLogic::CloseSession(const int Sessionidx)
@@ -153,16 +152,16 @@ void NetworkLogic::CloseSession(const int Sessionidx)
 
 	for (auto iter = m_dequeSession.begin(); iter != m_dequeSession.end(); ++iter)
 	{
-		if ((*iter)->idx == Sessionidx)
+		if ((*iter).idx == Sessionidx)
 		{
 			m_dequeSession.erase(iter);
 			break;
 		}
 	}
 
-	m_dequeSessionIndex.push_back(clnt->idx);
-	closesocket(clnt->fd->GetSocket());
-	clnt->Clear();
+	m_dequeSessionIndex.push_back(clnt.idx);
+	closesocket(clnt.fd->GetSocket());
+	clnt.Clear();
 }
 
 void NetworkLogic::SndPacket(fd_set & wr)
@@ -173,9 +172,9 @@ void NetworkLogic::SndPacket(fd_set & wr)
 		auto packet = m_queueSendPacketData.back();
 		m_queueSendPacketData.pop();
 
-		if (FD_ISSET(packet->session->fd->GetSocket(), &wr))
+		if (FD_ISSET(packet.session->fd->GetSocket(), &wr))
 		{
-			auto err = ProcessSendQueue(*packet->session);
+			auto err = ProcessSendQueue(packet);
 			if (err != ERR_CODE::ERR_NONE)
 			{
 				SocketUtil::ReportError("NetworLogic::SndPacket");
@@ -185,26 +184,26 @@ void NetworkLogic::SndPacket(fd_set & wr)
 	}
 }
 
-ERR_CODE NetworkLogic::ProcessSendQueue(Session& session)
+ERR_CODE NetworkLogic::ProcessSendQueue(const Packet& packet)
 {
-	if (session.IsConnect() == false)
+	if (packet.session->IsConnect() == false)
 		return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
 
-	char* buf = session.outStream->GetBuffer();
-	int64_t bufsize = session.outStream->GetBufferSize();
+	packet.session->outStream->Write(packet);
+	int bufsize = packet.session->outStream->GetBufferSize();
+	char* buffer = packet.session->outStream->GetBuffer();
 
-	int64_t sendSize = m_PtcpSocket->Send(buf, bufsize);
+	int dataSize = m_PtcpSocket->Send(buffer, bufsize);
 
-	if (sendSize < 0)
+	if (dataSize < 0)
 	{
-		if (sendSize == WSAEWOULDBLOCK)
+		if (dataSize == WSAEWOULDBLOCK)
 		{
-			SocketUtil::ReportError("NetworkLogic::ProcessSendQueue");
 			return ERR_CODE::ERR_WOULDBLOCK;
 		}
 		else
 		{
-			return ERR_CODE::ERR_SEND;
+			return static_cast<ERR_CODE>(dataSize);
 		}
 	}
 
@@ -254,6 +253,10 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 		return false;
 	}
 	CreateSessionIdx();
+
+	m_pckProcessor = new PckProcessor();
+	m_pckProcessor->InitPckInfo();
+	m_pckProcessor->SetSendPacketQueue(m_queueSendPacketData);
 
 	LOG("InitNetworkLogic Complete!");
 	return true;

@@ -70,10 +70,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoServer\Inc;C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoServer\Inc;C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoServer\Inc;$(IncludePath)</IncludePath>
@@ -139,7 +141,6 @@
   <ItemGroup>
     <ClCompile Include="Src\LoginProcess.cpp" />
     <ClCompile Include="Src\PckProcessor.cpp" />
-    <ClCompile Include="Src\Engine.cpp" />
     <ClCompile Include="Src\Logger.cpp" />
     <ClCompile Include="Src\Session.cpp" />
     <ClCompile Include="Src\SockAddress.cpp" />
@@ -149,13 +150,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Inc\Config.h" />
-    <ClInclude Include="Inc\Engine.h" />
     <ClInclude Include="Inc\Logger.h" />
     <ClInclude Include="Inc\PacketInfo.h" />
     <ClInclude Include="Inc\PckProcessor.h" />
     <ClInclude Include="Inc\ServErr.h" />
     <ClInclude Include="Inc\ServLibrary.h" />
     <ClInclude Include="Inc\Session.h" />
+    <ClInclude Include="Inc\Singleton.h" />
     <ClInclude Include="Inc\SockAddress.h" />
     <ClInclude Include="Inc\SocketUtil.h" />
     <ClInclude Include="Inc\Stream.h" />

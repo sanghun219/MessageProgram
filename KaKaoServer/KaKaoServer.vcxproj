@@ -70,12 +70,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\MySQL\MySQL Server 8.0\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\MySQL\MySQL Server 8.0\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;$(IncludePath)</IncludePath>
@@ -147,14 +147,12 @@
   <ItemGroup>
     <ClInclude Include="Inc\DBInfo.h" />
     <ClInclude Include="Inc\DBManager.h" />
-    <ClInclude Include="Inc\PckProcessorMgr.h" />
     <ClInclude Include="Inc\Server.h" />
     <ClInclude Include="Inc\NetworkLogic.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\DBManager.cpp" />
     <ClCompile Include="Src\NetworkLogic.cpp" />
-    <ClCompile Include="Src\PckProcessorMgr.cpp" />
     <ClCompile Include="Src\Server.cpp" />
     <ClCompile Include="Src\ServMain.cpp" />
   </ItemGroup>
