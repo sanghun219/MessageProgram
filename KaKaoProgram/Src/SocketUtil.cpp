@@ -26,6 +26,11 @@ void SocketUtil::ReportError(const char * DescFuncName)
 		LocalFree(&message);
 }
 
+int SocketUtil::GetLastError()
+{
+	return WSAGetLastError();
+}
+
 void SocketUtil::SetSocketOption(SOCKET & socket)
 {
 	linger lg;

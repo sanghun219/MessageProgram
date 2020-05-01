@@ -10,10 +10,10 @@ private:
 public:
 	int Send(const char* buf, const int bufSize);
 	int Recv(char* buf, const int bufSize);
-	ERR_CODE Bind();
-	ERR_CODE Listen(int BackLog);
-	ERR_CODE Accept();
-	ERR_CODE Connect();
+	int Bind();
+	int Listen(int BackLog);
+	int Accept();
+	int Connect();
 
 	const SockAddress& GetSockAddr() { return *m_addr; }
 	SOCKET GetSocket() { return m_Socket; }

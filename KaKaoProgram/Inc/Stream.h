@@ -7,21 +7,22 @@ class OutputStream
 {
 public:
 
-	void Write(const char* pData, const int dataSize)
+	void Write(const void* pData, const int dataSize)
 	{
 		int next = m_head + dataSize;
-		const char* copyData = static_cast<const char*>(pData);
+		const char* copyData = reinterpret_cast<const char*>(pData);
+
 		if (next > m_capacity)
 		{
 			ReallocBuffer(std::max<int>(m_capacity * 2, next));
 		}
-
-		memcpy(&m_buffer[m_head], &copyData[0], dataSize);
+		asdasd
+			memcpy(&m_buffer[m_head], &copyData[0], dataSize);
 		m_head += dataSize;
 	}
 	void Write(const std::string inString);
 	void Write(const Packet& pck);
-	void Write(const short data, const int dataSize = SHORT_SIZE) { Write((const char*)data, dataSize); }
+	void Write(const short data, const int dataSize = SHORT_SIZE) { Write(data, dataSize); }
 	void Write(const int data, const int dataSize = INT_SIZE) { Write((const char*)data, dataSize); }
 	char* GetBuffer()const { return m_buffer; }
 	int GetBufferSize()const { return sizeof(m_buffer); }

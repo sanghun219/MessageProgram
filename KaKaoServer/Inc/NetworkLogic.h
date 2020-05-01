@@ -8,6 +8,12 @@ class TCPSocket;
 class InputStream;
 class OutputStream;
 
+enum class CLOSE_TYPE
+{
+	FORCING,
+	END,
+};
+
 using namespace PacketProc;
 class NetworkLogic
 {
@@ -19,7 +25,7 @@ private:
 	int GetSessionIdx();
 	void CreateSessionIdx();
 	void pushPakcetInQueue(InputStream& inStream, const int sessionidx);
-	void CloseSession(const int Sessionidx);
+	void CloseSession(CLOSE_TYPE type, const int Sessionidx);
 	void SndPacket(fd_set& wr);
 	ERR_CODE ProcessSendQueue(const Packet& packet);
 private:

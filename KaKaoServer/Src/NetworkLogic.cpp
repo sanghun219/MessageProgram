@@ -3,13 +3,13 @@
 void NetworkLogic::ReceiveSession()
 {
 	SOCKET socket = INVALID_SOCKET;
-	SockAddress clnt_addr(0, AF_INET, 0);
+	SockAddress clnt_addr(0, AF_INET, m_pConfig->port);
 	TCPSocket clientSocket(socket, clnt_addr);
 
 	auto retErr = m_PtcpSocket->Accept();
-	if (retErr != ERR_CODE::ERR_NONE)
+	if (retErr != (int)ERR_CODE::ERR_NONE)
 	{
-		if (retErr == ERR_CODE::ERR_WOULDBLOCK)
+		if (retErr == WSAEWOULDBLOCK)
 		{
 			SocketUtil::ReportError("NetworkLogic::ERR_WOULDBLOCK");
 			return;
@@ -52,21 +52,14 @@ bool NetworkLogic::ReceivePacket(fd_set& rd)
 		// recv에 buf를 넘기는 순간 데이터를 받아옴.
 		auto retSize = m_PtcpSocket->Recv(Packet, 1500);
 
-		if (retSize == SOCKET_ERROR)
+		if (SocketUtil::GetLastError() == WSAEWOULDBLOCK)
 		{
-			if (retSize == WSAEWOULDBLOCK)
-			{
-				continue;
-			}
-			else
-			{
-				SocketUtil::ReportError("NetworkLogic::ReceivePacket");
-				return false;
-			}
+			continue;
 		}
-
+		// TODO : DataSize 넘겨줘야함.
 		pushPakcetInQueue(inStream, session.idx);
 	}
+
 	return true;
 }
 
@@ -146,8 +139,14 @@ void NetworkLogic::pushPakcetInQueue(InputStream& inStream, const int sessionidx
 	m_queueRecvPacketData.push(rcvpkt);
 }
 
-void NetworkLogic::CloseSession(const int Sessionidx)
+void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 {
+	if (type == CLOSE_TYPE::FORCING)
+	{
+		closesocket(m_ServSocket);
+		FD_CLR(m_ServSocket, &m_Readfds);
+		return;
+	}
 	auto& clnt = m_dequeSession.at(Sessionidx);
 
 	for (auto iter = m_dequeSession.begin(); iter != m_dequeSession.end(); ++iter)
@@ -227,22 +226,19 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 	}
 
 	m_pConfig = pConfig;
+
 	SockAddress serv_addr(INADDR_ANY, AF_INET, m_pConfig->port);
 
 	SocketUtil::SetSocketOption(m_ServSocket);
 	SocketUtil::SetSocketNonblock(m_ServSocket, true);
 
-	// TODO : 이거 정적 X 버젼으로 다심ㄴ들어라
-	/*PckProcessor::GetInst()->InitPckInfo();
-	PckProcessor::GetInst()->SetSendPacketQueue(m_queueSendPacketData);*/
-
 	m_PtcpSocket = std::make_shared<TCPSocket>(m_ServSocket, serv_addr);
 	auto retErr = m_PtcpSocket->Bind();
 
-	if ((retErr != ERR_CODE::ERR_NONE))
+	if ((retErr != (int)ERR_CODE::ERR_NONE))
 		return false;
 	retErr = m_PtcpSocket->Listen(m_pConfig->backlog);
-	if (retErr != ERR_CODE::ERR_NONE)
+	if (retErr != (int)ERR_CODE::ERR_NONE)
 		return false;
 	FD_ZERO(&m_Readfds);
 	FD_SET(m_PtcpSocket->GetSocket(), &m_Readfds);
@@ -272,11 +268,13 @@ bool NetworkLogic::DoRunLoop()
 	fd_write = m_Readfds;
 
 	auto retErr = select(0, &fd_read, &fd_write, nullptr, &tv);
-	if (retErr == SOCKET_ERROR)
+
+	/*if (retErr <= 0)
 	{
 		SocketUtil::ReportError("NetworkLogic::DoRunLoop::Select");
+		CloseSession(CLOSE_TYPE::FORCING, 0);
 		return false;
-	}
+	}*/
 
 	// receive packet
 	// TODO : FD_ISSET이 server 소켓이 fd_read에 담겨있으므로 무조건 true를 반환하는지 알아봐야함.
@@ -287,11 +285,7 @@ bool NetworkLogic::DoRunLoop()
 		ProcessRecvQueue();
 	}
 
-	if (FD_ISSET(m_PtcpSocket->GetSocket(), &fd_write))
-	{
-		SndPacket(fd_write);
-	}
-
+	SndPacket(fd_write);
 	return true;
 }
 

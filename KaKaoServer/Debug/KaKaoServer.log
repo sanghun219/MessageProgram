@@ -1,2 +1,7 @@
-﻿  Server.cpp
+﻿  DBManager.cpp
+  NetworkLogic.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoserver\src\networklogic.cpp(39): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+  ServMain.cpp
+  Server.cpp
+  코드를 생성하고 있습니다...
   KaKaoServer.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\Debug\KaKaoServer.exe

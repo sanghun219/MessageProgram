@@ -8,7 +8,7 @@ namespace PacketProc
 	{
 	public:
 		void InitPckInfo();
-		void SetSendPacketQueue(const std::queue<Packet>& sendpckQueue) { this->m_sendpckQueue = sendpckQueue; }
+		inline void SetSendPacketQueue(const std::queue<Packet>& sendpckQueue) { this->m_sendpckQueue = sendpckQueue; }
 		ERR_CODE Process(const Packet& inPacket);
 	private:
 		ERR_CODE Process_LOGIN_REQ(const Packet& packData);

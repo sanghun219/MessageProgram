@@ -18,69 +18,66 @@ int TCPSocket::Recv(char* buf, const int bufSize)
 {
 	// WOULD BLOCK과 연결종료 같은것들은 외부에서 처리하자.
 	int recvSize = recv(m_Socket, buf, bufSize, 0);
-	if (recvSize < 0)
+	if (recvSize <= 0)
 	{
-		REPORT_ERROR("TCPSocket::Recv");
-		return -(int)ERR_CODE::ERR_RECV;
+		return SocketUtil::GetLastError();
 	}
 
 	return recvSize;
 }
-ERR_CODE TCPSocket::Bind()
+int TCPSocket::Bind()
 {
 	int retErr = bind(m_Socket, (const sockaddr*)&m_addr->GetAddr(), m_addr->GetSizeOfAddr());
 	if (retErr == SOCKET_ERROR)
 	{
 		SocketUtil::ReportError("TCPSocket::Bind");
-		return ERR_CODE::ERR_BIND;
+		return SocketUtil::GetLastError();
 	}
 
-	return ERR_CODE::ERR_NONE;
+	return static_cast<int>(ERR_CODE::ERR_NONE);
 }
 
-ERR_CODE TCPSocket::Listen(int BackLog)
+int TCPSocket::Listen(int BackLog)
 {
-	int retErr = listen(m_Socket, backLog);
+	std::cout << BackLog << std::endl;
+	int retErr = listen(m_Socket, BackLog);
 	if (retErr == SOCKET_ERROR)
 	{
-		/*if (retErr == EWOULDBLOCK)
-		{
-			return ERR_CODE::ERR_WOULDBLOCK;
-		}*/
 		REPORT_ERROR("TCPSocket::Listen");
-		return ERR_CODE::ERR_LISTN;
+		return SocketUtil::GetLastError();
 	}
-	return ERR_CODE::ERR_NONE;
+	return static_cast<int>(ERR_CODE::ERR_NONE);
 }
 
-ERR_CODE TCPSocket::Accept()
+int TCPSocket::Accept()
 {
 	int clnt_size = m_addr->GetSizeOfAddr();
 	m_Socket = accept(m_Socket, (sockaddr*)&m_addr->GetAddr(), &clnt_size);
 	if (m_Socket == INVALID_SOCKET)
 	{
 		REPORT_ERROR("TCPSocket::Accept");
-		return ERR_CODE::ERR_INVALID_SOCK;
+		return SocketUtil::GetLastError();
 	}
 
-	return ERR_CODE::ERR_NONE;
+	return static_cast<int>(ERR_CODE::ERR_NONE);
 }
 
-ERR_CODE TCPSocket::Connect()
+int TCPSocket::Connect()
 {
-	int retErr = connect(m_Socket, (const sockaddr*)&m_addr, sizeof(m_addr));
+	int retErr = connect(m_Socket, (const sockaddr*)&m_addr->GetAddr(), m_addr->GetSizeOfAddr());
 	if (retErr == SOCKET_ERROR)
 	{
-		REPORT_ERROR("TCPSocket::Connect");
-		return ERR_CODE::ERR_CONNECT;
+		return SocketUtil::GetLastError();
 	}
-	return ERR_CODE::ERR_NONE;
+	return static_cast<int>(ERR_CODE::ERR_NONE);
 }
 
 TCPSocket::TCPSocket(SOCKET & inSocket, SockAddress& addr)
 {
 	m_Socket = inSocket;
-	m_addr = &addr;
+	m_addr = new SockAddress(addr.GetAddr().sin_addr.S_un.S_addr, addr.GetAddr().sin_family
+		, addr.GetAddr().sin_port);
+	backLog = SOMAXCONN;
 }
 
 TCPSocket::~TCPSocket()

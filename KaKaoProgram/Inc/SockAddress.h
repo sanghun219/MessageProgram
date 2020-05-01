@@ -20,7 +20,7 @@ public:
 	}
 	SockAddress(const SOCKADDR_IN& Inaddr)
 	{
-		addr.sin_addr = Inaddr.sin_addr;
+		addr.sin_addr.S_un.S_addr = Inaddr.sin_addr.S_un.S_addr;
 		addr.sin_family = (ADDRESS_FAMILY)Inaddr.sin_family;
 		addr.sin_port = Inaddr.sin_port;
 	}

@@ -36,6 +36,7 @@ void OutputStream::Write(const Packet & pck)
 
 void OutputStream::ReallocBuffer(int BufferCapacity)
 {
+	m_capacity = BufferCapacity;
 	char* copyBuffer = new char[BufferCapacity];
 	if (m_buffer == nullptr)
 	{
@@ -43,8 +44,8 @@ void OutputStream::ReallocBuffer(int BufferCapacity)
 	}
 	else
 	{
-		memcpy(copyBuffer, m_buffer, m_head);
-		std::free(m_buffer);
+		memcpy(copyBuffer, m_buffer, sizeof(m_buffer));
+		m_buffer = nullptr;
 		m_buffer = copyBuffer;
 	}
 }
@@ -52,14 +53,15 @@ void OutputStream::ReallocBuffer(int BufferCapacity)
 void InputStream::ReallocBuffer(int BufferCapacity)
 {
 	char* copyBuffer = new char[BufferCapacity];
+
 	if (m_buffer == nullptr)
 	{
 		m_buffer = new char[BufferCapacity];
 	}
 	else
 	{
-		memcpy(copyBuffer, m_buffer, m_head);
-		std::free(m_buffer);
+		memcpy(copyBuffer, m_buffer, sizeof(m_buffer));
+		m_buffer = nullptr;
 		m_buffer = copyBuffer;
 	}
 }
