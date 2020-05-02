@@ -12,12 +12,12 @@ public:
 	int Recv(char* buf, const int bufSize);
 	int Bind();
 	int Listen(int BackLog);
-	int Accept();
+	std::shared_ptr<TCPSocket> Accept(SockAddress& inAddress);
 	int Connect();
 
-	const SockAddress& GetSockAddr() { return *m_addr; }
-	SOCKET GetSocket() { return m_Socket; }
-	const int GetBackLog()const { return backLog; }
+	inline SockAddress& GetSockAddr() { return *m_addr; }
+	inline SOCKET& GetSocket() { return m_Socket; }
+	inline const int GetBackLog()const { return backLog; }
 public:
 	TCPSocket(SOCKET& inSocket, SockAddress& addr);
 	~TCPSocket();

@@ -7,10 +7,14 @@ private:
 	SOCKADDR_IN addr;
 public:
 
-	SOCKADDR_IN GetAddr()const { return addr; }
+	SOCKADDR_IN GetAddr() { return addr; }
 	int GetSizeOfAddr()const { return sizeof(addr); }
 
 public:
+	SockAddress()
+	{
+		ZeroMemory(&addr, sizeof(addr));
+	}
 	SockAddress(ULONG Inaddr, int af, short port)
 	{
 		ZeroMemory(&addr, sizeof(addr));

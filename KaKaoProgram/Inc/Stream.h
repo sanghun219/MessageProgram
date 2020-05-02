@@ -7,25 +7,25 @@ class OutputStream
 {
 public:
 
-	void Write(const void* pData, const int dataSize)
+	inline void StreamWrite(const void* pData, const int dataSize)
 	{
+		const char* copyData = static_cast<const char*>(pData);
 		int next = m_head + dataSize;
-		const char* copyData = reinterpret_cast<const char*>(pData);
-
 		if (next > m_capacity)
 		{
 			ReallocBuffer(std::max<int>(m_capacity * 2, next));
 		}
-		asdasd
-			memcpy(&m_buffer[m_head], &copyData[0], dataSize);
-		m_head += dataSize;
+
+		memmove(&m_buffer[m_head], copyData, dataSize);
+		m_head = next;
 	}
-	void Write(const std::string inString);
+	inline void Write(const std::string inString);
 	void Write(const Packet& pck);
-	void Write(const short data, const int dataSize = SHORT_SIZE) { Write(data, dataSize); }
-	void Write(const int data, const int dataSize = INT_SIZE) { Write((const char*)data, dataSize); }
-	char* GetBuffer()const { return m_buffer; }
-	int GetBufferSize()const { return sizeof(m_buffer); }
+	inline void Write(const short& data, const int dataSize = SHORT_SIZE) { StreamWrite(&data, dataSize); }
+	inline void Write(const int& data, const int dataSize = INT_SIZE) { StreamWrite(&data, dataSize); }
+	inline void Write(const char* data, const int dataSize) { StreamWrite(data, dataSize); }
+	inline char* GetBuffer()const { return m_buffer; }
+	inline int GetBufferSize()const { return sizeof(m_buffer); }
 private:
 	int m_head;
 	int m_capacity;
@@ -42,7 +42,7 @@ private:
 	void ReallocBuffer(int BufferCapacity);
 public:
 
-	void Read(char* pData, const int dataSize)
+	inline void Read(char* pData, const int dataSize)
 	{
 		int next = m_head + dataSize;
 		const char* copyData = reinterpret_cast<const char*>(pData);
@@ -51,10 +51,10 @@ public:
 		m_head = next;
 	}
 	void Read(std::string& inString);
-	void Read(short data, const int dataSize = SHORT_SIZE) { Read((char*)data, dataSize); }
-	void Read(int data, const int dataSize = INT_SIZE) { Read((char*)data, dataSize); }
+	inline void Read(short data, const int dataSize = SHORT_SIZE) { Read((char*)data, dataSize); }
+	inline void Read(int data, const int dataSize = INT_SIZE) { Read((char*)data, dataSize); }
 
-	char* GetBuffer()const { return m_buffer; }
+	inline char* GetBuffer()const { return m_buffer; }
 public:
 	InputStream& operator = (const InputStream& stream)
 	{

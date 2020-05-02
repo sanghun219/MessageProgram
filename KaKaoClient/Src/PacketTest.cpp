@@ -3,28 +3,35 @@ using namespace std;
 void PacketTest::Send()
 {
 	auto ret = m_ptrTCPsocket->Connect();
-
-	if (ret == WSAEWOULDBLOCK)
+	if (ret == SOCKET_ERROR)
 	{
-		return;
+		if (ret == WSAEWOULDBLOCK)
+		{
+			return;
+		}
+		else
+		{
+			SocketUtil::ReportError("PacketTest::test");
+			return;
+		}
 	}
 
 	isConnected = true;
-	char buf[1500];
-	ZeroMemory(buf, sizeof(buf));
+	char buf[1500] = { 0, };
 	cin >> buf;
 
 	OutputStream stream;
-	cout << "asdasd" << endl;
-	stream.Write((short)PACKET_DIR::CtoS);
-	stream.Write((short)PACKET_ID::PCK_LOGIN_REQ);
-	stream.Write(static_cast<int>(sizeof(buf)));
+	short pkdir = (short)PACKET_DIR::CtoS;
+	short pkid = (short)PACKET_ID::PCK_LOGIN_REQ;
+	stream.Write(buf, sizeof(buf));
+	stream.Write(pkid, sizeof(short));
+	stream.Write((int)sizeof(buf));
 	stream.Write(buf, sizeof(buf));
 
-	int sendSize = send(m_ptrTCPsocket->GetSocket(), stream.GetBuffer(), stream.GetBufferSize(), 0);
+	int sendSize = m_ptrTCPsocket->Send(stream.GetBuffer(), stream.GetBufferSize());
 	if (sendSize < 0)
 	{
-		if (sendSize == WSAEWOULDBLOCK)
+		if (SocketUtil::GetLastError() == WSAEWOULDBLOCK)
 		{
 			return;
 		}
@@ -92,10 +99,8 @@ void PacketTest::Init()
 	clnt_addr.sin_family = AF_INET;
 	clnt_addr.sin_port = 32000;
 
-	char IP[32] = { 0, };
-
 	//inet_ntop(AF_INET, &clnt_addr.sin_addr, IP, 32 - 1);
-	inet_pton(AF_INET, "192.168.208.72", &clnt_addr.sin_addr);
+	inet_pton(AF_INET, "127.0.0.1", &clnt_addr.sin_addr);
 	SockAddress addr(clnt_addr.sin_addr.S_un.S_addr, clnt_addr.sin_family, clnt_addr.sin_port);
 	isOver = false;
 	isConnected = false;

@@ -1,5 +1,1 @@
-﻿  ClienMain.cpp
-  PacketTest.cpp
-  코드를 생성하고 있습니다...
-c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\inc\stream.h(25): warning C4717: 'OutputStream::Write': 모든 제어 경로에서 재귀적입니다. 함수로 인해 런타임 스택 오버플로가 발생합니다.
-  KaKaoClient.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\Debug\KaKaoClient.exe
+﻿  KaKaoClient.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\Debug\KaKaoClient.exe

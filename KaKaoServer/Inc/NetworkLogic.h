@@ -11,6 +11,7 @@ class OutputStream;
 enum class CLOSE_TYPE
 {
 	FORCING,
+	ALL_SESSION,
 	END,
 };
 

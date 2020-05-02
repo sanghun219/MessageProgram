@@ -8,7 +8,6 @@ int TCPSocket::Send(const char* buf, const int bufSize)
 	// WOULD BLOCK과 연결종료 같은것들은 외부에서 처리하자.
 	if (sendSize < 0)
 	{
-		REPORT_ERROR("TCPSocket::Send");
 		return -(int)ERR_CODE::ERR_SEND;
 	}
 
@@ -49,17 +48,19 @@ int TCPSocket::Listen(int BackLog)
 	return static_cast<int>(ERR_CODE::ERR_NONE);
 }
 
-int TCPSocket::Accept()
+std::shared_ptr<TCPSocket> TCPSocket::Accept(SockAddress & inAddress)
 {
-	int clnt_size = m_addr->GetSizeOfAddr();
-	m_Socket = accept(m_Socket, (sockaddr*)&m_addr->GetAddr(), &clnt_size);
-	if (m_Socket == INVALID_SOCKET)
+	int addr_len = inAddress.GetSizeOfAddr();
+	SOCKET clnt_socket = accept(m_Socket, (struct sockaddr*)&inAddress.GetAddr(), &addr_len);
+
+	if (clnt_socket == INVALID_SOCKET)
 	{
-		REPORT_ERROR("TCPSocket::Accept");
-		return SocketUtil::GetLastError();
+		return nullptr;
 	}
 
-	return static_cast<int>(ERR_CODE::ERR_NONE);
+	TCPSocket clnt_tcp(clnt_socket, inAddress);
+
+	return PtrTCPSocket(new TCPSocket(clnt_tcp));
 }
 
 int TCPSocket::Connect()
@@ -69,7 +70,7 @@ int TCPSocket::Connect()
 	{
 		return SocketUtil::GetLastError();
 	}
-	return static_cast<int>(ERR_CODE::ERR_NONE);
+	return retErr;
 }
 
 TCPSocket::TCPSocket(SOCKET & inSocket, SockAddress& addr)

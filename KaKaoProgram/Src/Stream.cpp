@@ -1,7 +1,8 @@
 #include "Stream.h"
 #include "ServLibrary.h"
-OutputStream::OutputStream() :m_head(0), m_buffer(nullptr)
+OutputStream::OutputStream() :m_head(0)
 {
+	m_buffer = nullptr;
 	ReallocBuffer(1500 * 8);
 }
 
@@ -13,10 +14,10 @@ OutputStream::~OutputStream()
 void OutputStream::Write(const std::string inString)
 {
 	unsigned int elemCount = static_cast<unsigned int>(inString.size());
-	Write((char*)&elemCount, sizeof(elemCount));
+	StreamWrite((char*)&elemCount, sizeof(elemCount));
 	for (const auto& elem : inString)
 	{
-		Write(&elem, sizeof(elem));
+		StreamWrite(&elem, sizeof(elem));
 	}
 }
 
@@ -36,34 +37,35 @@ void OutputStream::Write(const Packet & pck)
 
 void OutputStream::ReallocBuffer(int BufferCapacity)
 {
-	m_capacity = BufferCapacity;
-	char* copyBuffer = new char[BufferCapacity];
 	if (m_buffer == nullptr)
 	{
 		m_buffer = new char[BufferCapacity];
+		memset(m_buffer, 0, BufferCapacity);
 	}
 	else
 	{
-		memcpy(copyBuffer, m_buffer, sizeof(m_buffer));
-		m_buffer = nullptr;
+		char* copyBuffer = static_cast<char*>(new char[BufferCapacity]);
+		memcpy(copyBuffer, m_buffer, BufferCapacity);
+		std::free(m_buffer);
 		m_buffer = copyBuffer;
 	}
+	m_capacity = BufferCapacity;
 }
 
 void InputStream::ReallocBuffer(int BufferCapacity)
 {
-	char* copyBuffer = new char[BufferCapacity];
-
 	if (m_buffer == nullptr)
 	{
 		m_buffer = new char[BufferCapacity];
 	}
 	else
 	{
-		memcpy(copyBuffer, m_buffer, sizeof(m_buffer));
-		m_buffer = nullptr;
+		char* copyBuffer = static_cast<char*>(new char[BufferCapacity]);
+		memcpy(copyBuffer, m_buffer, BufferCapacity);
+		std::free(m_buffer);
 		m_buffer = copyBuffer;
 	}
+	m_capacity = BufferCapacity;
 }
 
 void InputStream::Read(std::string& inString)

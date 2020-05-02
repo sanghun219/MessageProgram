@@ -3,35 +3,30 @@
 void NetworkLogic::ReceiveSession()
 {
 	SOCKET socket = INVALID_SOCKET;
-	SockAddress clnt_addr(0, AF_INET, m_pConfig->port);
-	TCPSocket clientSocket(socket, clnt_addr);
+	SockAddress clnt_addr;
 
-	auto retErr = m_PtcpSocket->Accept();
-	if (retErr != (int)ERR_CODE::ERR_NONE)
+	auto clntSocket = m_PtcpSocket->Accept(clnt_addr);
+	if (clntSocket == nullptr)
 	{
-		if (retErr == WSAEWOULDBLOCK)
+		if (SocketUtil::GetLastError() == WSAEWOULDBLOCK)
 		{
-			SocketUtil::ReportError("NetworkLogic::ERR_WOULDBLOCK");
 			return;
 		}
 		else
 		{
-			SocketUtil::ReportError("NetworkLogic::ReceiveSession");
+			SocketUtil::ReportError("NetworkLogic::Accept");
 			return;
 		}
 	}
-
 	int ClientIdx = GetSessionIdx();
 	if (ClientIdx < 0)
 	{
 		LOG("최대로 연결할 수 있는 세션의 크기를 넘어섰습니다!");
 		return;
 	}
-	FD_SET(clientSocket.GetSocket(), &m_Readfds);
+	FD_SET(clntSocket->GetSocket(), &m_Readfds);
 
-	char IP[MAX_IP] = { 0, };
-	inet_ntop(AF_INET, (const void*)&clnt_addr.GetAddr(), IP, MAX_IP - 1);
-	ConnectSessionNClient(clnt_addr, clientSocket, ClientIdx);
+	ConnectSessionNClient(clnt_addr, *m_PtcpSocket, ClientIdx);
 }
 
 bool NetworkLogic::ReceivePacket(fd_set& rd)
@@ -147,20 +142,23 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 		FD_CLR(m_ServSocket, &m_Readfds);
 		return;
 	}
-	auto& clnt = m_dequeSession.at(Sessionidx);
-
-	for (auto iter = m_dequeSession.begin(); iter != m_dequeSession.end(); ++iter)
+	else if (type == CLOSE_TYPE::ALL_SESSION)
 	{
-		if ((*iter).idx == Sessionidx)
+		for (int idx = 0; idx < m_dequeSession.size(); idx++)
 		{
-			m_dequeSession.erase(iter);
-			break;
+			auto& clnt = m_dequeSession.at(idx);
+			m_dequeSessionIndex.push_back(idx);
+			closesocket(clnt.fd->GetSocket());
+			clnt.Clear();
 		}
 	}
-
-	m_dequeSessionIndex.push_back(clnt.idx);
-	closesocket(clnt.fd->GetSocket());
-	clnt.Clear();
+	else
+	{
+		auto& clnt = m_dequeSession.at(Sessionidx);
+		m_dequeSessionIndex.push_back(clnt.idx);
+		closesocket(clnt.fd->GetSocket());
+		clnt.Clear();
+	}
 }
 
 void NetworkLogic::SndPacket(fd_set & wr)
@@ -227,12 +225,12 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 
 	m_pConfig = pConfig;
 
-	SockAddress serv_addr(INADDR_ANY, AF_INET, m_pConfig->port);
+	SockAddress serv_sockaddr(INADDR_ANY, AF_INET, m_pConfig->port);
 
 	SocketUtil::SetSocketOption(m_ServSocket);
 	SocketUtil::SetSocketNonblock(m_ServSocket, true);
 
-	m_PtcpSocket = std::make_shared<TCPSocket>(m_ServSocket, serv_addr);
+	m_PtcpSocket = std::make_shared<TCPSocket>(m_ServSocket, serv_sockaddr);
 	auto retErr = m_PtcpSocket->Bind();
 
 	if ((retErr != (int)ERR_CODE::ERR_NONE))
@@ -240,6 +238,7 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 	retErr = m_PtcpSocket->Listen(m_pConfig->backlog);
 	if (retErr != (int)ERR_CODE::ERR_NONE)
 		return false;
+
 	FD_ZERO(&m_Readfds);
 	FD_SET(m_PtcpSocket->GetSocket(), &m_Readfds);
 
@@ -260,29 +259,31 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 
 bool NetworkLogic::DoRunLoop()
 {
-	fd_set fd_read, fd_write;
-	timeval tv;
-	tv.tv_usec = 1000;
-	tv.tv_sec = 1;
-	fd_read = m_Readfds;
-	fd_write = m_Readfds;
+	auto fd_read = m_Readfds;
+	auto fd_write = m_Readfds;
+	timeval tv{ 0,1000 };
 
 	auto retErr = select(0, &fd_read, &fd_write, nullptr, &tv);
 
-	/*if (retErr <= 0)
+	if (retErr == -1)
 	{
-		SocketUtil::ReportError("NetworkLogic::DoRunLoop::Select");
+		SocketUtil::ReportError("NetworkLogic::Select");
 		CloseSession(CLOSE_TYPE::FORCING, 0);
 		return false;
-	}*/
+	}
 
 	// receive packet
 	// TODO : FD_ISSET이 server 소켓이 fd_read에 담겨있으므로 무조건 true를 반환하는지 알아봐야함.
-	if (FD_ISSET(m_PtcpSocket->GetSocket(), &fd_read))
+	if (FD_ISSET(m_PtcpSocket->GetSocket(), &m_Readfds))
 	{
 		ReceiveSession();
 		ReceivePacket(fd_read);
 		ProcessRecvQueue();
+	}
+	else
+	{
+		LOG("NO!");
+		return true;
 	}
 
 	SndPacket(fd_write);
@@ -295,4 +296,6 @@ NetworkLogic::NetworkLogic()
 
 NetworkLogic::~NetworkLogic()
 {
+	CloseSession(CLOSE_TYPE::ALL_SESSION, 0);
+	FD_CLR(m_PtcpSocket->GetSocket(), &m_Readfds);
 }
