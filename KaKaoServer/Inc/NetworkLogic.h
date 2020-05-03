@@ -32,12 +32,12 @@ private:
 private:
 	Config* m_pConfig;
 	fd_set m_Readfds;
-	SOCKET m_ServSocket;
+
 	std::deque<int> m_dequeSessionIndex;
 	std::deque<Session> m_dequeSession;
 	std::queue<Packet> m_queueRecvPacketData;
 	std::queue<Packet> m_queueSendPacketData;
-	PtrTCPSocket m_PtcpSocket;
+	TCPSocket m_tcpSocket;
 	std::recursive_mutex m_rm;
 	PckProcessor* m_pckProcessor;
 public:

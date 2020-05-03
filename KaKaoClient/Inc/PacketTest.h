@@ -16,6 +16,6 @@ public:
 private:
 	bool isOver;
 	bool isConnected;
-	PtrTCPSocket m_ptrTCPsocket;
+	TCPSocket m_TCPsocket;
 	SOCKET sock;
 };

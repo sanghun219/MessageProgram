@@ -7,7 +7,7 @@
 #pragma comment(lib,"ws2_32.lib")
 
 // 자료구조
-#include <string.h>
+#include <string>
 #include <vector>
 #include <unordered_map>
 #include <queue>
@@ -17,6 +17,7 @@
 #include <memory>
 #include <algorithm>
 #include <mutex>
+#include <stdint.h>
 
 // Define
 #define MAX_IP 32

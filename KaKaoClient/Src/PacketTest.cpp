@@ -2,33 +2,25 @@
 using namespace std;
 void PacketTest::Send()
 {
-	auto ret = m_ptrTCPsocket->Connect();
-	if (ret == SOCKET_ERROR)
-	{
-		if (ret == WSAEWOULDBLOCK)
-		{
-			return;
-		}
-		else
-		{
-			SocketUtil::ReportError("PacketTest::test");
-			return;
-		}
-	}
-
 	isConnected = true;
-	char buf[1500] = { 0, };
-	cin >> buf;
+	char buf[1500];
+	memset(buf, 0, sizeof(buf));
 
+	cin >> buf;
 	OutputStream stream;
 	short pkdir = (short)PACKET_DIR::CtoS;
 	short pkid = (short)PACKET_ID::PCK_LOGIN_REQ;
-	stream.Write(buf, sizeof(buf));
-	stream.Write(pkid, sizeof(short));
-	stream.Write((int)sizeof(buf));
-	stream.Write(buf, sizeof(buf));
+	int bufsize = sizeof(buf);
+	cout << bufsize << endl;
+	cout << (short)pkdir << endl;
+	cout << (short)pkid << endl;
 
-	int sendSize = m_ptrTCPsocket->Send(stream.GetBuffer(), stream.GetBufferSize());
+	stream.Write(pkdir);
+	stream.Write(pkid);
+	stream.Write(bufsize);
+	stream.Write(buf);
+	int sendSize = m_TCPsocket.Send(stream.GetBuffer(), stream.GetBufferSize());
+
 	if (sendSize < 0)
 	{
 		if (SocketUtil::GetLastError() == WSAEWOULDBLOCK)
@@ -52,7 +44,7 @@ void PacketTest::Recv()
 	if (isConnected == false)
 		return;
 	char copybuf[1500] = { 0, };
-	int recvsize = recv(m_ptrTCPsocket->GetSocket(), copybuf, sizeof(copybuf), 0);
+	int recvsize = recv(m_TCPsocket.GetSocket(), copybuf, sizeof(copybuf), 0);
 
 	if (recvsize < 0)
 	{
@@ -72,6 +64,18 @@ void PacketTest::Recv()
 
 void PacketTest::Run()
 {
+	auto ret = m_TCPsocket.Connect();
+	if (ret == SOCKET_ERROR)
+	{
+		if (SocketUtil::GetLastError() == WSAEWOULDBLOCK)
+		{
+		}
+		else
+		{
+			SocketUtil::ReportError("PacketTest::test");
+			return;
+		}
+	}
 	while (!isOver)
 	{
 		Send();
@@ -88,7 +92,7 @@ void PacketTest::Init()
 		return;
 	}
 
-	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == INVALID_SOCKET)
 	{
 		SocketUtil::ReportError("PacketTest::Init");
@@ -96,17 +100,18 @@ void PacketTest::Init()
 	}
 
 	SOCKADDR_IN clnt_addr;
+	memset(&clnt_addr, 0, sizeof(SOCKADDR_IN));
 	clnt_addr.sin_family = AF_INET;
-	clnt_addr.sin_port = 32000;
+	clnt_addr.sin_port = htons(32000);
 
-	//inet_ntop(AF_INET, &clnt_addr.sin_addr, IP, 32 - 1);
 	inet_pton(AF_INET, "127.0.0.1", &clnt_addr.sin_addr);
+
 	SockAddress addr(clnt_addr.sin_addr.S_un.S_addr, clnt_addr.sin_family, clnt_addr.sin_port);
 	isOver = false;
 	isConnected = false;
-	m_ptrTCPsocket = make_shared<TCPSocket>(sock, addr);
-
-	setSockOpt();
+	m_TCPsocket = TCPSocket(sock, addr);
+	//SocketUtil::SetSocketNonblock(m_TCPsocket.m_Socket, true);
+	SocketUtil::SetSocketOption(m_TCPsocket.m_Socket);
 
 	LOG("Client Init Complete!");
 }
@@ -114,5 +119,5 @@ void PacketTest::Init()
 void PacketTest::setSockOpt()
 {
 	auto opt = 1;
-	ioctlsocket(m_ptrTCPsocket->GetSocket(), FIONBIO, (u_long*)&opt);
+	ioctlsocket(m_TCPsocket.GetSocket(), FIONBIO, (u_long*)&opt);
 }

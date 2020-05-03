@@ -16,7 +16,7 @@ private:
 	std::unique_ptr<Config> m_pServerConfig;
 	std::unique_ptr<NetworkLogic> m_pNetworkLogic;
 public:
-
+	bool isOver;
 public:
 };
 #define MAX_PATH 260

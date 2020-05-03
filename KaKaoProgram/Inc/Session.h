@@ -13,7 +13,7 @@ public:
 	unsigned int idx = 0;
 	int seq = 0;
 	TCPSocket* fd = nullptr;
-	SockAddress* address;
+	SockAddress* address = nullptr;
 	InputStream* inStream = nullptr;
 	OutputStream* outStream = nullptr;
 	std::string UserID;

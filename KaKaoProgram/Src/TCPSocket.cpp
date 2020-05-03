@@ -17,16 +17,12 @@ int TCPSocket::Recv(char* buf, const int bufSize)
 {
 	// WOULD BLOCK과 연결종료 같은것들은 외부에서 처리하자.
 	int recvSize = recv(m_Socket, buf, bufSize, 0);
-	if (recvSize <= 0)
-	{
-		return SocketUtil::GetLastError();
-	}
 
 	return recvSize;
 }
 int TCPSocket::Bind()
 {
-	int retErr = bind(m_Socket, (const sockaddr*)&m_addr->GetAddr(), m_addr->GetSizeOfAddr());
+	int retErr = bind(m_Socket, (const sockaddr*)&m_addr->addr, m_addr->GetSizeOfAddr());
 	if (retErr == SOCKET_ERROR)
 	{
 		SocketUtil::ReportError("TCPSocket::Bind");
@@ -38,7 +34,6 @@ int TCPSocket::Bind()
 
 int TCPSocket::Listen(int BackLog)
 {
-	std::cout << BackLog << std::endl;
 	int retErr = listen(m_Socket, BackLog);
 	if (retErr == SOCKET_ERROR)
 	{
@@ -48,40 +43,47 @@ int TCPSocket::Listen(int BackLog)
 	return static_cast<int>(ERR_CODE::ERR_NONE);
 }
 
-std::shared_ptr<TCPSocket> TCPSocket::Accept(SockAddress & inAddress)
+TCPSocket* TCPSocket::Accept(SockAddress & inAddress)
 {
 	int addr_len = inAddress.GetSizeOfAddr();
-	SOCKET clnt_socket = accept(m_Socket, (struct sockaddr*)&inAddress.GetAddr(), &addr_len);
+	SOCKET clnt_socket = accept(m_Socket, (struct sockaddr*)&inAddress.addr, &addr_len);
 
 	if (clnt_socket == INVALID_SOCKET)
 	{
 		return nullptr;
 	}
-
-	TCPSocket clnt_tcp(clnt_socket, inAddress);
-
-	return PtrTCPSocket(new TCPSocket(clnt_tcp));
+	else
+		return new TCPSocket(clnt_socket, inAddress);
 }
 
 int TCPSocket::Connect()
 {
-	int retErr = connect(m_Socket, (const sockaddr*)&m_addr->GetAddr(), m_addr->GetSizeOfAddr());
-	if (retErr == SOCKET_ERROR)
-	{
-		return SocketUtil::GetLastError();
-	}
+	int retErr = connect(m_Socket, (const SOCKADDR*)&m_addr->addr, m_addr->GetSizeOfAddr());
 	return retErr;
 }
 
-TCPSocket::TCPSocket(SOCKET & inSocket, SockAddress& addr)
+TCPSocket & TCPSocket::operator=(const TCPSocket & s)
 {
+	if (this == &s)
+	{
+		return *this;
+	}
+	this->m_addr = new SockAddress(*s.m_addr);
+	this->backLog = s.backLog;
+	this->m_Socket = s.m_Socket;
+	return *this;
+}
+
+TCPSocket::TCPSocket(const SOCKET & inSocket, const SockAddress& addr)
+{
+	m_addr = new SockAddress(addr);
 	m_Socket = inSocket;
-	m_addr = new SockAddress(addr.GetAddr().sin_addr.S_un.S_addr, addr.GetAddr().sin_family
-		, addr.GetAddr().sin_port);
-	backLog = SOMAXCONN;
+}
+
+TCPSocket::TCPSocket()
+{
 }
 
 TCPSocket::~TCPSocket()
 {
-	closesocket(m_Socket);
 }

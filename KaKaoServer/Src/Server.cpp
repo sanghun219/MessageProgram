@@ -23,8 +23,9 @@ void Server::LoadConfig()
 
 void Server::Run()
 {
-	while (m_pNetworkLogic->DoRunLoop())
+	while (isOver)
 	{
+		m_pNetworkLogic->DoRunLoop();
 	}
 
 	LOG("서버가 종료되었습니다.");
@@ -42,10 +43,9 @@ void Server::InitServer()
 		LOG("InitNetworkLogic Err");
 		return;
 	}
-
 	Singleton<DBManager>::GetInst()->InitDBManager();
 
 	// 여기 위에까지 초기화 할 것들을 다 해둔다.
-
+	isOver = true;
 	Run();
 }

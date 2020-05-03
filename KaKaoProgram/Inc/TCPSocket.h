@@ -3,7 +3,7 @@
 class SockAddress;
 class TCPSocket
 {
-private:
+public:
 	SOCKET m_Socket;
 	SockAddress* m_addr;
 	int backLog;
@@ -12,15 +12,16 @@ public:
 	int Recv(char* buf, const int bufSize);
 	int Bind();
 	int Listen(int BackLog);
-	std::shared_ptr<TCPSocket> Accept(SockAddress& inAddress);
+	TCPSocket* Accept(SockAddress& inAddress);
 	int Connect();
 
 	inline SockAddress& GetSockAddr() { return *m_addr; }
-	inline SOCKET& GetSocket() { return m_Socket; }
+	inline SOCKET GetSocket() { return m_Socket; }
 	inline const int GetBackLog()const { return backLog; }
 public:
-	TCPSocket(SOCKET& inSocket, SockAddress& addr);
+	TCPSocket& operator = (const TCPSocket& s);
+
+	TCPSocket(const SOCKET& inSocket, const SockAddress& addr);
+	TCPSocket();
 	~TCPSocket();
 };
-
-using PtrTCPSocket = std::shared_ptr<TCPSocket>;
