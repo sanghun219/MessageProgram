@@ -5,7 +5,7 @@ void Session::Clear()
 	seq = 0;
 	std::free(address);
 	std::free(fd);
-	UserID.clear();
+	UserID[0] = { 0, };
 	ZeroMemory(&inStream, sizeof(inStream));
 	ZeroMemory(&outStream, sizeof(outStream));
 }

@@ -18,11 +18,13 @@
 #include <algorithm>
 #include <mutex>
 #include <stdint.h>
+#include <assert.h>
 
 // Define
 #define MAX_IP 32
 #define SESSION_ID unsigned int
 #define USER_ID_MAX 32
+#define PACKET_SIZE 1024 *10
 
 // 사용자 라이브러리
 #include "ServErr.h"

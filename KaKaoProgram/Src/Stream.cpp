@@ -1,118 +1,227 @@
 #include "Stream.h"
-#include "ServLibrary.h"
-#include <string>
-OutputStream::OutputStream() :m_head(0)
+#define STREAM_READ(type,retval)\
+size_t size = sizeof(type);\
+if(this->checkReadBound(size)==false){\
+return;\
+}\
+this->read((void*)(retval),size);
+
+#define STREAM_WRITE(value)	\
+INT32 size = sizeof(value);	\
+if (this->checkWriteBound(size) == false){	\
+	return;	\
+}	\
+memcpy_s((void*)(m_stream.data()+m_offset),m_stream.size()-m_offset,(const void*)&value,	\
+size);m_offset += size;
+Stream::Stream()
 {
-	m_buffer = nullptr;
-	ReallocBuffer(1500 * 8);
+	this->Init();
 }
 
-OutputStream::~OutputStream()
+Stream::Stream(UCHAR * stream, UINT32 size)
 {
-	std::free(m_buffer);
+	this->Init();
+	this->set(stream, size);
 }
-void OutputStream::Write(const void* pData, const uint32_t dataSize)
+
+void Stream::Init()
 {
-	const char* copyData = static_cast<const char*>(pData);
-	uint32_t next = m_head + dataSize;
-	if (next > m_capacity)
+	m_readPt = 0;
+	m_offset = 0;
+	ZeroMemory(&m_stream, sizeof(m_stream));
+}
+
+UCHAR* Stream::data()
+{
+	return m_stream.data();
+}
+
+UINT32 Stream::size()
+{
+	return m_offset;
+}
+
+void Stream::operator= (Stream& stream)
+{
+	this->set(stream.data(), stream.size());
+}
+
+void Stream::set(UCHAR* data, UINT32 size)
+{
+	this->m_offset = size;
+	memcpy_s(this->m_stream.data(), m_stream.size(), (void*)data, size);
+}
+
+bool Stream::checkWriteBound(INT32 len)
+{
+	if (m_offset + len > sizeof(m_stream))
 	{
-		ReallocBuffer(std::max<uint32_t>(m_capacity * 2, next));
+		LOG("Write Socket over bufsize!");
+		assert(FALSE);
+		return false;
 	}
-	memcpy((void*)&m_buffer[m_head], &copyData[0], dataSize);
-
-	m_head = next;
+	return true;
 }
-void OutputStream::Write(const std::string inString)
+
+void Stream::operator<<(const bool & value)
 {
-	unsigned int elemCount = static_cast<unsigned int>(inString.size());
-	Write((void*)&elemCount, sizeof(elemCount));
-	for (const auto& elem : inString)
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const INT8 & value)
+{
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const UINT8 & value)
+{
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const INT16 & value)
+{
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const UINT16 & value)
+{
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const INT32 & value)
+{
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const UINT32 & value)
+{
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const INT64 & value)
+{
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const UINT64 & value)
+{
+	STREAM_WRITE(value);
+}
+
+void Stream::operator<<(const std::string & value)
+{
+	*this << (INT32)value.length();
+	for (auto i : value) {
+		*this << (UINT8)i;
+	}
+}
+
+bool Stream::checkReadBound(UINT32 len)
+{
+	if (m_readPt + len > m_offset) {
+		LOG(" readOffset : %d, size : %d, totalOffset = %d", m_readPt, len, m_offset);
+		LOG("socket stream has not more memory!");
+		assert(false);
+		return false;
+	}
+	return true;
+}
+
+void Stream::read(void * retval, UINT32 len)
+{
+	memcpy_s(retval, len, (void*)(m_stream.data() + m_readPt), len);
+	m_readPt += len;
+}
+
+void Stream::operator>>(bool * retval)
+{
+	STREAM_READ(bool, retval);
+}
+
+void Stream::operator>>(INT8 * retval)
+{
+	STREAM_READ(INT8, retval);
+}
+
+void Stream::operator>>(UINT8 * retval)
+{
+	STREAM_READ(UINT8, retval);
+}
+
+void Stream::operator>>(INT16 * retval)
+{
+	STREAM_READ(INT16, retval);
+}
+
+void Stream::operator>>(UINT16 * retval)
+{
+	STREAM_READ(UINT16, retval);
+}
+
+void Stream::operator>>(INT32 * retval)
+{
+	STREAM_READ(INT32, retval);
+}
+
+void Stream::operator>>(UINT32 * retval)
+{
+	STREAM_READ(UINT32, retval);
+}
+
+void Stream::operator>>(INT64 * retval)
+{
+	STREAM_READ(INT64, retval);
+}
+
+void Stream::operator>>(UINT64 * retval)
+{
+	STREAM_READ(UINT64, retval);
+}
+
+void Stream::operator>>(std::string * retval)
+{
+	INT32 size;
+	*this >> &size;
+	if (this->checkReadBound(size) == false)
+		return;
+
+	char* buf = new char[size + 1];
+	this->read((void*)(buf), size * sizeof(CHAR));
+	buf[size] = '\0';
+	retval->clear();
+	*retval = buf;
+
+	delete buf;
+}
+
+template<typename T>
+void Stream::operator>>(T * retVal)
+{
+	STREAM_READ(T, retVal);
+}
+template<typename T>
+void Stream::operator>>(std::vector<T>* retval)
+{
+	size_t size;
+	*this >> &size;
+	for (size_t i = 0; i < size; ++i)
 	{
-		Write((void*)&elem, sizeof(elem));
+		T tmp;
+		*this >> &tmp;
+		retval->push_back(tmp);
 	}
 }
 
-void OutputStream::Write(const Packet & pck)
+template <typename T>
+void Stream::operator << (const T& value)
 {
-	short pk_id = static_cast<short>(pck.pckData.pkHeader.id);
-	short pk_dir = static_cast<short>(pck.pckData.pkHeader.dir);
-	int pk_size = pck.pckData.dataSize;
-	char* pk_data = nullptr;
-	memcpy(&pk_data[0], &pck.pckData.data[0], sizeof(pck.pckData.data));
-
-	Write(pk_dir);
-	Write(pk_id);
-	Write(pk_size);
-	Write(pk_data, pk_size);
+	STREAM_WRITE(value);
 }
-
-void OutputStream::ReallocBuffer(uint32_t BufferCapacity)
+template<typename T>
+void Stream::operator<<(const std::vector<T>& value)
 {
-	if (m_buffer == nullptr)
-	{
-		m_buffer = new char[BufferCapacity];
-		memset(m_buffer, 0, BufferCapacity);
+	*this << value.size();
+	for (auto i : value) {
+		*this << i;
 	}
-	else
-	{
-		char* copyBuffer = static_cast<char*>(new char[BufferCapacity]);
-		memcpy(copyBuffer, m_buffer, BufferCapacity);
-		std::free(m_buffer);
-		m_buffer = copyBuffer;
-	}
-	m_capacity = BufferCapacity;
-}
-
-void InputStream::ReallocBuffer(uint32_t BufferCapacity)
-{
-	if (m_buffer == nullptr)
-	{
-		m_buffer = new char[BufferCapacity];
-		memset(m_buffer, 0, BufferCapacity);
-	}
-	else
-	{
-		char* copyBuffer = static_cast<char*>(new char[BufferCapacity]);
-		memset(copyBuffer, 0, BufferCapacity);
-		memcpy(copyBuffer, m_buffer, sizeof(m_buffer));
-		std::free(m_buffer);
-		m_buffer = copyBuffer;
-	}
-	m_capacity = BufferCapacity;
-}
-
-void InputStream::Read(void * outData, const uint32_t dataSize)
-{
-	uint8_t* copyData = reinterpret_cast<uint8_t*>(outData);
-	uint32_t next = m_head + dataSize;
-
-	if (next >= m_capacity)
-	{
-		m_head = 0;
-	}
-	*copyData = static_cast<uint8_t>(copyData[m_head]);
-	m_head = next;
-}
-
-void InputStream::Read(std::string& inString)
-{
-	int dataSize = 0;
-	Read((char*)&dataSize, inString.size());
-	inString.resize(dataSize);
-	for (auto& elem : inString)
-	{
-		Read(&elem, sizeof(elem));
-	}
-}
-
-InputStream::InputStream(const uint32_t Capacity, char* buffer) :m_head(0), m_capacity(Capacity)
-{
-	ReallocBuffer(Capacity);
-}
-
-InputStream::~InputStream()
-{
-	delete m_buffer;
-	m_buffer = nullptr;
 }

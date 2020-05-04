@@ -5,8 +5,7 @@
 #include "Session.h"
 class SockAddress;
 class TCPSocket;
-class InputStream;
-class OutputStream;
+class Stream;
 
 enum class CLOSE_TYPE
 {
@@ -25,7 +24,7 @@ private:
 	void ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx);
 	int GetSessionIdx();
 	void CreateSessionIdx();
-	void pushPakcetInQueue(InputStream& inStream, const int sessionidx);
+	void pushPakcetInQueue(Stream& inStream, const int sessionidx);
 	void CloseSession(CLOSE_TYPE type, const int Sessionidx);
 	void SndPacket(fd_set& wr);
 	ERR_CODE ProcessSendQueue(const Packet& packet);

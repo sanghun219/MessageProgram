@@ -3,23 +3,20 @@ using namespace std;
 void PacketTest::Send()
 {
 	isConnected = true;
-	char buf[1500];
-	memset(buf, 0, sizeof(buf));
+	Stream stream;
 
-	cin >> buf;
-	OutputStream stream;
-	short pkdir = (short)PACKET_DIR::CtoS;
-	short pkid = (short)PACKET_ID::PCK_LOGIN_REQ;
-	int bufsize = sizeof(buf);
-	cout << bufsize << endl;
-	cout << (short)pkdir << endl;
-	cout << (short)pkid << endl;
+	INT16 pkdir = (INT16)PACKET_DIR::CtoS;
+	INT16 pkid = (INT16)PACKET_ID::PCK_LOGIN_REQ;
+	string data = "hello";
+	int size = data.size();
 
-	stream.Write(pkdir);
-	stream.Write(pkid);
-	stream.Write(bufsize);
-	stream.Write(buf);
-	int sendSize = m_TCPsocket.Send(stream.GetBuffer(), stream.GetBufferSize());
+	stream << pkdir;
+	stream << pkid;
+	stream << size;
+	stream << data;
+
+	cout << stream.size() << endl;
+	int sendSize = m_TCPsocket.Send(stream.data(), stream.size());
 
 	if (sendSize < 0)
 	{
@@ -33,10 +30,6 @@ void PacketTest::Send()
 			return;
 		}
 	}
-
-	/*
-		client는 순서대로 쓰고 해당 패킷을 보내기만하면됨;
-	*/
 }
 
 void PacketTest::Recv()

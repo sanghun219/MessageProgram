@@ -1,5 +1,6 @@
 #include "NetworkLogic.h"
 using namespace std;
+
 void NetworkLogic::ReceiveSession()
 {
 	SockAddress clnt_addr;
@@ -40,11 +41,11 @@ bool NetworkLogic::ReceivePacket(fd_set& rd)
 
 		session.seq++;
 
-		char Packet[1500] = { 0, };
-		const int packetSize = sizeof(Packet);
-		InputStream inStream(packetSize * 8, Packet);
+		UCHAR buf[1500];
+		memset(buf, 0, sizeof(buf));
+		session.outStream = new Stream(buf, 1500);
 
-		auto retSize = fd->Recv(Packet, packetSize);
+		auto retSize = fd->Recv(session.outStream->data(), session.outStream->size());
 
 		if (retSize < 0)
 		{
@@ -59,8 +60,18 @@ bool NetworkLogic::ReceivePacket(fd_set& rd)
 			}
 		}
 
+		INT16 pkdir = 0;
+		INT16 pkid = 0;
+		int datasize = 0;
+		string data;
+		*session.outStream >> &pkdir;
+		*session.outStream >> &pkid;
+		*session.outStream >> &datasize;
+		*session.outStream >> &data;
+		cout << pkdir << endl;
+		cout << pkid << endl;
 		// TODO : DataSize 넘겨줘야함.
-		pushPakcetInQueue(inStream, session.idx);
+		pushPakcetInQueue(*session.outStream, session.idx);
 	}
 
 	return true;
@@ -113,26 +124,25 @@ void NetworkLogic::CreateSessionIdx()
 	}
 }
 
-void NetworkLogic::pushPakcetInQueue(InputStream& inStream, const int sessionidx)
+void NetworkLogic::pushPakcetInQueue(Stream& inStream, const int sessionidx)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 
 	// 패킷을 까고 채워넣을건 채워넣자
-	PACKET_DIR pkdir = PACKET_DIR::END;
-	PACKET_ID pkId = PACKET_ID::PCK_END;
-	int pkheadSize = 0;
-	int datasize = 0;
-	char data[1500] = { 0, };
+	INT16 pkdir = static_cast<INT16>(PACKET_DIR::END);
+	INT16 pkId = static_cast<INT16>(PACKET_ID::PCK_END);
+	INT32 pkheadSize = 0;
+	INT32 datasize = 0;
+	std::string data;
 
 	PacketData pckData;
-	inStream.Read((short)pkdir, sizeof(short));
-	inStream.Read((short)pkId, sizeof(short));
+	inStream >> &pkdir;
+	inStream >> &pkId;
+	inStream >> &datasize;
+	inStream >> &data;
 
-	inStream.Read((int)datasize, sizeof(int));
-	inStream.Read(data, datasize);
-
-	pckData.pkHeader.dir = pkdir;
-	pckData.pkHeader.id = pkId;
+	pckData.pkHeader.dir = (PACKET_DIR)pkdir;
+	pckData.pkHeader.id = (PACKET_ID)pkId;
 	pckData.dataSize = datasize;
 	memcpy(&pckData.data[0], &data[0], sizeof(data));
 
@@ -198,24 +208,6 @@ ERR_CODE NetworkLogic::ProcessSendQueue(const Packet& packet)
 {
 	if (packet.session->IsConnect() == false)
 		return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
-
-	packet.session->outStream->Write(packet);
-	int bufsize = packet.session->outStream->GetBufferSize();
-	char* buffer = packet.session->outStream->GetBuffer();
-
-	int dataSize = m_tcpSocket.Send(buffer, bufsize);
-
-	if (dataSize < 0)
-	{
-		if (dataSize == WSAEWOULDBLOCK)
-		{
-			return ERR_CODE::ERR_WOULDBLOCK;
-		}
-		else
-		{
-			return static_cast<ERR_CODE>(dataSize);
-		}
-	}
 
 	return ERR_CODE::ERR_NONE;
 }

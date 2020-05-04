@@ -1,9 +1,9 @@
 #include "TCPSocket.h"
 #include "ServLibrary.h"
 
-int TCPSocket::Send(const char* buf, const int bufSize)
+int TCPSocket::Send(const UCHAR* buf, const int bufSize)
 {
-	int sendSize = send(m_Socket, buf, static_cast<int>(bufSize), 0);
+	int sendSize = send(m_Socket, (const char*)buf, bufSize, 0);
 
 	// WOULD BLOCK과 연결종료 같은것들은 외부에서 처리하자.
 	if (sendSize < 0)
@@ -13,10 +13,10 @@ int TCPSocket::Send(const char* buf, const int bufSize)
 
 	return sendSize;
 }
-int TCPSocket::Recv(char* buf, const int bufSize)
+int TCPSocket::Recv(UCHAR* buf, const int bufSize)
 {
 	// WOULD BLOCK과 연결종료 같은것들은 외부에서 처리하자.
-	int recvSize = recv(m_Socket, buf, bufSize, 0);
+	int recvSize = recv(m_Socket, (char*)buf, bufSize, 0);
 
 	return recvSize;
 }

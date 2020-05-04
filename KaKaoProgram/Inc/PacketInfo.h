@@ -10,7 +10,7 @@ class Session;
 */
 
 /// 진짜 단순한 요청과 응답 패킷
-enum class PACKET_ID :short
+enum class PACKET_ID : INT16
 {
 	PCK_LOGIN_REQ = 0,
 	PCK_LOGIN_RES = 1,
@@ -26,7 +26,7 @@ enum class PACKET_ID :short
 	PCK_END,
 };
 
-enum class PACKET_DIR : short
+enum class PACKET_DIR : INT16
 {
 	StoC,
 	CtoS,

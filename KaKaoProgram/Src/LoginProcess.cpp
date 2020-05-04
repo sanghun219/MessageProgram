@@ -5,9 +5,9 @@ namespace PacketProc
 {
 	ERR_CODE PckProcessor::Process_LOGIN_REQ(const Packet& packData)
 	{
-		char userID[128] = { 0, };
-		packData.session->inStream->Read(userID, sizeof(userID));
-		packData.session->UserID = userID;
+		UCHAR userID[128] = { 0, };
+		packData.session->inStream->read(userID, sizeof(userID));
+		memcpy(&packData.session->UserID, userID, sizeof(userID));
 
 		// id찾는 쿼리 없을시 생성, 있을시 데이터 로딩 후 user에 다 집어놓고 해당 데이터와 함께 send
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM UserData WHERE userID = '%s'", userID);

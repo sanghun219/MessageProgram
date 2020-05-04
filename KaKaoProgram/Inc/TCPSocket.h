@@ -8,8 +8,8 @@ public:
 	SockAddress* m_addr;
 	int backLog;
 public:
-	int Send(const char* buf, const int bufSize);
-	int Recv(char* buf, const int bufSize);
+	int Send(const UCHAR* buf, const int bufSize);
+	int Recv(UCHAR* buf, const int bufSize);
 	int Bind();
 	int Listen(int BackLog);
 	TCPSocket* Accept(SockAddress& inAddress);

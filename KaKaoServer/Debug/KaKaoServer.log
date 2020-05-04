@@ -1,1 +1,4 @@
-﻿  KaKaoServer.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\Debug\KaKaoServer.exe
+﻿  NetworkLogic.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoserver\src\networklogic.cpp(34): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoserver\src\networklogic.cpp(170): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+  KaKaoServer.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\Debug\KaKaoServer.exe

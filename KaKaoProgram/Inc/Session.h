@@ -1,8 +1,7 @@
 #pragma once
 #include "ServLibrary.h"
 class SockAddress;
-class InputStream;
-class OutputStream;
+class Stream;
 class TCPSocket;
 
 class Session
@@ -14,9 +13,9 @@ public:
 	int seq = 0;
 	TCPSocket* fd = nullptr;
 	SockAddress* address = nullptr;
-	InputStream* inStream = nullptr;
-	OutputStream* outStream = nullptr;
-	std::string UserID;
+	Stream* inStream = nullptr;
+	Stream* outStream = nullptr;
+	UCHAR UserID[128] = { 0, };
 
 	bool IsConnect();
 };
