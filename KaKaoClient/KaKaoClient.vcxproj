@@ -76,10 +76,11 @@
     <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoClient\Inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoClient\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\KaKaoProgram\Inc;$(ProjectDir)\..\KaKaoClient\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoClient\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)\..\Inc</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -87,7 +88,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>[$ProjectDir]\..\KaKaoServer\Inc;[$ProjectDir]\..\KaKaoClient\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -99,7 +100,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\KaKaoServer\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,7 +114,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\Inc;$(ProjectDir)\..\..\KaKaoProgram\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,12 +143,12 @@
     <ClCompile Include="Src\ClienMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\PacketTest.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\KaKaoProgram\KaKaoProgram.vcxproj">
       <Project>{785a885e-14e9-4185-b5d2-38b1c618a85c}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Inc\PacketTest.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

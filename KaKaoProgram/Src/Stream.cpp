@@ -1,6 +1,6 @@
 #include "Stream.h"
 #define STREAM_READ(type,retval)\
-size_t size = sizeof(type);\
+INT32 size = sizeof(type);\
 if(this->checkReadBound(size)==false){\
 return;\
 }\

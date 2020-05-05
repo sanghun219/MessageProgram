@@ -70,6 +70,8 @@ bool NetworkLogic::ReceivePacket(fd_set& rd)
 		*session.outStream >> &data;
 		cout << pkdir << endl;
 		cout << pkid << endl;
+		cout << datasize << endl;
+		cout << data << endl;
 		// TODO : DataSize ³Ñ°ÜÁà¾ßÇÔ.
 		pushPakcetInQueue(*session.outStream, session.idx);
 	}
