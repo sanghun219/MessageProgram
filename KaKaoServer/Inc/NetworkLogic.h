@@ -25,18 +25,19 @@ private:
 	void ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx);
 	int GetSessionIdx();
 	void CreateSessionIdx();
-	void pushPakcetInQueue(Stream& inStream, const int sessionidx);
+	void pushPakcetInQueue(Stream& readStream, const int sessionidx);
 	void CloseSession(CLOSE_TYPE type, const int Sessionidx);
 	void SndPacket(fd_set& wr);
 	ERR_CODE ProcessSendQueue(const Packet& packet);
 private:
 	Config* m_pConfig;
 	fd_set m_Readfds;
+	SOCKET m_servSocket;
 
 	std::deque<int> m_dequeSessionIndex;
 	std::deque<Session> m_dequeSession;
 	std::queue<Packet> m_queueRecvPacketData;
-	std::queue<Packet> m_queueSendPacketData;
+	std::queue<Packet>* m_queueSendPacketData;
 	TCPSocket m_tcpSocket;
 	std::recursive_mutex m_rm;
 	PckProcessor* m_pckProcessor;

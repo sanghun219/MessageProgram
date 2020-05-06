@@ -4,22 +4,21 @@
 class Stream
 {
 private:
-	size_t m_offset;
-	size_t m_readPt;
-	std::array < UCHAR, PACKET_SIZE> m_stream;
+	bool checkReadBound(UINT32 len);
+	void Init();
+	void set(UCHAR* data, UINT32 size);
 public:
 	Stream();
 	Stream(UCHAR* stream, UINT32 size);
-	void Init();
 
 	UCHAR* data();
 	UINT32 size();
 
 	void operator = (Stream& stream);
-	void set(UCHAR* data, UINT32 size);
 
+	// Write
+public:
 	bool checkWriteBound(INT32 len);
-
 	template<typename T>
 	void operator <<(const T& value);
 	void operator <<(const bool& value);
@@ -36,9 +35,10 @@ public:
 	void operator <<(const std::vector<T>& value);
 	void operator <<(const std::string& value);
 
-	bool checkReadBound(UINT32 len);
+	//READ
+private:
 	void read(void* retval, UINT32 len);
-
+public:
 	template<typename T>
 	void operator >> (T* retVal);
 
@@ -55,4 +55,9 @@ public:
 	template<typename T>
 	void operator >> (std::vector<T>* retval);
 	void operator >> (std::string* retval);
+
+private:
+	size_t m_offset;
+	size_t m_readPt;
+	std::array < UCHAR, PACKET_SIZE> m_stream;
 };

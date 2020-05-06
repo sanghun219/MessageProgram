@@ -8,8 +8,9 @@ namespace PacketProc
 	{
 	public:
 		void InitPckInfo();
-		inline void SetSendPacketQueue(const std::queue<Packet>& sendpckQueue) { this->m_sendpckQueue = sendpckQueue; }
+
 		ERR_CODE Process(const Packet& inPacket);
+		inline std::queue<Packet>* GetPacketQueue() { return &m_sendpckQueue; }
 	private:
 		ERR_CODE Process_LOGIN_REQ(const Packet& packData);
 		std::recursive_mutex m_rm;

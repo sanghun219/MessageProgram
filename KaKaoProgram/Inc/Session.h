@@ -13,8 +13,8 @@ public:
 	int seq = 0;
 	TCPSocket* fd = nullptr;
 	SockAddress* address = nullptr;
-	Stream* inStream = nullptr;
-	Stream* outStream = nullptr;
+	Stream* ReadStream = nullptr;
+	Stream* WriteStream = nullptr;
 	UCHAR UserID[128] = { 0, };
 
 	bool IsConnect();

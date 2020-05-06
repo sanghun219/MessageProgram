@@ -12,9 +12,10 @@ private:
 
 public:
 	void InitServer();
+	inline void GameOver() { isOver = true; }
 private:
-	std::unique_ptr<Config> m_pServerConfig;
-	std::unique_ptr<NetworkLogic> m_pNetworkLogic;
+	Config* m_pServerConfig;
+	NetworkLogic* m_pNetworkLogic;
 public:
 	bool isOver;
 public:

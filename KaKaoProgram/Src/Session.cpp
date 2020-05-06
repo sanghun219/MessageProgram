@@ -6,8 +6,8 @@ void Session::Clear()
 	std::free(address);
 	std::free(fd);
 	UserID[0] = { 0, };
-	ZeroMemory(&inStream, sizeof(inStream));
-	ZeroMemory(&outStream, sizeof(outStream));
+	ZeroMemory(&ReadStream, sizeof(ReadStream));
+	ZeroMemory(&WriteStream, sizeof(WriteStream));
 }
 
 bool Session::IsConnect()

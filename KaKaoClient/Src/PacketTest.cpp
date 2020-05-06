@@ -7,15 +7,14 @@ void PacketTest::Send()
 
 	INT16 pkdir = (INT16)PACKET_DIR::CtoS;
 	INT16 pkid = (INT16)PACKET_ID::PCK_LOGIN_REQ;
-	string data = "hello";
-	int size = data.size();
+	string userid = "sanghun219";
+	string userpass = "jang5229";
 
 	stream << pkdir;
 	stream << pkid;
-	stream << size;
-	stream << data;
+	stream << userid;
+	stream << userpass;
 
-	cout << stream.size() << endl;
 	int sendSize = m_TCPsocket.Send(stream.data(), stream.size());
 
 	if (sendSize < 0)
