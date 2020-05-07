@@ -23,47 +23,85 @@ void NetworkLogic::ReceiveSession()
 		LOG("최대로 연결할 수 있는 세션의 크기를 넘어섰습니다!");
 		return;
 	}
-	FD_SET(clntSocket->GetSocket(), &m_Readfds);
 
 	ConnectSessionNClient(clnt_addr, *clntSocket, ClientIdx);
 }
 
-bool NetworkLogic::ReceivePacket(fd_set& rd)
+bool NetworkLogic::ReadWriteProcess(fd_set & readset, fd_set & writeset)
 {
 	for (size_t i = 0; i < m_dequeSession.size(); i++)
 	{
 		auto& session = m_dequeSession[i];
-		auto fd = session.fd;
 
 		if (session.IsConnect() == false)
 			continue;
 
-		session.seq++;
-
-		UCHAR buf[1500];
-		memset(buf, 0, sizeof(buf));
-		session.ReadStream = new Stream(buf, 1500);
-
-		auto retSize = fd->Recv(session.ReadStream->data(), session.ReadStream->size());
-
-		if (retSize < 0)
+		auto retErr = ReceiveSocket(readset, i);
+		if (retErr == false)
 		{
-			if (SocketUtil::GetLastError() == WSAEWOULDBLOCK)
-			{
-				continue;
-			}
-			else
-			{
-				SocketUtil::ReportError("NetworkLogic::ReceivePacket");
-				return false;
-			}
+			CloseSession(CLOSE_TYPE::FORCING, i);
+			return false;
 		}
+		else
+			ProcessRecvQueue();
 
-		// TODO : DataSize 넘겨줘야함.
-		pushPakcetInQueue(*session.ReadStream, session.idx);
+		// WRITE PROCESS
+		SendPacket(writeset);
 	}
 
+	return false;
+}
+
+bool NetworkLogic::ReceiveSocket(fd_set & readset, size_t idx)
+{
+	auto& session = m_dequeSession[idx];
+	if (!FD_ISSET(session.fd->GetSocket(), &readset))
+		return true;
+	session.seq++;
+
+	auto& fd = session.fd;
+	UCHAR readPacket[1500];
+	ZeroMemory(readPacket, sizeof(readPacket));
+	session.ReadStream = new Stream(readPacket, sizeof(readPacket));
+
+	auto retSize = fd->Recv(session.ReadStream->data(), session.ReadStream->size());
+
+	if (retSize < 0)
+	{
+		if (SocketUtil::GetLastError() == WSAEWOULDBLOCK)
+		{
+			return true;
+		}
+		else
+		{
+			SocketUtil::ReportError("NetworkLogic::ReceivePacket");
+			return false;
+		}
+	}
+
+	ReceivePacket(*session.ReadStream, session.idx);
 	return true;
+}
+
+void NetworkLogic::ReceivePacket(Stream& readStream, const int sessionidx)
+{
+	std::lock_guard<std::recursive_mutex> lock(m_rm);
+
+	INT16 pkdir = static_cast<INT16>(PACKET_DIR::END);
+	INT16 pkId = static_cast<INT16>(PACKET_ID::PCK_END);
+
+	PacketHeader pckheader;
+	readStream >> &pkdir;
+	readStream >> &pkId;
+
+	pckheader.dir = (PACKET_DIR)pkdir;
+	pckheader.id = (PACKET_ID)pkId;
+
+	Packet rcvpkt;
+	rcvpkt.session = &m_dequeSession[sessionidx];
+	rcvpkt.session->ReadStream = &readStream;
+	rcvpkt.pckHeader = pckheader;
+	m_queueRecvPacketData.push(rcvpkt);
 }
 
 void NetworkLogic::ProcessRecvQueue()
@@ -82,9 +120,15 @@ void NetworkLogic::ConnectSessionNClient(SockAddress& addr, TCPSocket& client, c
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	Session session;
-	session.address = &addr;
 	session.idx = idx;
 	session.fd = new TCPSocket(client.GetSocket(), client.GetSockAddr());
+
+	FD_SET(session.fd->GetSocket(), &m_Readfds);
+	if (!FD_ISSET(session.fd->GetSocket(), &m_Readfds))
+	{
+		SocketUtil::ReportError("NetworkLogic::ConnectSessionNClient!");
+		return;
+	}
 
 	m_dequeSession.push_back(session);
 	LOG("%d번 세션이 연결되었습니다", session.idx);
@@ -110,27 +154,6 @@ void NetworkLogic::CreateSessionIdx()
 	{
 		m_dequeSessionIndex.push_back(i);
 	}
-}
-
-void NetworkLogic::pushPakcetInQueue(Stream& readStream, const int sessionidx)
-{
-	std::lock_guard<std::recursive_mutex> lock(m_rm);
-
-	INT16 pkdir = static_cast<INT16>(PACKET_DIR::END);
-	INT16 pkId = static_cast<INT16>(PACKET_ID::PCK_END);
-
-	PacketHeader pckheader;
-	readStream >> &pkdir;
-	readStream >> &pkId;
-
-	pckheader.dir = (PACKET_DIR)pkdir;
-	pckheader.id = (PACKET_ID)pkId;
-
-	Packet rcvpkt;
-	rcvpkt.session = &m_dequeSession[sessionidx];
-	rcvpkt.session->ReadStream = &readStream;
-	rcvpkt.pckHeader = pckheader;
-	m_queueRecvPacketData.push(rcvpkt);
 }
 
 void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
@@ -160,32 +183,46 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 	}
 }
 
-void NetworkLogic::SndPacket(fd_set & wr)
+void NetworkLogic::SendPacket(fd_set& wr)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 
 	while (!m_queueSendPacketData->empty())
 	{
 		auto packet = m_queueSendPacketData->back();
+		if (!FD_ISSET(packet.session->fd->GetSocket(), &wr))
+			return;
+
 		m_queueSendPacketData->pop();
 
-		if (FD_ISSET(packet.session->fd->GetSocket(), &wr))
+		auto err = ProcessSendPacket(packet);
+		if (err != ERR_CODE::ERR_NONE)
 		{
-			auto err = ProcessSendQueue(packet);
-			if (err != ERR_CODE::ERR_NONE)
-			{
-				SocketUtil::ReportError("NetworLogic::SndPacket");
-				return;
-			}
+			SocketUtil::ReportError("NetworLogic::SndPacket");
+			return;
 		}
 	}
 }
 
-ERR_CODE NetworkLogic::ProcessSendQueue(const Packet& packet)
+ERR_CODE NetworkLogic::ProcessSendPacket(const Packet& packet)
 {
-	cout << "hi" << endl;
-	if (packet.session->IsConnect() == false)
-		return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
+	const auto& fd = packet.session->fd;
+	const auto& sendpacket = packet.session->WriteStream->data();
+	const size_t sendpacketSize = packet.session->WriteStream->size();
+
+	auto retErr = fd->Send(sendpacket, sendpacketSize);
+	if (retErr == SOCKET_ERROR)
+	{
+		if (retErr == WSAEWOULDBLOCK)
+		{
+			return ERR_CODE::ERR_WOULDBLOCK;
+		}
+		else
+		{
+			SocketUtil::ReportError("NetworkLogic::ProcessSendPacket");
+			return ERR_CODE::ERR_SEND;
+		}
+	}
 
 	return ERR_CODE::ERR_NONE;
 }
@@ -248,8 +285,12 @@ bool NetworkLogic::DoRunLoop()
 	timeval tv{ 0,1000 };
 	auto retErr = select(0, &fd_read, &fd_write, NULL, &tv);
 
-	if (retErr < 0)
+	if (retErr <= 0)
 	{
+		if (retErr == 0)
+		{
+			return true;
+		}
 		SocketUtil::ReportError("NetworkLogic::Select");
 		CloseSession(CLOSE_TYPE::FORCING, 0);
 		return false;
@@ -260,11 +301,11 @@ bool NetworkLogic::DoRunLoop()
 	if (FD_ISSET(m_tcpSocket.GetSocket(), &fd_read))
 	{
 		ReceiveSession();
-		ReceivePacket(fd_read);
-		ProcessRecvQueue();
 	}
 
-	SndPacket(fd_write);
+	auto CheckErr = ReadWriteProcess(fd_read, fd_write);
+	if (CheckErr == false)
+		return false;
 
 	return true;
 }

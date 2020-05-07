@@ -3,8 +3,8 @@
 class SockAddress;
 class TCPSocket
 {
-public:
-	SOCKET m_Socket;
+private:
+	SOCKET* m_Socket;
 	SockAddress* m_addr;
 	int backLog;
 public:
@@ -16,7 +16,7 @@ public:
 	int Connect();
 
 	inline SockAddress& GetSockAddr() { return *m_addr; }
-	inline SOCKET GetSocket() { return m_Socket; }
+	inline  SOCKET& GetSocket() { return *m_Socket; }
 	inline const int GetBackLog()const { return backLog; }
 public:
 	TCPSocket& operator = (const TCPSocket& s);

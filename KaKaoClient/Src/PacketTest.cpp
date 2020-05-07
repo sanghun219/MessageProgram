@@ -35,8 +35,9 @@ void PacketTest::Recv()
 {
 	if (isConnected == false)
 		return;
-	char copybuf[1500] = { 0, };
-	int recvsize = recv(m_TCPsocket.GetSocket(), copybuf, sizeof(copybuf), 0);
+	UCHAR copybuf[1500] = { 0, };
+	Stream stream(copybuf, sizeof(copybuf));
+	int recvsize = m_TCPsocket.Recv(stream.data(), stream.size());
 
 	if (recvsize < 0)
 	{
@@ -51,7 +52,14 @@ void PacketTest::Recv()
 		}
 	}
 
-	LOG("Client : %s", copybuf);
+	short dir = 0;
+	short id = 0;
+	std::string message;
+	stream >> &dir;
+	stream >> &id;
+	stream >> &message;
+
+	LOG("Client : %s", message.data());
 }
 
 void PacketTest::Run()
@@ -68,9 +76,9 @@ void PacketTest::Run()
 			return;
 		}
 	}
+	Send();
 	while (!isOver)
 	{
-		Send();
 		Recv();
 	}
 }
@@ -103,7 +111,7 @@ void PacketTest::Init()
 	isConnected = false;
 	m_TCPsocket = TCPSocket(sock, addr);
 	//SocketUtil::SetSocketNonblock(m_TCPsocket.m_Socket, true);
-	SocketUtil::SetSocketOption(m_TCPsocket.m_Socket);
+	SocketUtil::SetSocketOption(m_TCPsocket.GetSocket());
 
 	LOG("Client Init Complete!");
 }

@@ -20,15 +20,16 @@ class NetworkLogic
 {
 private:
 	void ReceiveSession();
-	bool ReceivePacket(fd_set& rd);
+	bool ReadWriteProcess(fd_set& readset, fd_set& writeset);
+	bool ReceiveSocket(fd_set& readset, const size_t idx);
+	void ReceivePacket(Stream& readStream, const int sessionidx);
 	void ProcessRecvQueue();
 	void ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx);
 	int GetSessionIdx();
 	void CreateSessionIdx();
-	void pushPakcetInQueue(Stream& readStream, const int sessionidx);
 	void CloseSession(CLOSE_TYPE type, const int Sessionidx);
-	void SndPacket(fd_set& wr);
-	ERR_CODE ProcessSendQueue(const Packet& packet);
+	void SendPacket(fd_set& wr);
+	ERR_CODE ProcessSendPacket(const Packet& packet);
 private:
 	Config* m_pConfig;
 	fd_set m_Readfds;

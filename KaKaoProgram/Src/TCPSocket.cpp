@@ -3,7 +3,7 @@
 
 int TCPSocket::Send(const UCHAR* buf, const int bufSize)
 {
-	int sendSize = send(m_Socket, (const char*)buf, bufSize, 0);
+	int sendSize = send(*m_Socket, (const char*)buf, bufSize, 0);
 
 	if (sendSize < 0)
 	{
@@ -15,13 +15,13 @@ int TCPSocket::Send(const UCHAR* buf, const int bufSize)
 int TCPSocket::Recv(UCHAR* buf, const int bufSize)
 {
 	// WOULD BLOCK과 연결종료 같은것들은 외부에서 처리하자.
-	int recvSize = recv(m_Socket, (char*)buf, bufSize, 0);
+	int recvSize = recv(*m_Socket, (char*)buf, bufSize, 0);
 
 	return recvSize;
 }
 int TCPSocket::Bind()
 {
-	int retErr = bind(m_Socket, (const sockaddr*)&m_addr->addr, m_addr->GetSizeOfAddr());
+	int retErr = bind(*m_Socket, (const sockaddr*)&m_addr->addr, m_addr->GetSizeOfAddr());
 	if (retErr == SOCKET_ERROR)
 	{
 		SocketUtil::ReportError("TCPSocket::Bind");
@@ -33,7 +33,7 @@ int TCPSocket::Bind()
 
 int TCPSocket::Listen(int BackLog)
 {
-	int retErr = listen(m_Socket, BackLog);
+	int retErr = listen(*m_Socket, BackLog);
 	if (retErr == SOCKET_ERROR)
 	{
 		REPORT_ERROR("TCPSocket::Listen");
@@ -45,7 +45,7 @@ int TCPSocket::Listen(int BackLog)
 TCPSocket* TCPSocket::Accept(SockAddress & inAddress)
 {
 	int addr_len = inAddress.GetSizeOfAddr();
-	SOCKET clnt_socket = accept(m_Socket, (struct sockaddr*)&inAddress.addr, &addr_len);
+	SOCKET clnt_socket = accept(*m_Socket, (struct sockaddr*)&inAddress.addr, &addr_len);
 
 	if (clnt_socket == INVALID_SOCKET)
 	{
@@ -57,7 +57,7 @@ TCPSocket* TCPSocket::Accept(SockAddress & inAddress)
 
 int TCPSocket::Connect()
 {
-	int retErr = connect(m_Socket, (const SOCKADDR*)&m_addr->addr, m_addr->GetSizeOfAddr());
+	int retErr = connect(*m_Socket, (const SOCKADDR*)&m_addr->addr, m_addr->GetSizeOfAddr());
 	return retErr;
 }
 
@@ -76,7 +76,8 @@ TCPSocket & TCPSocket::operator=(const TCPSocket & s)
 TCPSocket::TCPSocket(const SOCKET & inSocket, const SockAddress& addr)
 {
 	m_addr = new SockAddress(addr);
-	m_Socket = inSocket;
+	m_Socket = new SOCKET();
+	*m_Socket = inSocket;
 }
 
 TCPSocket::TCPSocket()

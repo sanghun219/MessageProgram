@@ -3,7 +3,6 @@ void Session::Clear()
 {
 	idx = 0;
 	seq = 0;
-	std::free(address);
 	std::free(fd);
 	UserID[0] = { 0, };
 	ZeroMemory(&ReadStream, sizeof(ReadStream));
