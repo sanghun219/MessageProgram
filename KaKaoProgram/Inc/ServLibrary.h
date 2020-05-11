@@ -5,6 +5,7 @@
 #include <WS2tcpip.h>
 
 #pragma comment(lib,"ws2_32.lib")
+#pragma comment(lib,"libmysql.lib")
 
 // 자료구조
 #include <string>

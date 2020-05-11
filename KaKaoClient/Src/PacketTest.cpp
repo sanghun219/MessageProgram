@@ -5,12 +5,10 @@ void PacketTest::Send()
 	isConnected = true;
 	Stream stream;
 
-	INT16 pkdir = (INT16)PACKET_DIR::CtoS;
 	INT16 pkid = (INT16)PACKET_ID::PCK_LOGIN_REQ;
 	string userid = "sanghun219";
 	string userpass = "jang5229";
 
-	stream << pkdir;
 	stream << pkid;
 	stream << userid;
 	stream << userpass;
@@ -52,14 +50,25 @@ void PacketTest::Recv()
 		}
 	}
 
-	short dir = 0;
 	short id = 0;
-	std::string message;
-	stream >> &dir;
+	std::string ID;
+	std::string nick;
+	std::string pass;
+	std::string friends;
+	int chattingkey;
 	stream >> &id;
-	stream >> &message;
+	stream >> &ID;
+	stream >> &nick;
+	stream >> &pass;
+	stream >> &friends;
+	stream >> &chattingkey;
 
-	LOG("Client : %s", message.data());
+	LOG("id : %d", id);
+	LOG("user id : %s", ID.data());
+	LOG("nickname : %s", nick.data());
+	LOG("password : %s", pass.data());
+	LOG("friends : %s", friends.data());
+	LOG("chattingkey : %d", chattingkey);
 }
 
 void PacketTest::Run()

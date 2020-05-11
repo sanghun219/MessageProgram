@@ -70,16 +70,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;$(ProjectDir)\..\KaKaoServer\Inc;$(ProjectDir)\..\KaKaoProgram\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\..\KaKaoServer\Inc;$(ProjectDir)\..\KaKaoProgram\Inc;$(ProjectDir)\..\KaKaoProgram\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>[$ProjectDir]\..\KaKaoProgram\zlib\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectPath)\..\Inc;C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>[$ProjectDir]\..\KaKaoProgram\zlib\include;[$ProjectDir]\..\KaKaoServer\Inc;[$ProjectDir]\..\KaKaoProgram\Inc</IncludePath>
+    <LibraryPath>[$ProjectDir]\..\KaKaoProgram\zlib\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>[$ProjectDir]\..\KaKaoServer\include;$(IncludePath)</IncludePath>
-    <LibraryPath>[$ProjectDir]\..\KaKaoServer\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>[$ProjectDir]\..\KaKaoServer\include;[$ProjectDir]\..\KaKaoProgram\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>[$ProjectDir]\..\KaKaoServer\lib;[$ProjectDir]\..\KaKaoProgram\zlib\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;$(IncludePath)</IncludePath>
@@ -91,7 +91,8 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\KaKaoProgram\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\KaKaoProgram\Inc;$(ProjectDir)\..\KaKaoProgram\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

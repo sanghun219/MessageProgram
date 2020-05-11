@@ -19,16 +19,16 @@ using namespace PacketProc;
 class NetworkLogic
 {
 private:
-	void ReceiveSession();
-	bool ReadWriteProcess(fd_set& readset, fd_set& writeset);
-	bool ReceiveSocket(fd_set& readset, const size_t idx);
+	ERR_CODE ReceiveSession();
+	ERR_CODE ReadWriteProcess(fd_set& readset, fd_set& writeset);
+	ERR_CODE ReceiveSocket(fd_set& readset, const size_t idx);
 	void ReceivePacket(Stream& readStream, const int sessionidx);
 	void ProcessRecvQueue();
-	void ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx);
+	ERR_CODE ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx);
 	int GetSessionIdx();
 	void CreateSessionIdx();
 	void CloseSession(CLOSE_TYPE type, const int Sessionidx);
-	void SendPacket(fd_set& wr);
+	ERR_CODE SendPacket(fd_set& wr);
 	ERR_CODE ProcessSendPacket(const Packet& packet);
 private:
 	Config* m_pConfig;

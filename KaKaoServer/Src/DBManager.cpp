@@ -51,6 +51,8 @@ int DBManager::InitDBManager()
 	mysql_query(connection, "set session character_set_connection=euckr;");
 	mysql_query(connection, "set session character_set_result=euckr;");
 	mysql_query(connection, "set session character_set_client=euckr;");
+	mysql_query(connection, "set names euckr;");
+
 	isconnect = true;
 	return 0;
 }

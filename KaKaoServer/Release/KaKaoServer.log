@@ -1,0 +1,8 @@
+﻿  DBManager.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoserver\src\dbmanager.cpp(1): fatal error C1083: 포함 파일을 열 수 없습니다. 'DBManager.h': No such file or directory
+  NetworkLogic.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoserver\src\networklogic.cpp(1): fatal error C1083: 포함 파일을 열 수 없습니다. 'NetworkLogic.h': No such file or directory
+  Server.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoserver\src\server.cpp(1): fatal error C1083: 포함 파일을 열 수 없습니다. 'Server.h': No such file or directory
+  ServMain.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoserver\src\servmain.cpp(1): fatal error C1083: 포함 파일을 열 수 없습니다. 'Server.h': No such file or directory

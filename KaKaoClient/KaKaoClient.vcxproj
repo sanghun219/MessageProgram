@@ -76,11 +76,11 @@
     <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoClient\Inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)\..\KaKaoProgram\Inc;$(ProjectDir)\..\KaKaoClient\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LibraryPath)</LibraryPath>
+    <IncludePath>($ProjectDir)\..\KaKaoProgram\zlib\include;$(ProjectDir)\..\KaKaoProgram\Inc;$(ProjectDir)\..\KaKaoClient\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>[$ProjectDir]\..\KaKaoProgram\zlib\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)\..\Inc</IncludePath>
+    <IncludePath>$(ProjectDir)\..\KaKaoClient\Inc;$(ProjectDir)\..\KaKaoProgram\Inc</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -100,7 +100,8 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\..\KaKaoServer\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\..\KaKaoProgram\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

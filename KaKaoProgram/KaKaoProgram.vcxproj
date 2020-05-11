@@ -70,16 +70,15 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;$(ProjectDir)\..\KaKaoProgram\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\..\KaKaoProgram\Inc;$(ProjectDir)\..\KaKaoProgram\zlib\include;$(IncludePath)</IncludePath>
+    <LibraryPath>[$ProjectDir]\..\KaKaoProgram\zlib\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoServer\Inc;C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files %28x86%29\MySQL\MySQL Server 5.7\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>[$ProjectDir]\..\KaKaoServer\Inc;[$ProjectDir]\..\KaKaoProgram\zlib\include;[$ProjectDir]\..\KaKaoProgram\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>[$ProjectDir]\..\KaKaoProgram\zlib\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoServer\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\MySQL\MySQL Server 8.0\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Program Files\MySQL\MySQL Server 8.0\include;C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoServer\Inc;$(IncludePath)</IncludePath>
@@ -95,6 +94,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -103,7 +103,8 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoProgram\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -140,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Src\LoginProcess.cpp" />
+    <ClCompile Include="Src\NetworkLib.cpp" />
     <ClCompile Include="Src\PckProcessor.cpp" />
     <ClCompile Include="Src\Logger.cpp" />
     <ClCompile Include="Src\Session.cpp" />
@@ -151,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="Inc\Config.h" />
     <ClInclude Include="Inc\Logger.h" />
+    <ClInclude Include="Inc\NetworkLib.h" />
     <ClInclude Include="Inc\PacketInfo.h" />
     <ClInclude Include="Inc\PckProcessor.h" />
     <ClInclude Include="Inc\ServErr.h" />

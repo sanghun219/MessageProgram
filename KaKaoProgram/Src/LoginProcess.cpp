@@ -3,7 +3,7 @@
 #include "Singleton.h"
 namespace PacketProc
 {
-	ERR_CODE PckProcessor::Process_LOGIN_REQ(const Packet& packData)
+	ERR_PCK_CODE PckProcessor::Process_LOGIN_REQ(const Packet& packData)
 	{
 		// UserData  : UserID , Password
 		std::string UserID;
@@ -11,29 +11,109 @@ namespace PacketProc
 
 		*packData.session->ReadStream >> &UserID;
 		*packData.session->ReadStream >> &UserPass;
-		std::cout << UserID << std::endl;
+
 		// id찾는 쿼리 없을시 생성, 있을시 데이터 로딩 후 user에 다 집어놓고 해당 데이터와 함께 send
-		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM UserData WHERE userID = '%s'", UserID.data());
+		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM userinfo WHERE ID = '%s'", UserID.data());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
 
 		// TODO : 아이디 없으면 아이디 만들라는 RES , 있으면 특정 데이터를 들고 접속하라는 RES
-		if (mysql_fetch_row(res) == NULL)
+		if (mysql_num_fields(res) == 0)
 		{
-			short pkDir = static_cast<short>(PACKET_DIR::StoC);
 			short pkID = static_cast<short>(PACKET_ID::PCK_MAKE_ID_RES);
-			std::string msg = "등록되지 않은 ID입니다. 새로운 계정을 만들겠습니다!";
+			std::string msg = "등록되지 않은 ID입니다. 회원가입을 하시겠습니까?";
 			packData.session->WriteStream = new Stream();
-			*packData.session->WriteStream << pkDir;
 			*packData.session->WriteStream << pkID;
 			*packData.session->WriteStream << msg;
-
 			m_sendpckQueue.push(packData);
 		}
 		else
 		{
-			/*기존 데이터베이스 자료들고 패킷에 넣은후 들고감.  */
+			/*
+				ID,
+				USERNICKNAME,
+				PASS,
+				Friends,
+				ChattingKey,
+
+			*/
+
+			MYSQL_ROW row;
+			unsigned int fieldCount = mysql_num_fields(res);
+
+			row = mysql_fetch_row(res);
+
+			std::string id = row[0];
+			std::string nickname = row[1];
+			std::string pass = row[2];
+			std::string friendskey;
+			if (row[3] == nullptr)
+			{
+				friendskey = "";
+			}
+			else
+			{
+				friendskey = row[3];
+			}
+			int chattingkey;
+			if (row[4] == nullptr)
+			{
+				chattingkey = -1;
+			}
+			else
+			{
+				chattingkey = atoi(row[4]);
+			}
+
+			short pkid = static_cast<short>(PACKET_ID::PCK_LOGIN_REQ);
+
+			packData.session->WriteStream = new Stream();
+			*packData.session->WriteStream << pkid;
+			*packData.session->WriteStream << id;
+			*packData.session->WriteStream << nickname;
+			*packData.session->WriteStream << pass;
+			*packData.session->WriteStream << friendskey;
+			*packData.session->WriteStream << chattingkey;
+
+			m_sendpckQueue.push(packData);
 		}
 
-		return ERR_CODE::ERR_NONE;
+		return ERR_PCK_CODE::ERR_NONE;
+	}
+	ERR_PCK_CODE PckProcessor::Process_SIGN_UP_RES(const Packet& packData)
+	{
+		// 정보들이 들어왔다는 가정하에 해당 정보를 db에 입력후 다음 행해야할
+		// 패킷 정보를 넘겨준다.
+
+		/*
+			ID
+			UserNickname
+			password
+		*/
+
+		std::string ID;
+		std::string Nickname;
+		std::string Password;
+
+		*packData.session->ReadStream >> &ID;
+		*packData.session->ReadStream >> &Nickname;
+		*packData.session->ReadStream >> &Password;
+
+		// 중복 ID가 발생한경우 다시 가입하라고 보냄
+		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT ID FROM userinfo WHERE ID = '%s';", ID);
+		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
+		if (mysql_num_fields(res))
+		{
+			// 다시 만들라는 메시지
+		}
+		else
+		{
+			// 회원가입 됐다는 메시지
+		}
+
+		return ERR_PCK_CODE::ERR_NONE;
+	}
+	ERR_PCK_CODE PckProcessor::Process_SIGN_UP_REQ(const Packet& packData)
+	{
+		return ERR_PCK_CODE::ERR_NONE;
 	}
 };

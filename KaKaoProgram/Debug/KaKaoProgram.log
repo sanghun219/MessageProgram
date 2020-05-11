@@ -1,6 +1,7 @@
-﻿  Logger.cpp
-  LoginProcess.cpp
+﻿  LoginProcess.cpp
+  NetworkLib.cpp
   PckProcessor.cpp
+  Logger.cpp
   Session.cpp
   SockAddress.cpp
   SocketUtil.cpp

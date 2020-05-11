@@ -1,8 +1,8 @@
 #pragma once
 #include "ServLibrary.h"
 #include <mysql.h>
-
 #include "Singleton.h"
+
 class DBManager
 {
 	friend Singleton<DBManager>;
