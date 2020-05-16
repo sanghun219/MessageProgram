@@ -26,6 +26,7 @@
 #define SESSION_ID unsigned int
 #define USER_ID_MAX 32
 #define PACKET_SIZE 1024 *10
+#define BUFSIZE 1500
 
 // 사용자 라이브러리
 #include "ServErr.h"
@@ -37,4 +38,3 @@
 #include "PacketInfo.h"
 #include "SockAddress.h"
 #include "TCPSocket.h"
-#include "PacketInfo.h"

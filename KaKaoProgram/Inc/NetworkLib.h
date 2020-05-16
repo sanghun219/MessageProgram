@@ -3,5 +3,5 @@
 class NetworkLib
 {
 public:
-	uint32_t ComputeGlobalCRC(Stream& stream);
+	static uint32_t ComputeGlobalCRC(Stream& stream);
 };

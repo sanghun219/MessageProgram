@@ -22,14 +22,14 @@ private:
 	ERR_CODE ReceiveSession();
 	ERR_CODE ReadWriteProcess(fd_set& readset, fd_set& writeset);
 	ERR_CODE ReceiveSocket(fd_set& readset, const size_t idx);
-	void ReceivePacket(Stream& readStream, const int sessionidx);
+	void ReceivePacket(Stream* stream);
 	void ProcessRecvQueue();
 	ERR_CODE ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx);
 	int GetSessionIdx();
 	void CreateSessionIdx();
 	void CloseSession(CLOSE_TYPE type, const int Sessionidx);
-	ERR_CODE SendPacket(fd_set& wr);
-	ERR_CODE ProcessSendPacket(const Packet& packet);
+	ERR_CODE SendPacket(fd_set& wr, const int idx);
+	ERR_CODE ProcessSendPacket(const Packet& packet, const int idx);
 private:
 	Config* m_pConfig;
 	fd_set m_Readfds;

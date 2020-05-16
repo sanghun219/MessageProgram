@@ -46,7 +46,7 @@ ERR_CODE NetworkLogic::ReadWriteProcess(fd_set & readset, fd_set & writeset)
 			ProcessRecvQueue();
 
 		// WRITE PROCESS
-		SendPacket(writeset);
+		SendPacket(writeset, i);
 	}
 
 	return ERR_CODE::ERR_NONE;
@@ -60,11 +60,11 @@ ERR_CODE NetworkLogic::ReceiveSocket(fd_set & readset, size_t idx)
 	session.seq++;
 
 	auto& fd = session.fd;
-	UCHAR readPacket[1500];
+	UCHAR readPacket[BUFSIZE];
 	ZeroMemory(readPacket, sizeof(readPacket));
-	session.ReadStream = new Stream(readPacket, sizeof(readPacket));
+	session.stream = new Stream(readPacket, sizeof(readPacket));
 
-	auto retSize = fd->Recv(session.ReadStream->data(), session.ReadStream->size());
+	auto retSize = fd->Recv(session.stream->data(), session.stream->size());
 
 	if (retSize < 0)
 	{
@@ -79,17 +79,16 @@ ERR_CODE NetworkLogic::ReceiveSocket(fd_set & readset, size_t idx)
 		}
 	}
 
-	ReceivePacket(*session.ReadStream, session.idx);
+	ReceivePacket(session.stream);
 	return ERR_CODE::ERR_NONE;
 }
 
-void NetworkLogic::ReceivePacket(Stream& readStream, const int sessionidx)
+void NetworkLogic::ReceivePacket(Stream* stream)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
-
 	Packet rcvpkt;
-	rcvpkt.session = &m_dequeSession[sessionidx];
-	rcvpkt.session->ReadStream = &readStream;
+	ZeroMemory(&rcvpkt, sizeof(rcvpkt));
+	rcvpkt.stream = stream;
 	m_queueRecvPacketData.push(rcvpkt);
 }
 
@@ -99,7 +98,7 @@ void NetworkLogic::ProcessRecvQueue()
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	if (!m_queueRecvPacketData.empty())
 	{
-		auto packet = m_queueRecvPacketData.front();
+		auto packet = m_queueRecvPacketData.back();
 		m_queueRecvPacketData.pop();
 		m_pckProcessor->Process(packet);
 	}
@@ -173,19 +172,19 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 	}
 }
 
-ERR_CODE NetworkLogic::SendPacket(fd_set& wr)
+ERR_CODE NetworkLogic::SendPacket(fd_set& wr, const int idx)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
-
+	auto& fd = m_dequeSession[idx].fd;
 	while (!m_queueSendPacketData->empty())
 	{
 		auto packet = m_queueSendPacketData->back();
-		if (!FD_ISSET(packet.session->fd->GetSocket(), &wr))
+		if (!FD_ISSET(fd->GetSocket(), &wr))
 			return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
 
 		m_queueSendPacketData->pop();
 
-		auto retErr = ProcessSendPacket(packet);
+		auto retErr = ProcessSendPacket(packet, idx);
 		if (IsMakeError(retErr))
 		{
 			SocketUtil::ReportError("NetworLogic::SndPacket");
@@ -195,11 +194,11 @@ ERR_CODE NetworkLogic::SendPacket(fd_set& wr)
 	return ERR_CODE::ERR_NONE;
 }
 
-ERR_CODE NetworkLogic::ProcessSendPacket(const Packet& packet)
+ERR_CODE NetworkLogic::ProcessSendPacket(const Packet& packet, const int idx)
 {
-	const auto& fd = packet.session->fd;
-	const auto& sendpacket = packet.session->WriteStream->data();
-	const size_t sendpacketSize = packet.session->WriteStream->size();
+	const auto& fd = m_dequeSession[idx].fd;
+	const auto& sendpacket = packet.stream->data();
+	const size_t sendpacketSize = packet.stream->size();
 
 	auto retErr = fd->Send(sendpacket, sendpacketSize);
 	if (retErr == SOCKET_ERROR)

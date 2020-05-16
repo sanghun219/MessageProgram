@@ -1,8 +1,9 @@
-#include "PacketTest.h"
-#include "ServLibrary.h"
+#include "MainForm.h"
+
 int main()
 {
-	Singleton<PacketTest>::GetInst()->Init();
-	Singleton<PacketTest>::GetInst()->Run();
-	WSACleanup();
+	MainForm mainform;
+	mainform.Init();
+	mainform.CreateGUI();
+	mainform.Show();
 }

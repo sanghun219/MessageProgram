@@ -15,7 +15,7 @@ namespace PacketProc
 	{
 		std::lock_guard<std::recursive_mutex> lock(m_rm);
 		short id;
-		*inPacket.session->ReadStream >> &id;
+		*inPacket.stream >> &id;
 		if (m_PckIDtoFunc.find(id) == m_PckIDtoFunc.end())
 		{
 			// TODO : 책에서는 없는경우 다시 만들지만 나는 패킷 ID에 겜오브젝트가 없으니 패스

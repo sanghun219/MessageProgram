@@ -8,9 +8,10 @@ namespace PacketProc
 		// UserData  : UserID , Password
 		std::string UserID;
 		std::string UserPass;
+		Stream stream = *packData.stream;
 
-		*packData.session->ReadStream >> &UserID;
-		*packData.session->ReadStream >> &UserPass;
+		stream >> &UserID;
+		stream >> &UserPass;
 
 		// id찾는 쿼리 없을시 생성, 있을시 데이터 로딩 후 user에 다 집어놓고 해당 데이터와 함께 send
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM userinfo WHERE ID = '%s'", UserID.data());
@@ -21,9 +22,11 @@ namespace PacketProc
 		{
 			short pkID = static_cast<short>(PACKET_ID::PCK_MAKE_ID_RES);
 			std::string msg = "등록되지 않은 ID입니다. 회원가입을 하시겠습니까?";
-			packData.session->WriteStream = new Stream();
+			/*packData.session->WriteStream = new Stream();
 			*packData.session->WriteStream << pkID;
-			*packData.session->WriteStream << msg;
+			*packData.session->WriteStream << msg;*/
+			stream << pkID;
+			stream << msg;
 			m_sendpckQueue.push(packData);
 		}
 		else
@@ -64,16 +67,14 @@ namespace PacketProc
 				chattingkey = atoi(row[4]);
 			}
 
-			short pkid = static_cast<short>(PACKET_ID::PCK_LOGIN_REQ);
+			short pkid = static_cast<short>(PACKET_ID::PCK_LOGIN_RES);
 
-			packData.session->WriteStream = new Stream();
-			*packData.session->WriteStream << pkid;
-			*packData.session->WriteStream << id;
-			*packData.session->WriteStream << nickname;
-			*packData.session->WriteStream << pass;
-			*packData.session->WriteStream << friendskey;
-			*packData.session->WriteStream << chattingkey;
-
+			*packData.stream << pkid;
+			*packData.stream << id;
+			*packData.stream << nickname;
+			*packData.stream << pass;
+			*packData.stream << friendskey;
+			*packData.stream << chattingkey;
 			m_sendpckQueue.push(packData);
 		}
 
@@ -93,10 +94,10 @@ namespace PacketProc
 		std::string ID;
 		std::string Nickname;
 		std::string Password;
-
-		*packData.session->ReadStream >> &ID;
-		*packData.session->ReadStream >> &Nickname;
-		*packData.session->ReadStream >> &Password;
+		Stream stream = *packData.stream;
+		stream >> &ID;
+		stream >> &Nickname;
+		stream >> &Password;
 
 		// 중복 ID가 발생한경우 다시 가입하라고 보냄
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT ID FROM userinfo WHERE ID = '%s';", ID);

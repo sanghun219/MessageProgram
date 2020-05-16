@@ -1,14 +1,13 @@
 #pragma once
-#include "ServLibrary.h"
-class Session;
+#include "Stream.h"
 
-/// 진짜 단순한 요청과 응답 패킷
 enum class PACKET_ID : INT16
 {
 	PCK_LOGIN_REQ = 0,
 	PCK_SIGN_UP_REQ = 1,
 	PCK_SIGN_UP_RES = 2,
 	PCK_MAKE_ID_RES = 3,
+	PCK_LOGIN_RES = 4,
 
 	PCK_END,
 };
@@ -17,18 +16,15 @@ enum class PACKET_ID : INT16
 
 #pragma pack(push,1)
 
-#define PckDataSize sizeof(PacketData);
-struct Packet
-{
-	Session* session;
-};
-
 struct PacketHeader
 {
-	PACKET_ID PacketID;
-	UINT32 packetSize;
-	UCHAR* Contents;
+	short PacketID;
 	UINT32 CRC;
 };
 
+struct Packet
+{
+	PacketHeader pkHeader;
+	Stream* stream = nullptr;
+};
 #pragma pack(pop)

@@ -12,9 +12,8 @@ public:
 	unsigned int idx = 0;
 	int seq = 0;
 	TCPSocket* fd = nullptr;
-	Stream* ReadStream = nullptr;
-	Stream* WriteStream = nullptr;
-	UCHAR UserID[128] = { 0, };
+	Stream* stream = nullptr;
+	//Stream* WriteStream = nullptr;
 
 	bool IsConnect();
 };

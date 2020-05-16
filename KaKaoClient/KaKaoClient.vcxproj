@@ -76,8 +76,8 @@
     <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoClient\Inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>($ProjectDir)\..\KaKaoProgram\zlib\include;$(ProjectDir)\..\KaKaoProgram\Inc;$(ProjectDir)\..\KaKaoClient\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>[$ProjectDir]\..\KaKaoProgram\zlib\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoClient\include;($ProjectDir)\..\KaKaoProgram\zlib\include;$(ProjectDir)\..\KaKaoProgram\Inc;$(ProjectDir)\..\KaKaoClient\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\sangh\Desktop\프로젝트\kakaoProgram\KaKaoClient\lib;[$ProjectDir]\..\KaKaoProgram\zlib\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(ProjectDir)\..\KaKaoClient\Inc;$(ProjectDir)\..\KaKaoProgram\Inc</IncludePath>
@@ -101,10 +101,11 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)\..\KaKaoProgram\zlib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>nana_v141_Debug_x86.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -140,11 +141,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Src\ClientSceenLogin.cpp" />
+    <ClCompile Include="Src\IClientScene.cpp" />
+    <ClCompile Include="Src\MainForm.cpp" />
     <ClCompile Include="Src\PacketTest.cpp" />
     <ClCompile Include="Src\ClienMain.cpp" />
+    <ClCompile Include="Src\TCPNetwork.cpp" />
+    <ClCompile Include="Src\User.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\ClientSceenLogin.h" />
+    <ClInclude Include="Inc\IClientScene.h" />
     <ClInclude Include="Inc\PacketTest.h" />
+    <ClInclude Include="Inc\MainForm.h" />
+    <ClInclude Include="Inc\TCPNetwork.h" />
+    <ClInclude Include="Inc\User.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KaKaoProgram\KaKaoProgram.vcxproj">
