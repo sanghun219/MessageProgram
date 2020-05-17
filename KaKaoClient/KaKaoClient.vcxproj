@@ -147,7 +147,6 @@
     <ClCompile Include="Src\PacketTest.cpp" />
     <ClCompile Include="Src\ClienMain.cpp" />
     <ClCompile Include="Src\TCPNetwork.cpp" />
-    <ClCompile Include="Src\User.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Inc\ClientSceenLogin.h" />
@@ -155,7 +154,6 @@
     <ClInclude Include="Inc\PacketTest.h" />
     <ClInclude Include="Inc\MainForm.h" />
     <ClInclude Include="Inc\TCPNetwork.h" />
-    <ClInclude Include="Inc\User.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KaKaoProgram\KaKaoProgram.vcxproj">

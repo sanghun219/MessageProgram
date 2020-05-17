@@ -1,4 +1,7 @@
 #include "Stream.h"
+#include "User.h"
+#include "ChattingRoom.h"
+
 #define STREAM_READ(type,retval)\
 INT32 size = sizeof(type);\
 if(this->checkReadBound(size)==false){\

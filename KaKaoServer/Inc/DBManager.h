@@ -2,6 +2,7 @@
 #include "ServLibrary.h"
 #include <mysql.h>
 #include "Singleton.h"
+#include "QueryList.h"
 
 class DBManager
 {

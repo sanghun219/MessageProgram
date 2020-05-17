@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Src\ChattingRoom.cpp" />
     <ClCompile Include="Src\LoginProcess.cpp" />
     <ClCompile Include="Src\NetworkLib.cpp" />
     <ClCompile Include="Src\PckProcessor.cpp" />
@@ -149,13 +150,16 @@
     <ClCompile Include="Src\SocketUtil.cpp" />
     <ClCompile Include="Src\Stream.cpp" />
     <ClCompile Include="Src\TCPSocket.cpp" />
+    <ClCompile Include="Src\User.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\ChattingRoom.h" />
     <ClInclude Include="Inc\Config.h" />
     <ClInclude Include="Inc\Logger.h" />
     <ClInclude Include="Inc\NetworkLib.h" />
     <ClInclude Include="Inc\PacketInfo.h" />
     <ClInclude Include="Inc\PckProcessor.h" />
+    <ClInclude Include="Inc\QueryList.h" />
     <ClInclude Include="Inc\ServErr.h" />
     <ClInclude Include="Inc\ServLibrary.h" />
     <ClInclude Include="Inc\Session.h" />
@@ -164,6 +168,7 @@
     <ClInclude Include="Inc\SocketUtil.h" />
     <ClInclude Include="Inc\Stream.h" />
     <ClInclude Include="Inc\TCPSocket.h" />
+    <ClInclude Include="Inc\User.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

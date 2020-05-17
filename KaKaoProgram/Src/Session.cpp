@@ -3,9 +3,8 @@ void Session::Clear()
 {
 	idx = 0;
 	seq = 0;
-	std::free(fd);
+	ZeroMemory(&fd, sizeof(fd));
 	ZeroMemory(&stream, sizeof(stream));
-	//ZeroMemory(&WriteStream, sizeof(WriteStream));
 }
 
 bool Session::IsConnect()

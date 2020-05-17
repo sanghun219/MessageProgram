@@ -51,6 +51,12 @@
     <ClCompile Include="Src\NetworkLib.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Src\User.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ChattingRoom.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Inc\Logger.h">
@@ -90,6 +96,15 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Inc\NetworkLib.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Inc\User.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Inc\QueryList.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Inc\ChattingRoom.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

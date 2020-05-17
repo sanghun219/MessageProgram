@@ -23,6 +23,7 @@ enum class ERR_PCK_CODE : short
 	ERR_NONE = 1 << 0,
 	ERR_PCK_NOTHELLO = 1 << 1,
 	ERR_PCK_NOTFOUNDPCK_IN_HASHMAP = 1 << 2,
+	ERR_PCK_NOTEXISTQUERY = 1 << 3,
 };
 
 inline ERR_CODE operator |(ERR_CODE e1, ERR_CODE e2)

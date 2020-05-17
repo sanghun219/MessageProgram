@@ -13,7 +13,6 @@ public:
 	int seq = 0;
 	TCPSocket* fd = nullptr;
 	Stream* stream = nullptr;
-	//Stream* WriteStream = nullptr;
 
 	bool IsConnect();
 };

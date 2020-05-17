@@ -15,6 +15,7 @@ bool ClientSceenLogin::ProcessPacket(PACKET_ID pkID, const Stream& stream)
 		break;
 	case (short)PACKET_ID::PCK_LOGIN_RES:
 		loginBtn->caption(charset("로그인 완료!").to_bytes(unicode::utf8));
+		SetCurSceenType(CLIENT_SCENE_TYPE::FRIEND_LIST);
 		break;
 	}
 
@@ -37,7 +38,7 @@ void ClientSceenLogin::CreateUI(form* pform)
 	});
 	passbox.events().text_changed([&]()
 	{
-		SettingPassword(passbox.text());
+		SettingPassword(charset(passbox.text()).to_bytes(unicode::utf8));
 	});
 	loginBtn = new button(*m_pform, charset("로그인").to_bytes(unicode::utf8));
 	loginBtn->events().click([&]()
