@@ -10,24 +10,21 @@ namespace PacketProc
 		// UserData  : UserID , Password
 		std::string UserID;
 		std::string UserPass;
-		Stream stream = *packData.stream;
 
-		stream >> &UserID;
-		stream >> &UserPass;
+		*packData.stream >> &UserID;
+		*packData.stream >> &UserPass;
 
 		// id찾는 쿼리 없을시 생성, 있을시 데이터 로딩 후 user에 다 집어놓고 해당 데이터와 함께 send
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM userinfo WHERE ID = '%s'", UserID.data());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
 
 		// TODO : 아이디 없으면 아이디 만들라는 RES , 있으면 특정 데이터를 들고 접속하라는 RES
-		if (mysql_num_fields(res) == 0)
+		if (mysql_num_rows(res) == 0)
 		{
 			short pkID = static_cast<short>(PACKET_ID::PCK_MAKE_ID_RES);
-			std::string msg = "등록되지 않은 ID입니다. 회원가입을 하시겠습니까?";
-
-			stream << pkID;
-			stream << msg;
+			*packData.stream << pkID;
 			m_sendpckQueue.push(packData);
+			return ERR_PCK_CODE::ERR_NONE;
 		}
 		else
 		{
@@ -36,6 +33,22 @@ namespace PacketProc
 				USERNICKNAME,
 				PASS,
 			*/
+
+			// 아이디는 있찌만 password가 없는 경우 로그인 정보 오류 전달
+			Singleton<DBManager>::GetInst()->ProcessQuery("SELECT Pass FROM userinfo WHERE ID = '%s' AND Pass = '%s'", UserID.c_str(), UserPass.c_str());
+			res = Singleton<DBManager>::GetInst()->GetsqlRes();
+
+			// 아이디는 있지만 비밀번호가 맞지않음
+			if (mysql_num_rows(res) == 0)
+			{
+				short pkID = static_cast<short>(PACKET_ID::PCK_LOGIN_WRONG_PASS_RES);
+				*packData.stream << pkID;
+				m_sendpckQueue.push(packData);
+				return ERR_PCK_CODE::ERR_NONE;
+			}
+
+			Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM userinfo WHERE ID = '%s'", UserID.data());
+			res = Singleton<DBManager>::GetInst()->GetsqlRes();
 			MYSQL_ROW row;
 			unsigned int fieldCount = mysql_num_fields(res);
 
@@ -143,18 +156,17 @@ namespace PacketProc
 			*packData.stream << nickname;
 			*packData.stream << pass;
 			// 패킷 데이터 순서대로 READ 해야함
+			*packData.stream << friendsIDList.size();
 			for (int i = 0; i < friendsIDList.size(); i++)
 			{
 				*packData.stream << friendsIDList[i]->GetUserID();
 				*packData.stream << friendsIDList[i]->GetUserNick();
-				*packData.stream << friendsIDList[i]->GetPassword();
 
 				for (auto iter : friendsIDList[i]->GetFriendList())
 				{
 					// 친구 정보 전송
 					*packData.stream << iter->GetUserID();
 					*packData.stream << iter->GetUserNick();
-					*packData.stream << iter->GetPassword();
 				}
 			}
 
@@ -183,7 +195,7 @@ namespace PacketProc
 
 		return ERR_PCK_CODE::ERR_NONE;
 	}
-	ERR_PCK_CODE PckProcessor::Process_SIGN_UP_RES(const Packet& packData)
+	ERR_PCK_CODE PckProcessor::Process_SIGN_UP_REQ(const Packet& packData)
 	{
 		// 정보들이 들어왔다는 가정하에 해당 정보를 db에 입력후 다음 행해야할
 		// 패킷 정보를 넘겨준다.
@@ -197,27 +209,36 @@ namespace PacketProc
 		std::string ID;
 		std::string Nickname;
 		std::string Password;
-		Stream stream = *packData.stream;
-		stream >> &ID;
-		stream >> &Nickname;
-		stream >> &Password;
+
+		*packData.stream >> &ID;
+		*packData.stream >> &Nickname;
+		*packData.stream >> &Password;
 
 		// 중복 ID가 발생한경우 다시 가입하라고 보냄
-		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT ID FROM userinfo WHERE ID = '%s';", ID);
+		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT ID FROM userinfo WHERE ID = '%s';", ID.c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
-		if (mysql_num_fields(res))
+		if (mysql_num_rows(res) != 0)
 		{
 			// 다시 만들라는 메시지
+			short pkid = static_cast<short>(PACKET_ID::PCK_SIGN_UP_RES);
+			int value = -1;
+			*packData.stream << pkid;
+			*packData.stream << value;
+			m_sendpckQueue.push(packData);
 		}
 		else
 		{
 			// 회원가입 됐다는 메시지
+			short pkid = static_cast<short>(PACKET_ID::PCK_SIGN_UP_RES);
+			int value = 1;
+			*packData.stream << pkid;
+			*packData.stream << value;
+			m_sendpckQueue.push(packData);
+
+			// DB에 id,pass,nickname insert함
+			Singleton<DBManager>::GetInst()->ProcessQuery("INSERT INTO userinfo VALUES ('%s' ,'%s' , '%s' );", ID.c_str(), Nickname.c_str(), Password.c_str());
 		}
 
-		return ERR_PCK_CODE::ERR_NONE;
-	}
-	ERR_PCK_CODE PckProcessor::Process_SIGN_UP_REQ(const Packet& packData)
-	{
 		return ERR_PCK_CODE::ERR_NONE;
 	}
 };

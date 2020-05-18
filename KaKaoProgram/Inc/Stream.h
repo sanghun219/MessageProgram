@@ -33,7 +33,7 @@ public:
 
 	template<typename T>
 	void operator <<(const std::vector<T>& value);
-	void operator <<(const std::string& value);
+	Stream& operator <<(const std::string& value);
 
 	//READ
 private:
@@ -54,7 +54,7 @@ public:
 
 	template<typename T>
 	void operator >> (std::vector<T>* retval);
-	void operator >> (std::string* retval);
+	Stream& operator >> (std::string* retval);
 
 private:
 	size_t m_offset;

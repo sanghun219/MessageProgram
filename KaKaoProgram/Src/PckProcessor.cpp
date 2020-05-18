@@ -8,7 +8,6 @@ namespace PacketProc
 	{
 		m_PckIDtoFunc[(short)PACKET_ID::PCK_LOGIN_REQ] = &PckProcessor::Process_LOGIN_REQ;
 		m_PckIDtoFunc[(short)PACKET_ID::PCK_SIGN_UP_REQ] = &PckProcessor::Process_SIGN_UP_REQ;
-		m_PckIDtoFunc[(short)PACKET_ID::PCK_SIGN_UP_RES] = &PckProcessor::Process_SIGN_UP_RES;
 	}
 
 	ERR_PCK_CODE PckProcessor::Process(const Packet& inPacket)

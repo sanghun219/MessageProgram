@@ -1,4 +1,5 @@
 #include "MainForm.h"
+#include "User.h"
 using namespace nana;
 void MainForm::Init()
 {
@@ -6,6 +7,7 @@ void MainForm::Init()
 	m_TCPNetwork->ConnectToServer();
 	m_SceenLogin = new ClientSceenLogin();
 	m_SceenLogin->SetNetwork(m_TCPNetwork);
+	m_SceenLogin->SetUserInfo(m_User);
 
 	m_timer.elapse([&]() {PacketProcess(); });
 	m_timer.interval(std::chrono::milliseconds(32));

@@ -111,12 +111,13 @@ void Stream::operator<<(const UINT64 & value)
 	STREAM_WRITE(value);
 }
 
-void Stream::operator<<(const std::string & value)
+Stream& Stream::operator<<(const std::string & value)
 {
 	*this << (INT32)value.length();
 	for (auto i : value) {
 		*this << (UINT8)i;
 	}
+	return *this;
 }
 
 bool Stream::checkReadBound(UINT32 len)
@@ -181,12 +182,12 @@ void Stream::operator>>(UINT64 * retval)
 	STREAM_READ(UINT64, retval);
 }
 
-void Stream::operator>>(std::string * retval)
+Stream& Stream::operator>>(std::string * retval)
 {
 	INT32 size;
 	*this >> &size;
 	if (this->checkReadBound(size) == false)
-		return;
+		return *this;
 
 	char* buf = new char[size + 1];
 	this->read((void*)(buf), size * sizeof(CHAR));
@@ -195,6 +196,8 @@ void Stream::operator>>(std::string * retval)
 	*retval = buf;
 
 	delete buf;
+
+	return *this;
 }
 
 template<typename T>

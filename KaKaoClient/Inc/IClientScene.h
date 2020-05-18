@@ -14,20 +14,22 @@ using namespace nana;
 enum class CLIENT_SCENE_TYPE
 {
 	LOGIN,
+	MAKEID,
 	FRIEND_LIST,
 	CHATTING_ROOM_LIST,
 	CHATTING_ROOM,
 	END,
 };
-
+class User;
 class IClientScene
 {
 public:
 	virtual ~IClientScene() {}
 
 	virtual void Update() {}
-	virtual bool ProcessPacket(PACKET_ID pkID, const Stream& stream) { return false; }
+	virtual bool ProcessPacket(PACKET_ID pkID, Stream& stream) { return false; }
 
+	virtual void SetUserInfo(User* user) { this->m_User = user; }
 	virtual void SetNetwork(TCPNetwork* tcpNetwork) { this->m_tcpNetwork = tcpNetwork; }
 	static void UnicodeToAnsi(const wchar_t* pszText, const int destSize, char* pszDest)
 	{
@@ -38,4 +40,5 @@ public:
 protected:
 	static CLIENT_SCENE_TYPE m_SceneType;
 	TCPNetwork* m_tcpNetwork;
+	User* m_User;
 };

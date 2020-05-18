@@ -20,6 +20,13 @@ public:
 	inline std::string GetPassword()const { return m_password; }
 	inline std::vector<User*> GetFriendList()const { return m_FriendList; }
 	inline std::vector<ChattingRoom*> GetChattingRoomList()const { return m_ChattingRoomList; }
+
+	inline void SetUserID(std::string id) { m_id = id; }
+	inline void SetUserNick(std::string nick) { m_nickname = nick; }
+	inline void SetUserPass(std::string pass) { m_password = pass; }
+	inline void SetFriendList(std::vector<User*> friendlist) { m_FriendList.assign(friendlist.begin(), friendlist.end()); }
+	inline void SetChattingRoomList(std::vector<ChattingRoom*> chatroomlist) { m_ChattingRoomList.assign(chatroomlist.begin(), chatroomlist.end()); }
+
 private:
 	std::string m_id;
 	std::string m_nickname;
