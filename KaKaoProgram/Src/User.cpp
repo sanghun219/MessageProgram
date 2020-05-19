@@ -1,4 +1,5 @@
 #include "User.h"
+#include "Stream.h"
 
 User::User(std::string id, std::string nick, std::string pass, std::vector<User*> friendlist
 	, std::vector<ChattingRoom*> chattingroomList)
@@ -12,8 +13,8 @@ User::User(std::string id, std::string nick, std::string pass, std::vector<User*
 
 User::User(std::string id, std::string nick)
 {
-	this->m_id = id;
 	this->m_nickname = nick;
+	this->m_id = id;
 }
 
 User& User::operator=(const User & user)
@@ -51,5 +52,66 @@ void User::Clear()
 			delete iter;
 			iter = nullptr;
 		}
+	}
+}
+
+void User::Read(Stream& inStream, bool isFriend)
+{
+	if (!isFriend)
+	{
+		inStream >> &this->m_id;
+		inStream >> &this->m_nickname;
+		inStream >> &this->m_password;
+
+		INT32 size = 0;
+		inStream >> &size;
+
+		for (INT32 i = 0; i < size; i++)
+		{
+			User* friends = new User();
+			friends->Read(inStream, true);
+			m_FriendList.push_back(friends);
+		}
+
+		inStream >> &size;
+
+		for (INT32 i = 0; i < size; i++)
+		{
+			ChattingRoom* chatroom = new ChattingRoom();
+			chatroom->Read(inStream);
+			m_ChattingRoomList.push_back(chatroom);
+		}
+	}
+	else
+	{
+		inStream >> &this->m_nickname;
+	}
+}
+
+void User::Write(Stream& outStream, bool isFriend)
+{
+	if (!isFriend)
+	{
+		outStream << this->m_id;
+		outStream << this->m_nickname;
+		outStream << this->m_password;
+		INT32 size = this->m_FriendList.size();
+		outStream << size;
+
+		for (auto iter : this->m_FriendList)
+		{
+			iter->Write(outStream, true);
+		}
+		size = this->m_ChattingRoomList.size();
+		outStream << size;
+
+		for (auto iter : this->m_ChattingRoomList)
+		{
+			iter->Write(outStream);
+		}
+	}
+	else
+	{
+		outStream << this->m_nickname;
 	}
 }

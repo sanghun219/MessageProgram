@@ -1,6 +1,6 @@
 #pragma once
 #include "IClientScene.h"
-#include "Stream.h"
+class Stream;
 class ClientSceenLogin : public IClientScene
 {
 public:
@@ -13,7 +13,7 @@ private:
 	void LoginRequest();
 	void SignupRequest();
 	void SignupResult(Stream & stream);
-	void LoginResult(Stream & stream);
+	void LoginResult(Stream& stream);
 	void SettingLoginID(std::string id);
 	void SettingLoginPassword(std::string pass);
 	void SettingSignupID(std::string id);

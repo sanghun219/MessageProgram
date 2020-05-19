@@ -10,10 +10,11 @@ enum class PACKET_ID : INT16
 	PCK_LOGIN_RES = 4,
 	PCK_LOGIN_WRONG_PASS_RES = 5,
 
+	//채팅방
+	PCK_CHAT_ROOM_IS_EMPTY = 6,
+
 	PCK_END,
 };
-
-// RPC 수행위한 enum
 
 #pragma pack(push,1)
 

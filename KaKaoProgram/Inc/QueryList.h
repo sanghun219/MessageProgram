@@ -13,9 +13,9 @@ WHERE uicr.UserID = '" #ID "'\
 )"
 
 #define QUERY_FIND_JOINNEDUSERS_FROM_ROOMID(ID)\
-"SELECT UserID FROM userinchatroom WHERE roomID IN( \
+" SELECT NickName FROM userinfo WHERE ID IN ( SELECT UserID FROM userinchatroom WHERE roomID IN( \
 SELECT chr.RoomID FROM chattingroom AS chr \
-WHERE chr.roomID ='" #ID "')"
+WHERE chr.roomID ='" #ID "'))"
 
 #define QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(ID) \
 "SELECT RoomID, Sequence, SendDate, ID, Nickname, Contents FROM chattingdata \

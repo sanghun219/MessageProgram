@@ -15,6 +15,7 @@ public:
 private:
 	TCPNetwork* m_TCPNetwork;
 	ClientSceenLogin* m_SceenLogin;
+
 	// unique를 쓰지 않으니 메모리 릭에 빠진다. 해결불가
 	std::unique_ptr<form> m_fm;
 	timer m_timer;

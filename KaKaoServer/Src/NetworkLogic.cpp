@@ -74,7 +74,6 @@ ERR_CODE NetworkLogic::ReceiveSocket(fd_set & readset, size_t idx)
 		}
 		else
 		{
-			SocketUtil::ReportError("NetworkLogic::ReceivePacket");
 			return ERR_CODE::ERR_RECV;
 		}
 	}
@@ -151,6 +150,20 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 	{
 		closesocket(m_dequeSession[Sessionidx].fd->GetSocket());
 		FD_CLR(m_dequeSession[Sessionidx].fd->GetSocket(), &m_Readfds);
+		m_dequeSession[Sessionidx].Clear();
+		for (auto iter = m_dequeSession.begin(); iter != m_dequeSession.end();)
+		{
+			if (iter->idx == Sessionidx)
+			{
+				iter = m_dequeSession.erase(iter);
+				break;
+			}
+
+			else
+				++iter;
+		}
+		m_dequeSessionIndex.push_back(Sessionidx);
+		LOG("%d번 세션의 연결이 해제되었습니다.", Sessionidx);
 		return;
 	}
 	else if (type == CLOSE_TYPE::ALL_SESSION)
@@ -161,14 +174,8 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 			m_dequeSessionIndex.push_back(idx);
 			closesocket(clnt.fd->GetSocket());
 			clnt.Clear();
+			LOG("%d번 세션의 연결이 해제되었습니다.", idx);
 		}
-	}
-	else
-	{
-		auto& clnt = m_dequeSession.at(Sessionidx);
-		m_dequeSessionIndex.push_back(clnt.idx);
-		closesocket(clnt.fd->GetSocket());
-		clnt.Clear();
 	}
 }
 

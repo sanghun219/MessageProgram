@@ -9,6 +9,7 @@ struct ChattingData
 	std::string m_Senddate;
 	std::string m_UserID;
 	std::string m_Nickname;
+	// TODO : 나중에 혹시 사진 같은걸 보내고 싶다면 CLASS 명이 컨텐츠로 들어오고 내용이 와야할듯
 	std::string m_Contents;
 };
 
@@ -22,6 +23,8 @@ public:
 	void SetChatData(ChattingData data);
 	void SetRoomName(const std::string name);
 	void SetRoomID(const INT64 roomID);
+	void Read(Stream&  instream);
+	void Write(Stream& outStream);
 
 	inline INT64 GetRoomID()const { return m_RoomID; }
 	inline std::string GetRoomName()const { return m_RoomName; }

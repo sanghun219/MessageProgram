@@ -13,22 +13,20 @@ bool ClientSceenLogin::ProcessPacket(PACKET_ID pkID, Stream& stream)
 	switch ((short)pkID)
 	{
 	case (short)PACKET_ID::PCK_MAKE_ID_RES:
-		m_loginBtn->caption(charset("로그인").to_bytes(unicode::utf8));
 		CreateMakeidUI();
 		break;
 	case (short)PACKET_ID::PCK_LOGIN_RES:
-		m_loginBtn->caption(charset("로그인 완료!").to_bytes(unicode::utf8));
-		SetCurSceenType(CLIENT_SCENE_TYPE::FRIEND_LIST);
 		LoginResult(stream);
 		break;
 	case (short)PACKET_ID::PCK_LOGIN_WRONG_PASS_RES:
-		m_loginBtn->caption(charset("로그인").to_bytes(unicode::utf8));
 		CreateWrongPassUI();
 		break;
 	case (short)PACKET_ID::PCK_SIGN_UP_RES:
 		SignupResult(stream);
 		break;
 	default:
+		LOG("%d", pkID);
+		LOG("수신된 패킷은 존재하지 않는 패킷입니다. %s", stream.data());
 		break;
 	}
 
@@ -167,21 +165,20 @@ void ClientSceenLogin::SignupResult(Stream & stream)
 	}
 }
 
-void ClientSceenLogin::LoginResult(Stream & stream)
+void ClientSceenLogin::LoginResult(Stream& stream)
 {
 	// TODO : 어떻게 받을지 생각하기.
 	// 유저 정보 전부 받아서 관리된다.
-	using namespace std;
-	string id, nickname, pass;
-	unsigned int friendlistsize = 0;
-	vector<User*> userlist;
-	stream >> &id >> &nickname >> &pass >> &friendlistsize;
-	for (int i = 0; i < friendlistsize; i++)
+	if (m_User == nullptr)
 	{
-		User* user = new User();
-		stream >> &user->GetUserID();
-		stream >> &user->GetUserNick();
+		LOG("User정보가 설정되지 않았습니다.");
+		return;
 	}
+	m_User->Read(stream);
+	m_loginBtn->caption(charset("로그인 완료!").to_bytes(unicode::utf8));
+	SetCurSceenType(CLIENT_SCENE_TYPE::FRIEND_LIST);
+
+	LOG("로그인이 완료 됐습니다!");
 }
 
 void ClientSceenLogin::SettingSignupID(std::string id)
@@ -227,6 +224,7 @@ void ClientSceenLogin::SettingLoginPassword(std::string pass)
 
 void ClientSceenLogin::CreateMakeidUI()
 {
+	m_loginBtn->caption(charset("로그인").to_bytes(unicode::utf8));
 	form midform(API::make_center(170, 130));
 	label midlab(midform, charset("ID가 존재하지 않습니다.").to_bytes(unicode::utf8));
 	button midbtn(midform, charset("확인").to_bytes(unicode::utf8));
@@ -291,6 +289,7 @@ void ClientSceenLogin::CreateSingUpUI()
 
 void ClientSceenLogin::CreateWrongPassUI()
 {
+	m_loginBtn->caption(charset("로그인").to_bytes(unicode::utf8));
 	form wrongform(API::make_center(290, 160));
 	label wronglabel(wrongform, charset("계정 또는 비밀번호를 다시 확인해 주세요.").to_bytes(unicode::utf8));
 	button wrongbtn(wrongform, charset("확인").to_bytes(unicode::utf8));

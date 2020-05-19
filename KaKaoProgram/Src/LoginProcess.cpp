@@ -54,11 +54,15 @@ namespace PacketProc
 
 			row = mysql_fetch_row(res);
 
+			User* user = new User();
 			std::string id = row[0];
 			std::string nickname = row[1];
 			std::string pass = row[2];
-			std::vector<User*> friendsIDList;
 			std::vector<ChattingRoom*> chattingRoomList;
+
+			user->SetUserID(id);
+			user->SetUserNick(nickname);
+			user->SetUserPass(pass);
 #pragma region 친구목록 조회
 			auto reterr = Singleton<DBManager>::GetInst()->
 				ProcessQuery(QUERY_FIND_FRIENDS_INFO(id.c_str()));
@@ -74,10 +78,10 @@ namespace PacketProc
 
 			while ((row = mysql_fetch_row(res)))
 			{
-				std::string friendsid = row[0];
+				std::string friendsID = row[0];
 				std::string friendsNickName = row[1];
-				User* myFriend = new User(friendsid, friendsNickName);
-				friendsIDList.push_back(myFriend);
+				User* myFriend = new User(friendsID, friendsNickName);
+				user->SetFriendList(myFriend);
 			}
 #pragma endregion
 
@@ -100,13 +104,14 @@ namespace PacketProc
 				std::string RoomName = row[1];
 				room->SetRoomID(RoomID);
 				room->SetRoomName(RoomName);
+
 				chattingRoomList.push_back(room);
 			}
-			// 참여한 UserIDs 찾기
-			for (int i = 0; i < chattingRoomList.size(); i++)
+
+			for (auto iter : chattingRoomList)
 			{
 				reterr = Singleton<DBManager>::GetInst()->
-					ProcessQuery(QUERY_FIND_JOINNEDUSERS_FROM_ROOMID(chattingRoomList[i]->GetRoomID()));
+					ProcessQuery(QUERY_FIND_JOINNEDUSERS_FROM_ROOMID(iter->GetRoomID()));
 
 				if (reterr < 0)
 				{
@@ -116,80 +121,43 @@ namespace PacketProc
 				res = Singleton<DBManager>::GetInst()->GetsqlRes();
 				fieldCount = mysql_num_fields(res);
 
-				while (row = mysql_fetch_row(res))
+				for (int i = 0; i < fieldCount; i++)
 				{
-					std::string userid = row[0];
-					chattingRoomList[i]->SetJoinnedUser(userid);
+					iter->SetJoinnedUser(row[0]);
 				}
-				// 방에 전달된 데이터들 정보 담기
+
 				reterr = Singleton<DBManager>::GetInst()->
-					ProcessQuery(QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(chattingRoomList[i]->GetRoomID()));
+					ProcessQuery(QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(iter->GetRoomID()));
 
 				if (reterr < 0)
 				{
 					return ERR_PCK_CODE::ERR_PCK_NOTEXISTQUERY;
 				}
-
-				res = Singleton<DBManager>::GetInst()->GetsqlRes();
 				fieldCount = mysql_num_fields(res);
 
-				while (row = mysql_fetch_row(res))
+				if (fieldCount == 0)
 				{
-					ChattingData data;
-					data.m_RoomID = atoi(row[0]);
-					data.m_Sequence = atoi(row[1]);
-					data.m_Senddate = row[2];
-					data.m_UserID = row[3];
-					data.m_Nickname = row[4];
-					data.m_Contents = row[5];
+				}
+				else
+				{
+					ChattingData chatdata;
+					chatdata.m_RoomID = atoi(row[0]);
+					chatdata.m_Sequence = atoi(row[1]);
+					chatdata.m_Senddate = row[2];
+					chatdata.m_UserID = row[3];
+					chatdata.m_Nickname = row[4];
+					chatdata.m_Contents = row[5];
 
-					chattingRoomList[i]->SetChatData(data);
+					iter->SetChatData(chatdata);
 				}
 			}
 
 #pragma endregion
-
+			user->SetChattingRoomList(chattingRoomList);
 			short pkid = static_cast<short>(PACKET_ID::PCK_LOGIN_RES);
-
 			*packData.stream << pkid;
-			*packData.stream << id;
-			*packData.stream << nickname;
-			*packData.stream << pass;
-			// 패킷 데이터 순서대로 READ 해야함
-			*packData.stream << friendsIDList.size();
-			for (int i = 0; i < friendsIDList.size(); i++)
-			{
-				*packData.stream << friendsIDList[i]->GetUserID();
-				*packData.stream << friendsIDList[i]->GetUserNick();
 
-				for (auto iter : friendsIDList[i]->GetFriendList())
-				{
-					// 친구 정보 전송
-					*packData.stream << iter->GetUserID();
-					*packData.stream << iter->GetUserNick();
-				}
-			}
-
-			for (int i = 0; i < chattingRoomList.size(); i++)
-			{
-				*packData.stream << chattingRoomList[i]->GetRoomID();
-				*packData.stream << chattingRoomList[i]->GetRoomName();
-				for (auto iter : chattingRoomList[i]->GetJoinnedUsers())
-				{
-					*packData.stream << iter;
-				}
-
-				for (auto iter : chattingRoomList[i]->GetChattingDataList())
-				{
-					*packData.stream << iter.m_RoomID;
-					*packData.stream << iter.m_Sequence;
-					*packData.stream << iter.m_Senddate;
-					*packData.stream << iter.m_UserID;
-					*packData.stream << iter.m_Nickname;
-					*packData.stream << iter.m_Contents;
-				}
-			}
-
+			user->Write(*packData.stream);
 			m_sendpckQueue.push(packData);
 		}
 
