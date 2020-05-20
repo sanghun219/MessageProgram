@@ -74,10 +74,9 @@ namespace PacketProc
 
 			res = Singleton<DBManager>::GetInst()->GetsqlRes();
 
-			fieldCount = mysql_num_fields(res);
-
 			while ((row = mysql_fetch_row(res)))
 			{
+				std::cout << row[0] << std::endl;
 				std::string friendsID = row[0];
 				std::string friendsNickName = row[1];
 				User* myFriend = new User(friendsID, friendsNickName);

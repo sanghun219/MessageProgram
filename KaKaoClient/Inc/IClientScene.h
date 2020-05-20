@@ -7,6 +7,7 @@
 #include <nana/gui/widgets/label.hpp>
 #include <nana/gui/widgets/textbox.hpp>
 #include <nana/gui/widgets/listbox.hpp>
+#include <nana/gui/widgets/tabbar.hpp>
 #include <nana/gui/timer.hpp>
 #include <nana/gui.hpp>
 using namespace nana;
@@ -28,7 +29,8 @@ public:
 
 	virtual void Update() {}
 	virtual bool ProcessPacket(PACKET_ID pkID, Stream& stream) { return false; }
-
+	virtual void Show() { m_pform->show(); exec(); }
+	virtual void CreateUI() = 0;
 	virtual void SetUserInfo(User* user) { this->m_User = user; }
 	virtual void SetNetwork(TCPNetwork* tcpNetwork) { this->m_tcpNetwork = tcpNetwork; }
 	static void UnicodeToAnsi(const wchar_t* pszText, const int destSize, char* pszDest)
@@ -41,4 +43,5 @@ protected:
 	static CLIENT_SCENE_TYPE m_SceneType;
 	TCPNetwork* m_tcpNetwork;
 	User* m_User;
+	nana::form* m_pform;
 };

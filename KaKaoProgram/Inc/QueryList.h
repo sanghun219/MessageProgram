@@ -1,10 +1,11 @@
 #pragma once
 
 #define QUERY_FIND_FRIENDS_INFO(ID) \
-"SELECT * FROM userinfo WHERE ID IN (SELECT fr.id FROM friendsinfo AS fr \
-LEFT JOIN userinfo AS us \
-ON '" #ID "' = fr.id\
-)"
+"SELECT ID,NickName FROM userinfo WHERE ID IN ( \
+SELECT fr.FriendID FROM friendsinfo as fr \
+left join userinfo as us \
+on '" #ID "' = fr.ID \
+);"
 
 #define QUERY_FIND_CHATTINGROOM_FROM_USERID(ID) \
 "SELECT * FROM chattingroom WHERE RoomID IN ( \

@@ -1,9 +1,10 @@
 #include "..\Inc\ClientSceenLogin.h"
 #include <nana/gui/widgets/picture.hpp>
 #include "User.h"
+#include "SceneMgr.h"
 void ClientSceenLogin::Update()
 {
-	if (GetCurSceenType() != CLIENT_SCENE_TYPE::LOGIN)
+	if (Singleton<SceneMgr>::GetInst()->GetSceen()->GetCurSceenType() != CLIENT_SCENE_TYPE::LOGIN)
 		return;
 }
 
@@ -33,10 +34,10 @@ bool ClientSceenLogin::ProcessPacket(PACKET_ID pkID, Stream& stream)
 	return false;
 }
 
-void ClientSceenLogin::CreateUI(form* pform)
+void ClientSceenLogin::CreateUI()
 {
-	m_pform = pform;
-
+	m_pform = new form(API::make_center(280, 280));
+	m_pform->caption(charset("카카오톡").to_bytes(unicode::utf8));
 	m_loginidbox = new textbox(*m_pform);
 	m_loginpassbox = new textbox(*m_pform);
 	std::string IDName = "카카오 계정";
@@ -70,12 +71,12 @@ void ClientSceenLogin::CreateUI(form* pform)
 	plc.field("textboxs") << *m_loginidbox << *m_loginpassbox;
 
 	plc.collocate();
-	m_pform->show();
-	exec();
 }
 
 ClientSceenLogin::~ClientSceenLogin()
 {
+	delete m_pform;
+	m_pform = nullptr;
 }
 
 void ClientSceenLogin::LoginRequest()
@@ -112,6 +113,7 @@ void ClientSceenLogin::SignupResult(Stream & stream)
 {
 	int res = 0;
 	stream >> &res;
+
 	if (res == 1) // OK
 	{
 		// 창띄운다 (회원가입이 완료 됐습니다!) - 동시에 회원가입 창 닫는다. (떼이터 다지우고)
@@ -176,7 +178,7 @@ void ClientSceenLogin::LoginResult(Stream& stream)
 	}
 	m_User->Read(stream);
 	m_loginBtn->caption(charset("로그인 완료!").to_bytes(unicode::utf8));
-	SetCurSceenType(CLIENT_SCENE_TYPE::FRIEND_LIST);
+	Singleton<SceneMgr>::GetInst()->SetSceen(CLIENT_SCENE_TYPE::FRIEND_LIST);
 
 	LOG("로그인이 완료 됐습니다!");
 }
@@ -249,7 +251,7 @@ void ClientSceenLogin::CreateMakeidUI()
 
 void ClientSceenLogin::CreateSingUpUI()
 {
-	m_signupform = new form(API::make_center(300, 300));
+	m_signupform = new form(API::make_center(280, 280));
 
 	m_idbox = new textbox(*m_signupform);
 	m_nicknamebox = new textbox(*m_signupform);
@@ -297,7 +299,7 @@ void ClientSceenLogin::CreateWrongPassUI()
 	{
 		wrongform.close();
 	});
-	std::cout << "asdasd";
+
 	place plc{ wrongform };
 	plc.div("<><weight = 80% vert<>< weight = 30% lab><weight = 20% bt><> ><>");
 	plc["lab"] << wronglabel;

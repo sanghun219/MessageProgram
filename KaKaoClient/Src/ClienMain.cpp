@@ -4,6 +4,6 @@ int main()
 {
 	MainForm mainform;
 	mainform.Init();
-	mainform.CreateGUI();
-	mainform.Show();
+	while (true)
+		mainform.UpdateSceen();
 }

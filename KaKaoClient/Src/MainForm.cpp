@@ -1,33 +1,36 @@
 #include "MainForm.h"
+#include "IClientScene.h"
+#include "ClientSceenLogin.h"
+#include "ClientSceenFriendList.h"
 #include "User.h"
+#include "SceneMgr.h"
+#include <thread>
+
 using namespace nana;
 void MainForm::Init()
 {
 	m_TCPNetwork = new TCPNetwork();
 	m_TCPNetwork->ConnectToServer();
 	m_User = new User();
-	m_SceenLogin = new ClientSceenLogin();
-	m_SceenLogin->SetNetwork(m_TCPNetwork);
-	m_SceenLogin->SetUserInfo(m_User);
+
+	Singleton<SceneMgr>::GetInst()->SetSceen(CLIENT_SCENE_TYPE::LOGIN);
+
 	m_timer.elapse([&]() {PacketProcess(); });
 	m_timer.interval(std::chrono::milliseconds(32));
 	m_timer.start();
 }
 
-void MainForm::CreateGUI()
+void MainForm::UpdateSceen()
 {
-	m_fm = std::make_unique<form>(API::make_center(300, 450));
-	std::string CaptionName = "Ä«Ä«¿ÀÅå";
-
-	m_fm->caption(charset(CaptionName).to_bytes(unicode::utf8));
-
-	m_SceenLogin->CreateUI(m_fm.get());
-}
-
-void MainForm::Show()
-{
-	m_fm->show();
-	exec();
+	bool isNeedUpdate = Singleton<SceneMgr>::GetInst()->IsNeedUpdate();
+	if (isNeedUpdate)
+	{
+		m_Sceen = Singleton<SceneMgr>::GetInst()->GetSceen();
+		m_Sceen->SetNetwork(m_TCPNetwork);
+		m_Sceen->SetUserInfo(m_User);
+		m_Sceen->CreateUI();
+		m_Sceen->Show();
+	}
 }
 
 void MainForm::PacketProcess()
@@ -40,14 +43,20 @@ void MainForm::PacketProcess()
 	{
 		short id = -1;
 		*packet->stream >> &id;
-		m_SceenLogin->ProcessPacket(static_cast<PACKET_ID>(id), *packet->stream);
-	}
+		m_Sceen->ProcessPacket(static_cast<PACKET_ID>(id), *packet->stream);
 
-	m_SceenLogin->Update();
+		if (packet->stream != nullptr)
+		{
+			delete packet->stream;
+		}
+	}
+	m_Sceen->Update();
 }
 
 MainForm::~MainForm()
 {
 	if (m_TCPNetwork != nullptr)
 		m_TCPNetwork->Clear();
+	if (updatethread.joinable())
+		updatethread.join();
 }

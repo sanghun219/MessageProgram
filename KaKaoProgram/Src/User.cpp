@@ -84,6 +84,7 @@ void User::Read(Stream& inStream, bool isFriend)
 	}
 	else
 	{
+		inStream >> &this->m_id;
 		inStream >> &this->m_nickname;
 	}
 }
@@ -112,6 +113,7 @@ void User::Write(Stream& outStream, bool isFriend)
 	}
 	else
 	{
+		outStream << this->m_id;
 		outStream << this->m_nickname;
 	}
 }

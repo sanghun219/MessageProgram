@@ -6,7 +6,8 @@ class ClientSceenLogin : public IClientScene
 public:
 	virtual void Update()override;
 	virtual bool ProcessPacket(PACKET_ID pkID, Stream& stream)override;
-	void CreateUI(form* pform);
+	virtual void CreateUI()override;
+
 	~ClientSceenLogin();
 
 private:
@@ -24,7 +25,7 @@ private:
 	void CreateWrongPassUI();
 	void ClearSignUpUI();
 private:
-	form* m_pform;
+	/*form* m_pform;*/
 	form* m_signupform;
 	std::string m_loginID;
 	std::string m_LoginPass;

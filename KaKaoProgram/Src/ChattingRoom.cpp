@@ -30,7 +30,7 @@ void ChattingRoom::SetRoomID(const INT64 roomID)
 	m_RoomID = roomID;
 }
 
-void ChattingRoom::Read(Stream& const instream)
+void ChattingRoom::Read(Stream& instream)
 {
 	instream >> &this->m_RoomID;
 	instream >> &this->m_RoomName;
