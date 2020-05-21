@@ -26,6 +26,7 @@ private:
 	MYSQL_ROW sql_row;
 	bool isconnect;
 public:
-
+	~DBManager();
 private:
+	DBManager() {}
 };

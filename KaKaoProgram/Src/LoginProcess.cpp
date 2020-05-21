@@ -65,7 +65,7 @@ namespace PacketProc
 			user->SetUserPass(pass);
 #pragma region 친구목록 조회
 			auto reterr = Singleton<DBManager>::GetInst()->
-				ProcessQuery(QUERY_FIND_FRIENDS_INFO(id.c_str()));
+				ProcessQuery(QUERY_FIND_FRIENDS_INFO(id).c_str());
 
 			if (reterr < 0)
 			{
@@ -76,7 +76,6 @@ namespace PacketProc
 
 			while ((row = mysql_fetch_row(res)))
 			{
-				std::cout << row[0] << std::endl;
 				std::string friendsID = row[0];
 				std::string friendsNickName = row[1];
 				User* myFriend = new User(friendsID, friendsNickName);
@@ -87,7 +86,7 @@ namespace PacketProc
 #pragma region 채팅방목록 조회
 			// 채팅방 ID 찾기
 			reterr = Singleton<DBManager>::GetInst()->
-				ProcessQuery(QUERY_FIND_CHATTINGROOM_FROM_USERID(id.c_str()));
+				ProcessQuery(QUERY_FIND_CHATTINGROOM_FROM_USERID(id).c_str());
 
 			if (reterr < 0)
 			{
@@ -110,7 +109,7 @@ namespace PacketProc
 			for (auto iter : chattingRoomList)
 			{
 				reterr = Singleton<DBManager>::GetInst()->
-					ProcessQuery(QUERY_FIND_JOINNEDUSERS_FROM_ROOMID(iter->GetRoomID()));
+					ProcessQuery(QUERY_FIND_JOINNEDUSERS_FROM_ROOMID(iter->GetRoomID()).c_str());
 
 				if (reterr < 0)
 				{
@@ -126,7 +125,7 @@ namespace PacketProc
 				}
 
 				reterr = Singleton<DBManager>::GetInst()->
-					ProcessQuery(QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(iter->GetRoomID()));
+					ProcessQuery(QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(iter->GetRoomID()).c_str());
 
 				if (reterr < 0)
 				{

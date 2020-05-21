@@ -36,7 +36,8 @@ bool ClientSceenLogin::ProcessPacket(PACKET_ID pkID, Stream& stream)
 
 void ClientSceenLogin::CreateUI()
 {
-	m_pform = new form(API::make_center(280, 280));
+	m_pform = new form(API::make_center(280, 280), nana::appear::decorate<appear::taskbar, appear::sizable>());
+	m_pform->bgcolor(nana::colors::light_yellow);
 	m_pform->caption(charset("카카오톡").to_bytes(unicode::utf8));
 	m_loginidbox = new textbox(*m_pform);
 	m_loginpassbox = new textbox(*m_pform);
@@ -117,7 +118,7 @@ void ClientSceenLogin::SignupResult(Stream & stream)
 	if (res == 1) // OK
 	{
 		// 창띄운다 (회원가입이 완료 됐습니다!) - 동시에 회원가입 창 닫는다. (떼이터 다지우고)
-		form okform(API::make_center(170, 130));
+		form okform(API::make_center(170, 130), nana::appear::decorate<appear::taskbar, appear::sizable>());
 		label oklabel(okform, charset("회원가입 완료!").to_bytes(unicode::utf8));
 		button okbtn(okform, charset("확인").to_bytes(unicode::utf8));
 
@@ -143,7 +144,7 @@ void ClientSceenLogin::SignupResult(Stream & stream)
 	else // ID가 이미 존재함
 	{
 		// 창띄운다 (이미 존재하는 ID 입니다!)  - 데이터 다지우고
-		form failform(API::make_center(170, 130));
+		form failform(API::make_center(170, 130), nana::appear::decorate<appear::taskbar, appear::sizable>());
 		label failabel(failform, charset("이미 존재하는 ID 입니다!").to_bytes(unicode::utf8));
 		button failbtn(failform, charset("확인").to_bytes(unicode::utf8));
 
@@ -227,7 +228,7 @@ void ClientSceenLogin::SettingLoginPassword(std::string pass)
 void ClientSceenLogin::CreateMakeidUI()
 {
 	m_loginBtn->caption(charset("로그인").to_bytes(unicode::utf8));
-	form midform(API::make_center(170, 130));
+	form midform(API::make_center(170, 130), nana::appear::decorate<appear::taskbar, appear::sizable>());
 	label midlab(midform, charset("ID가 존재하지 않습니다.").to_bytes(unicode::utf8));
 	button midbtn(midform, charset("확인").to_bytes(unicode::utf8));
 

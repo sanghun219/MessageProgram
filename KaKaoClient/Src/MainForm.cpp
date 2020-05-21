@@ -44,11 +44,6 @@ void MainForm::PacketProcess()
 		short id = -1;
 		*packet->stream >> &id;
 		m_Sceen->ProcessPacket(static_cast<PACKET_ID>(id), *packet->stream);
-
-		if (packet->stream != nullptr)
-		{
-			delete packet->stream;
-		}
 	}
 	m_Sceen->Update();
 }

@@ -112,3 +112,18 @@ MYSQL_RES * DBManager::GetsqlRes() const
 		return nullptr;
 	}
 }
+
+DBManager::~DBManager()
+{
+	if (isconnect)
+	{
+		try
+		{
+			mysql_close(connection);
+		}
+		catch (...)
+		{
+			LOG("DB 연결 해제가 비정상적으로 동작했습니다.");
+		}
+	}
+}
