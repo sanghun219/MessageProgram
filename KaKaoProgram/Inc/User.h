@@ -14,6 +14,7 @@ public:
 	User(std::string id, std::string nick);
 	User& operator = (const User& user);
 	User() {}
+	~User();
 	void Clear();
 
 	void Read(Stream& inStream, bool isFriend = false);

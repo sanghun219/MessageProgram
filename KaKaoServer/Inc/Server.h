@@ -18,6 +18,9 @@ private:
 	NetworkLogic* m_pNetworkLogic;
 public:
 	bool isOver;
+private:
+	Server() {}
 public:
+	~Server();
 };
 #define MAX_PATH 260

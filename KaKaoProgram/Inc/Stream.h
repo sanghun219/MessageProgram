@@ -14,7 +14,7 @@ public:
 	UCHAR* data();
 	UINT32 size();
 
-	void operator = (Stream& stream);
+	Stream& operator = (Stream& stream);
 
 	// Write
 public:

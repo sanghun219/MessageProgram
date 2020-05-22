@@ -44,9 +44,11 @@ UINT32 Stream::size()
 	return m_offset;
 }
 
-void Stream::operator= (Stream& stream)
+Stream& Stream::operator= (Stream& stream)
 {
+	if (&stream == this) { return *this; }
 	this->set(stream.data(), stream.size());
+	return *this;
 }
 
 void Stream::set(UCHAR* data, UINT32 size)

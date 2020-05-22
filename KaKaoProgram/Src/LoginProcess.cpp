@@ -119,7 +119,7 @@ namespace PacketProc
 				res = Singleton<DBManager>::GetInst()->GetsqlRes();
 				fieldCount = mysql_num_fields(res);
 
-				for (int i = 0; i < fieldCount; i++)
+				for (size_t i = 0; i < fieldCount; i++)
 				{
 					iter->SetJoinnedUser(row[0]);
 				}

@@ -26,7 +26,7 @@ inline const std::string QUERY_FIND_JOINNEDUSERS_FROM_ROOMID(INT64 ID)
 		"( SELECT UserID FROM userinchatroom WHERE roomID IN ( "
 		"SELECT chr.RoomID FROM chattingroom AS chr "
 		"WHERE chr.roomID = ";
-	retstr += ID;
+	retstr += static_cast<int>(ID);
 	retstr += "))";
 	return retstr;
 }
@@ -35,6 +35,7 @@ inline const std::string QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(INT64 ID)
 {
 	std::string retstr = "SELECT RoomID, Sequence, SendDate, ID, Nickname, Contents FROM chattingdata"
 		"WHERE RoomID = ";
-	retstr += ID;
+	retstr += static_cast<int>(ID);
+
 	return retstr;
 }

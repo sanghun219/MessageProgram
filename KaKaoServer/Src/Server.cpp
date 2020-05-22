@@ -48,3 +48,15 @@ void Server::InitServer()
 	isOver = true;
 	Run();
 }
+
+Server::~Server()
+{
+	if (m_pServerConfig != nullptr)
+	{
+		delete m_pServerConfig;
+	}
+	if (m_pNetworkLogic != nullptr)
+	{
+		delete m_pNetworkLogic;
+	}
+}

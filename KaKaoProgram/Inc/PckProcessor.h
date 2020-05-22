@@ -25,5 +25,3 @@ namespace PacketProc
 		~PckProcessor() {}
 	};
 }
-
-// TODO : 클라 / 서버의 패킷이 들어오면 ID를 읽고 처리를 해준다.

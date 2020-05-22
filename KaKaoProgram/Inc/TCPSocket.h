@@ -4,6 +4,7 @@ class SockAddress;
 class TCPSocket
 {
 private:
+
 	SOCKET* m_Socket;
 	SockAddress* m_addr;
 	int backLog;

@@ -35,6 +35,11 @@ User& User::operator=(const User & user)
 	return *this;
 }
 
+User::~User()
+{
+	Clear();
+}
+
 void User::Clear()
 {
 	if (!m_FriendList.empty())
