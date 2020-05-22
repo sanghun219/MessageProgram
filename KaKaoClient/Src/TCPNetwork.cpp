@@ -25,10 +25,10 @@ void TCPNetwork::ConnectToServer()
 
 	SockAddress addr(clnt_addr.sin_addr.S_un.S_addr, clnt_addr.sin_family, clnt_addr.sin_port);
 
-	m_TCPSocket = TCPSocket(m_socket, addr);
+	m_PTCPSocket = std::make_unique<TCPSocket>(m_socket, addr);
 	//SocketUtil::SetSocketNonblock(m_TCPsocket.m_Socket, true);
-	SocketUtil::SetSocketOption(m_TCPSocket.GetSocket());
-	auto connerr = m_TCPSocket.Connect();
+	SocketUtil::SetSocketOption(m_PTCPSocket->GetSocket());
+	auto connerr = m_PTCPSocket->Connect();
 	if (connerr == SOCKET_ERROR)
 	{
 		SocketUtil::ReportError("TCPNetwork::InitSocket");
@@ -40,27 +40,28 @@ void TCPNetwork::ConnectToServer()
 }
 
 // 패킷이 있다면 (receive 할) 먼저온 순서대로 return 한다.
-Packet* TCPNetwork::GetPacket()
+Packet TCPNetwork::GetPacket()
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	if (!m_PacketQueue.empty())
 	{
-		Packet* retpacket = &m_PacketQueue.back();
+		std::cout << m_PacketQueue.size() << std::endl;
+		Packet retpacket = m_PacketQueue.back();
 		m_PacketQueue.pop_back();
 		return retpacket;
 	}
 
-	return nullptr;
+	return Packet();
 }
 
 // 소켓으로 데이터를 받고 스트림에 채워넣은후 큐에 넣어준다.
 bool TCPNetwork::ReceviePacket()
 {
 	fd_set readset;
-	timeval tv;
+	timeval tv{ 0,1000 };
 
 	FD_ZERO(&readset);
-	FD_SET(m_TCPSocket.GetSocket(), &readset);
+	FD_SET(m_PTCPSocket->GetSocket(), &readset);
 
 	auto retsel = select(0, &readset, nullptr, nullptr, &tv);
 	if (retsel <= 0)
@@ -76,11 +77,11 @@ bool TCPNetwork::ReceviePacket()
 		}
 	}
 
-	if (FD_ISSET(m_TCPSocket.GetSocket(), &readset))
+	if (FD_ISSET(m_PTCPSocket->GetSocket(), &readset))
 	{
 		UCHAR data[1500];
 		ZeroMemory(data, sizeof(data));
-		int recvret = m_TCPSocket.Recv(data, sizeof(data));
+		int recvret = m_PTCPSocket->Recv(data, sizeof(data));
 
 		if (recvret < 0)
 		{
@@ -107,7 +108,7 @@ bool TCPNetwork::ReceviePacket()
 // 버튼 동작이 있을때마다 혹은 데이터 입력시 패킷을 넘겨준다.
 bool TCPNetwork::SendPacket(const Packet& packet)
 {
-	int retsend = m_TCPSocket.Send(packet.stream->data(), packet.stream->size());
+	int retsend = m_PTCPSocket->Send(packet.stream->data(), packet.stream->size());
 
 	if (retsend <= 0)
 	{

@@ -6,7 +6,7 @@ public:
 	void ConnectToServer();
 	// 패킷을 받아서 패킷 형태로 가공해서 전달해줌.
 
-	Packet* GetPacket();
+	Packet GetPacket();
 	// 소켓과 패킷이 섞여 있으니 true false로 간단하게 리턴하자
 	bool ReceviePacket();
 	bool SendPacket(const Packet& packet);
@@ -16,7 +16,7 @@ private:
 	void DisConnected();
 private:
 	SOCKET m_socket;
-	TCPSocket m_TCPSocket;
+	std::unique_ptr<TCPSocket> m_PTCPSocket;
 	std::deque<Packet> m_PacketQueue;
 	std::recursive_mutex m_rm;
 	std::thread m_thread;

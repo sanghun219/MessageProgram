@@ -4,9 +4,8 @@ class SockAddress;
 class TCPSocket
 {
 private:
-
-	SOCKET* m_Socket;
-	SockAddress* m_addr;
+	std::unique_ptr<SOCKET> m_Socket;
+	std::unique_ptr<SockAddress> m_addr;
 	int backLog;
 public:
 	int Send(const UCHAR* buf, const int bufSize);
@@ -17,7 +16,7 @@ public:
 	int Connect();
 
 	inline SockAddress& GetSockAddr() { return *m_addr; }
-	inline  SOCKET& GetSocket() { return *m_Socket; }
+	inline   SOCKET& GetSocket() { return *m_Socket; }
 	inline const int GetBackLog()const { return backLog; }
 public:
 	TCPSocket& operator = (const TCPSocket& s);

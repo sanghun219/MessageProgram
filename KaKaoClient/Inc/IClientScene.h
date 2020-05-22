@@ -3,6 +3,7 @@
 #include "Stream.h"
 #include "TCPNetwork.h"
 #include "Stream.h"
+#include "User.h"
 #include <nana/gui/widgets/button.hpp>
 #include <nana/gui/widgets/label.hpp>
 #include <nana/gui/widgets/textbox.hpp>

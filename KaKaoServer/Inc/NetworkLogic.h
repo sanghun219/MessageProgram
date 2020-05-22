@@ -31,17 +31,18 @@ private:
 	ERR_CODE SendPacket(fd_set& wr, const int idx);
 	ERR_CODE ProcessSendPacket(const Packet& packet, const int idx);
 private:
-	Config* m_pConfig;
+	// Config는 Read기능 뿐이다. 여러 클라이언트가 접근해야하니 unique_ptr은 불가능
+	std::shared_ptr<Config> m_pConfig;
 	fd_set m_Readfds;
 	SOCKET m_servSocket;
 
 	std::deque<int> m_dequeSessionIndex;
-	std::deque<Session> m_dequeSession;
+	std::deque<Session*> m_pdequeSession;
 	std::queue<Packet> m_queueRecvPacketData;
 	std::queue<Packet>* m_queueSendPacketData;
-	TCPSocket m_tcpSocket;
+	std::unique_ptr<TCPSocket> m_PtcpSocket;
 	std::recursive_mutex m_rm;
-	PckProcessor* m_pckProcessor;
+	std::unique_ptr<PckProcessor> m_pckProcessor;
 public:
 	bool InitNetworkLogic(Config* pConfig);
 	bool DoRunLoop();

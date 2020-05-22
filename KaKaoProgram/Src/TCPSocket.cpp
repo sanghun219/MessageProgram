@@ -52,7 +52,10 @@ TCPSocket* TCPSocket::Accept(SockAddress & inAddress)
 		return nullptr;
 	}
 	else
-		return new TCPSocket(clnt_socket, inAddress);
+	{
+		TCPSocket* retSocket = new TCPSocket(clnt_socket, inAddress);
+		return retSocket;
+	}
 }
 
 int TCPSocket::Connect()
@@ -67,17 +70,17 @@ TCPSocket & TCPSocket::operator=(const TCPSocket & s)
 	{
 		return *this;
 	}
-	this->m_addr = new SockAddress(*s.m_addr);
+	this->m_addr.reset(s.m_addr.get());
 	this->backLog = s.backLog;
-	this->m_Socket = s.m_Socket;
+	this->m_Socket.reset(s.m_Socket.get());
 	return *this;
 }
 
 TCPSocket::TCPSocket(const SOCKET & inSocket, const SockAddress& addr)
 {
-	m_addr = new SockAddress(addr);
-	m_Socket = new SOCKET();
-	*m_Socket = inSocket;
+	m_addr = std::make_unique<SockAddress>(addr);
+
+	m_Socket = std::make_unique<SOCKET>(inSocket);
 }
 
 TCPSocket::TCPSocket()

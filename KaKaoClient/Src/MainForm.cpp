@@ -9,9 +9,9 @@
 using namespace nana;
 void MainForm::Init()
 {
-	m_TCPNetwork = new TCPNetwork();
-	m_TCPNetwork->ConnectToServer();
-	m_User = new User();
+	m_pTCPNetwork = std::make_unique<TCPNetwork>();
+	m_pTCPNetwork->ConnectToServer();
+	m_pUser = std::make_unique<User>();
 
 	Singleton<SceneMgr>::GetInst()->SetSceen(CLIENT_SCENE_TYPE::LOGIN);
 
@@ -25,33 +25,39 @@ void MainForm::UpdateSceen()
 	bool isNeedUpdate = Singleton<SceneMgr>::GetInst()->IsNeedUpdate();
 	if (isNeedUpdate)
 	{
-		m_Sceen = Singleton<SceneMgr>::GetInst()->GetSceen();
-		m_Sceen->SetNetwork(m_TCPNetwork);
-		m_Sceen->SetUserInfo(m_User);
-		m_Sceen->CreateUI();
-		m_Sceen->Show();
+		m_pSceen = Singleton<SceneMgr>::GetInst()->GetSceen();
+		m_pSceen->SetNetwork(m_pTCPNetwork.get());
+		m_pSceen->SetUserInfo(m_pUser.get());
+		m_pSceen->CreateUI();
+		m_pSceen->Show();
 	}
 }
 
 void MainForm::PacketProcess()
 {
-	if (!m_TCPNetwork)
+	if (!m_pTCPNetwork)
 		return;
 
-	auto packet = m_TCPNetwork->GetPacket();
-	if (packet != nullptr)
+	std::unique_ptr<Packet> _pPacket;
+	auto packet = m_pTCPNetwork->GetPacket();
+	if (packet.stream != nullptr)
+		_pPacket = std::make_unique<Packet>(packet);
+
+	if (_pPacket != nullptr)
 	{
 		short id = -1;
-		*packet->stream >> &id;
-		m_Sceen->ProcessPacket(static_cast<PACKET_ID>(id), *packet->stream);
+		*_pPacket->stream >> &id;
+		std::cout << id << std::endl;
+		m_pSceen->ProcessPacket(static_cast<PACKET_ID>(id), *_pPacket->stream);
+		_pPacket.release();
 	}
-	m_Sceen->Update();
+	m_pSceen->Update();
 }
 
 MainForm::~MainForm()
 {
-	if (m_TCPNetwork != nullptr)
-		m_TCPNetwork->Clear();
+	if (m_pTCPNetwork != nullptr)
+		m_pTCPNetwork->Clear();
 	if (updatethread.joinable())
 		updatethread.join();
 }

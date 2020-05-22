@@ -3,8 +3,10 @@ void Session::Clear()
 {
 	idx = 0;
 	seq = 0;
-	ZeroMemory(&fd, sizeof(fd));
-	ZeroMemory(&stream, sizeof(stream));
+	fd.release();
+	stream.release();
+	/*ZeroMemory(&fd, sizeof(fd));
+	ZeroMemory(&stream, sizeof(stream));*/
 }
 
 bool Session::IsConnect()

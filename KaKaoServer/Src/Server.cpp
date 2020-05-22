@@ -6,7 +6,7 @@
 void Server::LoadConfig()
 {
 	setlocale(LC_ALL, "");
-	m_pServerConfig = new Config();
+	m_pServerConfig = std::make_shared<Config>();
 	wchar_t sPath[MAX_PATH] = { 0, };
 	::GetCurrentDirectory(MAX_PATH, sPath);
 
@@ -35,8 +35,8 @@ void Server::InitServer()
 {
 	LoadConfig();
 	Singleton<DBManager>::GetInst()->InitDBManager();
-	m_pNetworkLogic = new NetworkLogic();
-	auto retErr = m_pNetworkLogic->InitNetworkLogic(m_pServerConfig);
+	m_pNetworkLogic = std::make_unique<NetworkLogic>();
+	auto retErr = m_pNetworkLogic->InitNetworkLogic(m_pServerConfig.get());
 
 	if (!retErr)
 	{
@@ -51,12 +51,4 @@ void Server::InitServer()
 
 Server::~Server()
 {
-	if (m_pServerConfig != nullptr)
-	{
-		delete m_pServerConfig;
-	}
-	if (m_pNetworkLogic != nullptr)
-	{
-		delete m_pNetworkLogic;
-	}
 }

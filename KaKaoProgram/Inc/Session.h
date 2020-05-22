@@ -11,8 +11,8 @@ public:
 
 	unsigned int idx = 0;
 	int seq = 0;
-	TCPSocket* fd = nullptr;
-	Stream* stream = nullptr;
+	std::unique_ptr<TCPSocket> fd;
+	std::unique_ptr<Stream> stream;
 
 	bool IsConnect();
 };

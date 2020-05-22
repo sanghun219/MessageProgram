@@ -27,7 +27,7 @@ bool ClientSceenLogin::ProcessPacket(PACKET_ID pkID, Stream& stream)
 		break;
 	default:
 		LOG("%d", pkID);
-		LOG("수신된 패킷은 존재하지 않는 패킷입니다. %s", stream.data());
+		LOG("수신된 패킷은 존재하지 않는 패킷입니다. %d", (int)pkID);
 		break;
 	}
 
@@ -36,7 +36,7 @@ bool ClientSceenLogin::ProcessPacket(PACKET_ID pkID, Stream& stream)
 
 void ClientSceenLogin::CreateUI()
 {
-	m_pform = new form(API::make_center(280, 280), nana::appear::decorate<appear::taskbar, appear::sizable>());
+	m_pform = new nana::form(API::make_center(280, 280), nana::appear::decorate<appear::taskbar, appear::sizable>());
 	m_pform->bgcolor(nana::colors::light_yellow);
 	m_pform->caption(charset("카카오톡").to_bytes(unicode::utf8));
 	m_loginidbox = new textbox(*m_pform);
@@ -77,7 +77,6 @@ void ClientSceenLogin::CreateUI()
 ClientSceenLogin::~ClientSceenLogin()
 {
 	delete m_pform;
-	m_pform = nullptr;
 }
 
 void ClientSceenLogin::LoginRequest()
@@ -92,7 +91,6 @@ void ClientSceenLogin::LoginRequest()
 	*pck.stream << m_LoginPass;
 
 	m_tcpNetwork->SendPacket(pck);
-	delete pck.stream;
 }
 
 void ClientSceenLogin::SignupRequest()
@@ -107,7 +105,6 @@ void ClientSceenLogin::SignupRequest()
 	*packet.stream << m_signupPass;
 
 	m_tcpNetwork->SendPacket(packet);
-	delete packet.stream;
 }
 
 void ClientSceenLogin::SignupResult(Stream & stream)

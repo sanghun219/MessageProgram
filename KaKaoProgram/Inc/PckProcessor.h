@@ -8,9 +8,8 @@ namespace PacketProc
 	{
 	public:
 		void InitPckInfo();
-
 		ERR_PCK_CODE Process(const Packet& inPacket);
-		inline std::queue<Packet>* GetPacketQueue() { return &m_sendpckQueue; }
+		inline std::queue< Packet>* GetPacketQueue() { return &m_sendpckQueue; }
 	private:
 #pragma region ·Î±×ÀÎ
 		ERR_PCK_CODE Process_LOGIN_REQ(const Packet& packData);
@@ -21,7 +20,7 @@ namespace PacketProc
 		typedef ERR_PCK_CODE(PckProcessor::*PckProcessFunction)(const Packet&);
 		std::unordered_map < short, PckProcessFunction> m_PckIDtoFunc;
 		std::queue<Packet> m_sendpckQueue;
-
-		~PckProcessor() {}
+	public:
+		~PckProcessor() {};
 	};
 }

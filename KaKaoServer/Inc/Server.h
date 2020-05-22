@@ -14,8 +14,8 @@ public:
 	void InitServer();
 	inline void GameOver() { isOver = true; }
 private:
-	Config* m_pServerConfig;
-	NetworkLogic* m_pNetworkLogic;
+	std::shared_ptr<Config> m_pServerConfig;
+	std::unique_ptr<NetworkLogic> m_pNetworkLogic;
 public:
 	bool isOver;
 private:
