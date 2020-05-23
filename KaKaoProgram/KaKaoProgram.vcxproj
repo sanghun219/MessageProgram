@@ -156,6 +156,7 @@
     <ClInclude Include="Inc\ChattingRoom.h" />
     <ClInclude Include="Inc\Config.h" />
     <ClInclude Include="Inc\Logger.h" />
+    <ClInclude Include="Inc\nanaUtil.h" />
     <ClInclude Include="Inc\NetworkLib.h" />
     <ClInclude Include="Inc\PacketInfo.h" />
     <ClInclude Include="Inc\PckProcessor.h" />

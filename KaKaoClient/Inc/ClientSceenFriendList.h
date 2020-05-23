@@ -1,8 +1,10 @@
 #pragma once
 #include "IClientScene.h"
+
 #include <nana/gui/widgets/tabbar.hpp>
 #include <nana/gui/widgets/panel.hpp>
 #include <nana/gui/widgets/group.hpp>
+#include <nana/gui/widgets/panel.hpp>
 class ClientSceenFriendList : public IClientScene
 {
 public:
@@ -13,13 +15,15 @@ public:
 
 	virtual void CreateUI()override;
 
+	void SetSearchtext();
 private:
+	std::string m_frSearchtext;
 
-	nana::textbox* m_pSearchtBox;
+	nana::textbox* m_pFriendSearchtBox;
 	nana::label* m_pTitlelb;
-	nana::button* m_pChattroomListBtn;
+	nana::button* m_pFindIDBtn;
 	nana::listbox* m_pFriendListBox;
 	nana::tabbar<std::string>* m_pTabbar;
-	nana::group m_pfrgroup;
-	nana::group m_pchgroup;
+	nana::panel<false>* m_pFriendpanel;
+	nana::panel<false>* m_pChattingRoompanel;
 };

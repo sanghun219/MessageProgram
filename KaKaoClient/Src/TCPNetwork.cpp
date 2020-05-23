@@ -79,7 +79,7 @@ bool TCPNetwork::ReceviePacket()
 	if (FD_ISSET(m_PTCPSocket->GetSocket(), &readset))
 	{
 		UCHAR data[1500];
-		std::cout << ">>>" << std::endl;
+
 		ZeroMemory(data, sizeof(data));
 		int recvret = m_PTCPSocket->Recv(data, sizeof(data));
 
@@ -100,8 +100,6 @@ bool TCPNetwork::ReceviePacket()
 		ZeroMemory(&packet, sizeof(packet));
 		packet.stream = new Stream(data, recvret);
 		m_PacketQueue.push_back(packet);
-		std::cout << recvret << std::endl;
-		std::cout << "!" << std::endl;
 	}
 
 	return true;

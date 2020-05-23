@@ -250,7 +250,7 @@ void ClientSceenLogin::CreateMakeidUI()
 void ClientSceenLogin::CreateSingUpUI()
 {
 	m_signupform = new form(API::make_center(280, 280));
-
+	m_signupform->bgcolor(colors::light_yellow);
 	m_idbox = new textbox(*m_signupform);
 	m_nicknamebox = new textbox(*m_signupform);
 	m_passbox = new textbox(*m_signupform);

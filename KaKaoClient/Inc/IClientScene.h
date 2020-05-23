@@ -4,6 +4,7 @@
 #include "TCPNetwork.h"
 #include "Stream.h"
 #include "User.h"
+#include <regex>
 #include <nana/gui/widgets/button.hpp>
 #include <nana/gui/widgets/label.hpp>
 #include <nana/gui/widgets/textbox.hpp>
@@ -36,7 +37,7 @@ public:
 	virtual void SetNetwork(TCPNetwork* tcpNetwork) { this->m_tcpNetwork = tcpNetwork; }
 	static void UnicodeToAnsi(const wchar_t* pszText, const int destSize, char* pszDest)
 	{
-		_snprintf_s(pszDest, destSize, _TRUNCATE, "%S", pszText);
+		_snprintf_s(pszDest, destSize, _TRUNCATE, "%ws", pszText);
 	}
 	static CLIENT_SCENE_TYPE GetCurSceenType() { return m_SceneType; }
 	static void SetCurSceenType(const CLIENT_SCENE_TYPE sceneType) { m_SceneType = sceneType; }
