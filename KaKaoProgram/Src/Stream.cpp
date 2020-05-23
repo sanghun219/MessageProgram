@@ -51,6 +51,13 @@ Stream& Stream::operator= (Stream& stream)
 	return *this;
 }
 
+void Stream::Clear()
+{
+	m_readPt = 0;
+	m_offset = 0;
+	ZeroMemory(&m_stream, sizeof(m_stream));
+}
+
 void Stream::set(UCHAR* data, UINT32 size)
 {
 	this->m_offset = size;

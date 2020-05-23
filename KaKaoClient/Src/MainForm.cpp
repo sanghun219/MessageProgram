@@ -47,7 +47,6 @@ void MainForm::PacketProcess()
 	{
 		short id = -1;
 		*_pPacket->stream >> &id;
-		std::cout << id << std::endl;
 		m_pSceen->ProcessPacket(static_cast<PACKET_ID>(id), *_pPacket->stream);
 		_pPacket.release();
 	}
@@ -56,8 +55,6 @@ void MainForm::PacketProcess()
 
 MainForm::~MainForm()
 {
-	if (m_pTCPNetwork != nullptr)
-		m_pTCPNetwork->Clear();
 	if (updatethread.joinable())
 		updatethread.join();
 }

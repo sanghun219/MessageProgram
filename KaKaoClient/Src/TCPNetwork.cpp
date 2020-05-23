@@ -45,7 +45,6 @@ Packet TCPNetwork::GetPacket()
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	if (!m_PacketQueue.empty())
 	{
-		std::cout << m_PacketQueue.size() << std::endl;
 		Packet retpacket = m_PacketQueue.back();
 		m_PacketQueue.pop_back();
 		return retpacket;
@@ -80,10 +79,11 @@ bool TCPNetwork::ReceviePacket()
 	if (FD_ISSET(m_PTCPSocket->GetSocket(), &readset))
 	{
 		UCHAR data[1500];
+		std::cout << ">>>" << std::endl;
 		ZeroMemory(data, sizeof(data));
 		int recvret = m_PTCPSocket->Recv(data, sizeof(data));
 
-		if (recvret < 0)
+		if (recvret <= 0)
 		{
 			if (SocketUtil::GetLastError() == WSAEWOULDBLOCK)
 			{
@@ -100,6 +100,8 @@ bool TCPNetwork::ReceviePacket()
 		ZeroMemory(&packet, sizeof(packet));
 		packet.stream = new Stream(data, recvret);
 		m_PacketQueue.push_back(packet);
+		std::cout << recvret << std::endl;
+		std::cout << "!" << std::endl;
 	}
 
 	return true;

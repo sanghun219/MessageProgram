@@ -12,7 +12,7 @@ namespace PacketProc
 		inline std::queue< Packet>* GetPacketQueue() { return &m_sendpckQueue; }
 	private:
 #pragma region ·Î±×ÀÎ
-		ERR_PCK_CODE Process_LOGIN_REQ(const Packet& packData);
+		ERR_PCK_CODE Process_LOGIN_REQ(const Packet& RecvPacket);
 		ERR_PCK_CODE Process_SIGN_UP_REQ(const Packet& packData);
 #pragma endregion
 		std::recursive_mutex m_rm;

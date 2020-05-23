@@ -15,7 +15,7 @@ public:
 	UINT32 size();
 
 	Stream& operator = (Stream& stream);
-
+	void Clear();
 	// Write
 public:
 	bool checkWriteBound(INT32 len);

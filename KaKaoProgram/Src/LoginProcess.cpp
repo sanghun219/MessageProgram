@@ -5,14 +5,17 @@
 #include "ChattingRoom.h"
 namespace PacketProc
 {
-	ERR_PCK_CODE PckProcessor::Process_LOGIN_REQ(const Packet& packData)
+	ERR_PCK_CODE PckProcessor::Process_LOGIN_REQ(const Packet& RecvPacket)
 	{
 		// UserData  : UserID , Password
 		std::string UserID;
 		std::string UserPass;
 
-		*packData.stream >> &UserID;
-		*packData.stream >> &UserPass;
+		*RecvPacket.stream >> &UserID;
+		*RecvPacket.stream >> &UserPass;
+
+		Packet SendPacket;
+		SendPacket.stream = new Stream();
 
 		// id찾는 쿼리 없을시 생성, 있을시 데이터 로딩 후 user에 다 집어놓고 해당 데이터와 함께 send
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM userinfo WHERE ID = '%s'", UserID.data());
@@ -22,8 +25,8 @@ namespace PacketProc
 		if (mysql_num_rows(res) == 0)
 		{
 			short pkID = static_cast<short>(PACKET_ID::PCK_MAKE_ID_RES);
-			*packData.stream << pkID;
-			m_sendpckQueue.push(packData);
+			*SendPacket.stream << pkID;
+			m_sendpckQueue.push(SendPacket);
 			return ERR_PCK_CODE::ERR_NONE;
 		}
 		else
@@ -42,8 +45,8 @@ namespace PacketProc
 			if (mysql_num_rows(res) == 0)
 			{
 				short pkID = static_cast<short>(PACKET_ID::PCK_LOGIN_WRONG_PASS_RES);
-				*packData.stream << pkID;
-				m_sendpckQueue.push(packData);
+				*SendPacket.stream << pkID;
+				m_sendpckQueue.push(SendPacket);
 				return ERR_PCK_CODE::ERR_NONE;
 			}
 
@@ -153,15 +156,15 @@ namespace PacketProc
 #pragma endregion
 			user->SetChattingRoomList(chattingRoomList);
 			short pkid = static_cast<short>(PACKET_ID::PCK_LOGIN_RES);
-			*packData.stream << pkid;
+			*SendPacket.stream << pkid;
 
-			user->Write(*packData.stream);
-			m_sendpckQueue.push(packData);
+			user->Write(*SendPacket.stream);
+			m_sendpckQueue.push(SendPacket);
 		}
 
 		return ERR_PCK_CODE::ERR_NONE;
 	}
-	ERR_PCK_CODE PckProcessor::Process_SIGN_UP_REQ(const Packet& packData)
+	ERR_PCK_CODE PckProcessor::Process_SIGN_UP_REQ(const Packet& RecvPacket)
 	{
 		// 정보들이 들어왔다는 가정하에 해당 정보를 db에 입력후 다음 행해야할
 		// 패킷 정보를 넘겨준다.
@@ -176,9 +179,12 @@ namespace PacketProc
 		std::string Nickname;
 		std::string Password;
 
-		*packData.stream >> &ID;
-		*packData.stream >> &Nickname;
-		*packData.stream >> &Password;
+		*RecvPacket.stream >> &ID;
+		*RecvPacket.stream >> &Nickname;
+		*RecvPacket.stream >> &Password;
+
+		Packet SendPacket;
+		SendPacket.stream = new Stream();
 
 		// 중복 ID가 발생한경우 다시 가입하라고 보냄
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT ID FROM userinfo WHERE ID = '%s';", ID.c_str());
@@ -188,18 +194,18 @@ namespace PacketProc
 			// 다시 만들라는 메시지
 			short pkid = static_cast<short>(PACKET_ID::PCK_SIGN_UP_RES);
 			int value = -1;
-			*packData.stream << pkid;
-			*packData.stream << value;
-			m_sendpckQueue.push(packData);
+			*SendPacket.stream << pkid;
+			*SendPacket.stream << value;
+			m_sendpckQueue.push(SendPacket);
 		}
 		else
 		{
 			// 회원가입 됐다는 메시지
 			short pkid = static_cast<short>(PACKET_ID::PCK_SIGN_UP_RES);
 			int value = 1;
-			*packData.stream << pkid;
-			*packData.stream << value;
-			m_sendpckQueue.push(packData);
+			*SendPacket.stream << pkid;
+			*SendPacket.stream << value;
+			m_sendpckQueue.push(SendPacket);
 
 			// DB에 id,pass,nickname insert함
 			Singleton<DBManager>::GetInst()->ProcessQuery("INSERT INTO userinfo VALUES ('%s' ,'%s' , '%s' );", ID.c_str(), Nickname.c_str(), Password.c_str());
