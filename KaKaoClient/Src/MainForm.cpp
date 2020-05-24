@@ -1,7 +1,7 @@
 #include "MainForm.h"
 #include "IClientScene.h"
 #include "ClientSceenLogin.h"
-#include "ClientSceenFriendList.h"
+#include "ClientMainScene.h"
 #include "User.h"
 #include "SceneMgr.h"
 #include <thread>

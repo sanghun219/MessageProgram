@@ -1,5 +1,5 @@
 #include "SceneMgr.h"
-#include "ClientSceenFriendList.h"
+#include "ClientMainScene.h"
 #include "ClientSceenLogin.h"
 IClientScene* SceneMgr::m_pClientScene = nullptr;
 int SceneMgr::m_NeedUpdateCount = 0;
@@ -17,7 +17,7 @@ void SceneMgr::SetSceen(CLIENT_SCENE_TYPE sceen)
 		m_pClientScene = new ClientSceenLogin();
 		break;
 	case CLIENT_SCENE_TYPE::FRIEND_LIST:
-		m_pClientScene = new ClientSceenFriendList();
+		m_pClientScene = new ClientMainScene();
 		break;
 	default:
 		break;

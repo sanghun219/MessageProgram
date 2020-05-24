@@ -17,6 +17,7 @@ public:
 	int InitDBManager();
 	void CloseDBManager();
 	int ProcessQuery(const char* query, ...);
+	std::string GetQuery(const char* query, ...);
 	MYSQL_ROW GetsqlRow()const { return sql_row; }
 	MYSQL_RES* GetsqlRes()const;
 private:

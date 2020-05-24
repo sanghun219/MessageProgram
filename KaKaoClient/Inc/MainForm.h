@@ -2,7 +2,7 @@
 #include "TCPNetwork.h"
 #include "IClientScene.h"
 #include "ClientSceenLogin.h"
-#include "ClientSceenFriendList.h"
+#include "ClientMainScene.h"
 #include "User.h"
 #include <thread>
 #include <nana/gui/timer.hpp>
@@ -20,7 +20,7 @@ private:
 	// 추상 클래스는 객체로 담아갈수 없음
 	IClientScene* m_pSceen;
 	std::unique_ptr<ClientSceenLogin> m_pSceenLogin;
-	std::unique_ptr<ClientSceenFriendList> m_pSceenFriendList;
+	std::unique_ptr<ClientMainScene> m_pSceenFriendList;
 
 	// unique를 쓰지 않으니 메모리 릭에 빠진다. 해결불가
 	std::unique_ptr<nana::form> m_fm;

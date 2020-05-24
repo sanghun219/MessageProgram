@@ -141,7 +141,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Src\ClientSceenFriendList.cpp" />
+    <ClCompile Include="Src\ClientMainScene.cpp" />
     <ClCompile Include="Src\ClientSceenLogin.cpp" />
     <ClCompile Include="Src\IClientScene.cpp" />
     <ClCompile Include="Src\MainForm.cpp" />
@@ -151,7 +151,7 @@
     <ClCompile Include="Src\TCPNetwork.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Inc\ClientSceenFriendList.h" />
+    <ClInclude Include="Inc\ClientMainScene.h" />
     <ClInclude Include="Inc\ClientSceenLogin.h" />
     <ClInclude Include="Inc\IClientScene.h" />
     <ClInclude Include="Inc\PacketTest.h" />

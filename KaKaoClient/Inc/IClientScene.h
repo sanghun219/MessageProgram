@@ -4,6 +4,7 @@
 #include "TCPNetwork.h"
 #include "Stream.h"
 #include "User.h"
+#include "nanaUtil.h"
 #include <regex>
 #include <nana/gui/widgets/button.hpp>
 #include <nana/gui/widgets/label.hpp>

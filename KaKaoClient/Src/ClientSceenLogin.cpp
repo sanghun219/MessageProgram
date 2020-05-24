@@ -26,7 +26,6 @@ bool ClientSceenLogin::ProcessPacket(PACKET_ID pkID, Stream& stream)
 		SignupResult(stream);
 		break;
 	default:
-		LOG("%d", pkID);
 		LOG("수신된 패킷은 존재하지 않는 패킷입니다. %d", (int)pkID);
 		break;
 	}
@@ -192,6 +191,8 @@ void ClientSceenLogin::SettingSignupID(std::string id)
 
 void ClientSceenLogin::SettingSignupNick(std::string nick)
 {
+	std::wstring wnick = m_nicknamebox->caption_wstring();
+	convert_unicode_to_ansi_string(nick, wnick.c_str(), wnick.size());
 	m_signupNick = nick;
 	if (m_signupID.length() != 0 && m_signupNick.length() != 0 && m_signupPass.length() != 0)
 	{
@@ -201,6 +202,8 @@ void ClientSceenLogin::SettingSignupNick(std::string nick)
 
 void ClientSceenLogin::SettingSignupPass(std::string pass)
 {
+	std::wstring wpass = m_passbox->caption_wstring();
+	convert_unicode_to_ansi_string(pass, wpass.c_str(), wpass.size());
 	m_signupPass = pass;
 	if (m_signupID.length() != 0 && m_signupNick.length() != 0 && m_signupPass.length() != 0)
 	{
@@ -210,13 +213,19 @@ void ClientSceenLogin::SettingSignupPass(std::string pass)
 
 void ClientSceenLogin::SettingLoginID(std::string id)
 {
+	std::wstring wid = m_loginidbox->caption_wstring();
+	convert_unicode_to_ansi_string(id, wid.c_str(), wid.size());
 	m_loginID = id;
+
 	if (m_loginID.length() != 0 && m_LoginPass.length() != 0)
 		m_loginBtn->enabled(true);
 }
 
 void ClientSceenLogin::SettingLoginPassword(std::string pass)
 {
+	std::wstring wpass = m_loginpassbox->caption_wstring();
+	convert_unicode_to_ansi_string(pass, wpass.c_str(), wpass.size());
+
 	m_LoginPass = pass;
 	if (m_loginID.length() != 0 && m_LoginPass.length() != 0)
 		m_loginBtn->enabled(true);

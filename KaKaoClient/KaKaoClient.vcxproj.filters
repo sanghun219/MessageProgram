@@ -33,10 +33,10 @@
     <ClCompile Include="Src\ClientSceenLogin.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Src\ClientSceenFriendList.cpp">
+    <ClCompile Include="Src\SceneMgr.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Src\SceneMgr.cpp">
+    <ClCompile Include="Src\ClientMainScene.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,10 +56,10 @@
     <ClInclude Include="Inc\ClientSceenLogin.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Inc\ClientSceenFriendList.h">
+    <ClInclude Include="Inc\SceneMgr.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Inc\SceneMgr.h">
+    <ClInclude Include="Inc\ClientMainScene.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

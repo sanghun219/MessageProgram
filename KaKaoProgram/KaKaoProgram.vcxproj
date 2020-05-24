@@ -142,9 +142,11 @@
   <ItemGroup>
     <ClCompile Include="Src\ChattingRoom.cpp" />
     <ClCompile Include="Src\LoginProcess.cpp" />
+    <ClCompile Include="Src\MainProcess.cpp" />
     <ClCompile Include="Src\NetworkLib.cpp" />
     <ClCompile Include="Src\PckProcessor.cpp" />
     <ClCompile Include="Src\Logger.cpp" />
+    <ClCompile Include="Src\QueryList.cpp" />
     <ClCompile Include="Src\Session.cpp" />
     <ClCompile Include="Src\SockAddress.cpp" />
     <ClCompile Include="Src\SocketUtil.cpp" />

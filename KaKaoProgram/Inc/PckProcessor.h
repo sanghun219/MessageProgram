@@ -13,7 +13,12 @@ namespace PacketProc
 	private:
 #pragma region 로그인
 		ERR_PCK_CODE Process_LOGIN_REQ(const Packet& RecvPacket);
-		ERR_PCK_CODE Process_SIGN_UP_REQ(const Packet& packData);
+		ERR_PCK_CODE Process_SIGN_UP_REQ(const Packet& RecvPacket);
+#pragma endregion
+
+#pragma region 메인
+		ERR_PCK_CODE Process_PCK_FIND_ID_REQ(const Packet& RecvPacket);
+		ERR_PCK_CODE Process_PCK_ADD_ID_REQ(const Packet& RecvPacket);
 #pragma endregion
 		std::recursive_mutex m_rm;
 	private:

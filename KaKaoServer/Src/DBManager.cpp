@@ -100,6 +100,18 @@ int DBManager::ProcessQuery(const char* query, ...)
 	}
 }
 
+std::string DBManager::GetQuery(const char * query, ...)
+{
+	std::lock_guard<std::recursive_mutex> lock(m_rm);
+	static char copyQuery[1024];
+	ZeroMemory(&copyQuery, sizeof(copyQuery));
+	va_list ap;
+	va_start(ap, query);
+	vsprintf_s(copyQuery + strlen(copyQuery), sizeof(copyQuery), query, ap);
+	va_end(ap);
+	return copyQuery;
+}
+
 MYSQL_RES * DBManager::GetsqlRes() const
 {
 	if (sql_result != nullptr)
