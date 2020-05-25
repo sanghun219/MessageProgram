@@ -59,12 +59,13 @@ void ClientSceenLogin::CreateUI()
 		m_loginBtn->caption(charset("로그인 중..").to_bytes(unicode::utf8));
 	});
 	m_loginBtn->enabled(false);
-
+	m_loginBtn->bgcolor(nana::colors::antique_white);
 	m_SignUpBtn = new button(*m_pform, charset("회원가입").to_bytes(unicode::utf8));
 	m_SignUpBtn->events().click([&]()
 	{
 		CreateSingUpUI();
 	});
+	m_SignUpBtn->bgcolor(nana::colors::antique_white);
 	place plc{ *m_pform };
 	plc.div("<><weight=80% vert<><weight=70% vert <vert gap=10 textboxs arrange=[25,25]>  <weight=25 gap=10 buttons> ><>><>");
 	plc.field("buttons") << *m_loginBtn << *m_SignUpBtn;
@@ -175,7 +176,7 @@ void ClientSceenLogin::LoginResult(Stream& stream)
 	}
 	m_User->Read(stream);
 	m_loginBtn->caption(charset("로그인 완료!").to_bytes(unicode::utf8));
-	Singleton<SceneMgr>::GetInst()->SetSceen(CLIENT_SCENE_TYPE::FRIEND_LIST);
+	Singleton<SceneMgr>::GetInst()->SetSceen(CLIENT_SCENE_TYPE::MAIN);
 
 	LOG("로그인이 완료 됐습니다!");
 }

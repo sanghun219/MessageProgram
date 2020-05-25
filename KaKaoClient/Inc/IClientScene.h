@@ -18,10 +18,7 @@ using namespace nana;
 enum class CLIENT_SCENE_TYPE
 {
 	LOGIN,
-	MAKEID,
-	FRIEND_LIST,
-	CHATTING_ROOM_LIST,
-	CHATTING_ROOM,
+	MAIN,
 	END,
 };
 class User;

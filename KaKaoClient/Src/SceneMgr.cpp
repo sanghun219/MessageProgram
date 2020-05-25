@@ -16,10 +16,11 @@ void SceneMgr::SetSceen(CLIENT_SCENE_TYPE sceen)
 	case CLIENT_SCENE_TYPE::LOGIN:
 		m_pClientScene = new ClientSceenLogin();
 		break;
-	case CLIENT_SCENE_TYPE::FRIEND_LIST:
+	case CLIENT_SCENE_TYPE::MAIN:
 		m_pClientScene = new ClientMainScene();
 		break;
 	default:
+		m_pClientScene = nullptr;
 		break;
 	}
 	m_NeedUpdateCount++;
@@ -28,6 +29,7 @@ void SceneMgr::SetSceen(CLIENT_SCENE_TYPE sceen)
 
 bool SceneMgr::IsNeedUpdate()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	if (m_NeedUpdateCount > 0)
 	{
 		--m_NeedUpdateCount;

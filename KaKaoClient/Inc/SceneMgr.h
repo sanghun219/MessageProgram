@@ -19,4 +19,5 @@ public:
 private:
 	static IClientScene* m_pClientScene;
 	static int m_NeedUpdateCount;
+	std::recursive_mutex m_rm;
 };

@@ -1,9 +1,12 @@
 #include "ClientMainScene.h"
 #include "User.h"
+#include "SceneMgr.h"
+#include <nana/gui/widgets/combox.hpp>
+#include <nana/gui/widgets/checkbox.hpp>
 
 void ClientMainScene::Update()
 {
-	if (GetCurSceenType() != CLIENT_SCENE_TYPE::FRIEND_LIST)
+	if (Singleton<SceneMgr>::GetInst()->GetSceen()->GetCurSceenType() != CLIENT_SCENE_TYPE::MAIN)
 		return;
 }
 
@@ -32,6 +35,7 @@ void ClientMainScene::CreateUI()
 	// 패널을 2개두고 탭바에의해서 전환되도록해야함. 탭바에 탭패이지를 붙여야함.
 	m_pFriendpanel = new nana::panel<false>(*m_pform);
 	m_pChattingRoompanel = new nana::panel<false>(*m_pform);
+	m_pChattingRoompanel->bgcolor(nana::colors::antique_white);
 	m_pTabbar = new nana::tabbar<std::string>(*m_pform);
 	m_pTabbar->bgcolor(colors::antique_white);
 	m_pFriendSearchtBox = new nana::textbox(*m_pFriendpanel);
@@ -45,12 +49,57 @@ void ClientMainScene::CreateUI()
 	m_pTabbar->append(charset("채팅").to_bytes(unicode::utf8), *m_pChattingRoompanel);
 	m_pFriendSearchtBox->multi_lines(false);
 
-	m_pFriendSearchtBox->events().text_changed([&]() {SetSearchtext(); });
+	m_pFriendSearchtBox->events().text_changed([&]() {SetSearchtext(m_pFriendSearchtBox, m_pFriendListBox); });
 
 	m_pFriendpanel->bgcolor(colors::light_yellow);
 	m_pFriendSearchtBox->tip_string(charset("친구찾기").to_bytes(unicode::utf8));
 	m_pFriendListBox->append_header("");
 	m_pFriendListBox->show_header(false);
+
+#pragma region 채팅방
+	m_pSearchChatRoom = new nana::textbox(*m_pChattingRoompanel);
+	m_pChatRoomList = new nana::listbox(*m_pChattingRoompanel);
+	m_pMakeChattingRoomBtn = new nana::button(*m_pChattingRoompanel, charset("새로운채팅").to_bytes(unicode::utf8));
+	m_pChatComment = new nana::label(*m_pChattingRoompanel);
+	m_pSearchChatRoom->bgcolor(nana::colors::antique_white);
+	m_pSearchChatRoom->multi_lines(false).tip_string(charset("참여자 검색").to_bytes(unicode::utf8));
+	m_pMakeChattingRoomBtn->bgcolor(nana::colors::antique_white);
+	m_pChatRoomList->bgcolor(nana::colors::antique_white);
+
+	m_pChatRoomList->append_header("");
+	m_pChatRoomList->show_header(false);
+	m_pMakeChattingRoomBtn->events().click([&]()
+	{
+		// 대화 상태 선택 UI 생성
+		CreateChatUI();
+	});
+	std::string chatroomname;
+	for (auto iter : m_User->GetChattingRoomList())
+	{
+		if (iter->GetRoomName().empty())
+		{
+			// 친구 이름 , 참여한 이름 몇을 적음
+			for (auto iter2 : iter->GetJoinnedUsers())
+			{
+				chatroomname.append(iter2).append(",");
+			}
+			chatroomname.pop_back();
+			m_pChatRoomList->at(0).push_back(charset(chatroomname).to_bytes(unicode::utf8));
+		}
+		else
+		{
+			m_pChatRoomList->at(0).push_back(charset(iter->GetRoomName()).to_bytes(unicode::utf8));
+		}
+	}
+
+	place chatplc{ *m_pChattingRoompanel };
+	chatplc.div("vert<margin = [20,15,20,15] weight = 18% gap =10 search><margin = [20,0,20,0] chat>");
+	chatplc["search"] << *m_pSearchChatRoom << *m_pMakeChattingRoomBtn;
+	chatplc["chat"] << *m_pChatRoomList;
+	chatplc.collocate();
+
+#pragma endregion
+
 	for (auto iter : m_User->GetFriendList())
 	{
 		m_pFriendListBox->at(0).append(charset(iter->GetUserNick()).to_bytes(unicode::utf8));
@@ -72,22 +121,23 @@ void ClientMainScene::CreateUI()
 	plc.collocate();
 }
 
-void ClientMainScene::SetSearchtext()
+void ClientMainScene::SetSearchtext(nana::textbox* tb, nana::listbox* lb)
 {
-	std::wstring wstr = m_pFriendSearchtBox->caption_wstring();
+	std::string str;
+	std::wstring wstr = tb->caption_wstring();
 	std::list<std::string> searchlist;
 
-	if (convert_unicode_to_ansi_string(m_frSearchtext, wstr.c_str(), wstr.size()) != 0)
+	if (convert_unicode_to_ansi_string(str, wstr.c_str(), wstr.size()) != 0)
 	{
-		m_frSearchtext.clear();
+		str.clear();
 	}
 
 	for (auto iter : m_User->GetFriendList())
 	{
 		std::string nick = iter->GetUserNick();
-		if (!m_frSearchtext.empty())
+		if (!str.empty())
 		{
-			if (nick.find(m_frSearchtext) != std::string::npos)
+			if (nick.find(str) != std::string::npos)
 			{
 				searchlist.push_back(nick);
 				break;
@@ -96,20 +146,20 @@ void ClientMainScene::SetSearchtext()
 		else
 			searchlist.clear();
 	}
-	m_pFriendListBox->clear();
+	lb->clear();
 	if (!searchlist.empty())
 	{
 		for (auto iter : searchlist)
 		{
-			m_pFriendListBox->at(0).push_back(charset(iter).to_bytes(unicode::utf8));
+			lb->at(0).push_back(charset(iter).to_bytes(unicode::utf8));
 		}
 	}
 	else
 	{
-		if (m_frSearchtext.length() == 0)
+		if (str.length() == 0)
 			for (auto iter : m_User->GetFriendList())
 			{
-				m_pFriendListBox->at(0).push_back(charset(iter->GetUserNick()).to_bytes(unicode::utf8));
+				lb->at(0).push_back(charset(iter->GetUserNick()).to_bytes(unicode::utf8));
 			}
 	}
 	searchlist.clear();
@@ -293,4 +343,47 @@ void ClientMainScene::AddFriendResult(Stream & stream)
 		exec();
 		return;
 	}
+}
+
+void ClientMainScene::CreateChatUI()
+{
+	form _form = form(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
+	_form.bgcolor(nana::colors::light_yellow);
+	// 텍스트박스 하나 리스트박스 하나 확인 버튼 취소 버튼
+	textbox* _tb = new textbox(_form);
+	listbox* _lb = new listbox(_form);
+	label* _label = new label(_form, charset("친구목록").to_bytes(unicode::utf8));
+	button* _ok = new button(_form, charset("확인").to_bytes(unicode::utf8));
+	button* _close = new button(_form, charset("취소").to_bytes(unicode::utf8));
+
+	_tb->bgcolor(nana::colors::antique_white);
+	_ok->bgcolor(nana::colors::antique_white);
+	_close->bgcolor(nana::colors::antique_white);
+	_tb->multi_lines(false).tip_string(charset("대화상대 검색").to_bytes(unicode::utf8));
+	_lb->bgcolor(nana::colors::antique_white);
+
+	place _plc{ _form };
+	_plc.div("vert<margin = [25,5,25,5] weight = 20% search><weight = 10% lb>< \
+		weight = 40% list><><margin = [10,0,10,0] gap = 10 weight = 15% btn>");
+	_plc["search"] << *_tb;
+	_plc["btn"] << *_ok << *_close;
+	_plc["list"] << *_lb;
+	_plc["lb"] << *_label;
+
+	_lb->append_header("");
+	_lb->show_header(false);
+	_lb->checkable(true);
+	for (auto iter : m_User->GetFriendList())
+	{
+		_lb->at(0).push_back(iter->GetUserNick());
+	}
+
+	_tb->events().text_changed([&]()
+	{
+		SetSearchtext(_tb, _lb);
+	});
+
+	_plc.collocate();
+	_form.show();
+	exec();
 }

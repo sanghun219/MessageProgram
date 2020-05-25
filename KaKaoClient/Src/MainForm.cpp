@@ -14,7 +14,7 @@ void MainForm::Init()
 	m_pUser = std::make_unique<User>();
 
 	Singleton<SceneMgr>::GetInst()->SetSceen(CLIENT_SCENE_TYPE::LOGIN);
-
+	m_pSceen = Singleton<SceneMgr>::GetInst()->GetSceen();
 	m_timer.elapse([&]() {PacketProcess(); });
 	m_timer.interval(std::chrono::milliseconds(32));
 	m_timer.start();
@@ -26,6 +26,7 @@ void MainForm::UpdateSceen()
 	if (isNeedUpdate)
 	{
 		m_pSceen = Singleton<SceneMgr>::GetInst()->GetSceen();
+		std::cout << (int)m_pSceen->GetCurSceenType() << std::endl;
 		m_pSceen->SetNetwork(m_pTCPNetwork.get());
 		m_pSceen->SetUserInfo(m_pUser.get());
 		m_pSceen->CreateUI();
@@ -50,7 +51,11 @@ void MainForm::PacketProcess()
 		m_pSceen->ProcessPacket(static_cast<PACKET_ID>(id), *_pPacket->stream);
 		_pPacket.release();
 	}
-	m_pSceen->Update();
+	if (m_pSceen == nullptr)
+	{
+		m_pSceen = Singleton<SceneMgr>::GetInst()->GetSceen();
+		m_pSceen->Update();
+	}
 }
 
 MainForm::~MainForm()

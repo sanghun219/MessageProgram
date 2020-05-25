@@ -15,7 +15,7 @@ public:
 
 	virtual void CreateUI()override;
 
-	void SetSearchtext();
+	void SetSearchtext(nana::textbox* tb, nana::listbox* lb);
 private:
 	void FrMainFindIDBtn();
 	void FrInFindIDBtn();
@@ -24,6 +24,10 @@ private:
 	void FrMainOpenChatUI();
 	void FindResult(Stream& stream);
 	void AddFriendResult(Stream& stream);
+
+	//채팅방 UI
+	void CreateChatUI();
+
 private:
 	std::string m_frSearchtext;
 
@@ -43,4 +47,10 @@ private:
 	nana::button* m_pfrInFoundIDreqFriend;
 
 	std::string foundID;
+
+	// 채팅방
+	nana::textbox* m_pSearchChatRoom;
+	nana::listbox* m_pChatRoomList;
+	nana::button* m_pMakeChattingRoomBtn;
+	nana::label* m_pChatComment;
 };
