@@ -10,6 +10,8 @@ namespace PacketProc
 		m_PckIDtoFunc[(short)PACKET_ID::PCK_SIGN_UP_REQ] = &PckProcessor::Process_SIGN_UP_REQ;
 		m_PckIDtoFunc[(short)PACKET_ID::PCK_FIND_ID_REQ] = &PckProcessor::Process_PCK_FIND_ID_REQ;
 		m_PckIDtoFunc[(short)PACKET_ID::PCK_ADD_FRIEND_REQ] = &PckProcessor::Process_PCK_ADD_ID_REQ;
+		m_PckIDtoFunc[(short)PACKET_ID::PCK_FIND_NICK_REQ] = &PckProcessor::Process_PCK_FIND_NICKNAME_REQ;
+		m_PckIDtoFunc[(short)PACKET_ID::PCK_MAKE_CHATTING_ROOM_REQ] = &PckProcessor::Process_PCK_MAKE_CHATTING_ROOM_REQ;
 	}
 
 	ERR_PCK_CODE PckProcessor::Process(const Packet& inPacket)

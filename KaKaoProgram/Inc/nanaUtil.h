@@ -3,6 +3,7 @@
 #include <string.h>
 #include <regex>
 #include <vector>
+#include <ctime>
 
 inline DWORD convert_ansi_to_unicode_string(
 	__out std::wstring& unicode,
@@ -183,4 +184,20 @@ inline DWORD convert_utf8_to_unicode_string(
 		}
 	} while (false);
 	return error;
+}
+
+inline std::string ConvertCurrentDateTimeToString()
+{
+	time_t curr_time;
+	struct tm* curr_tm = nullptr;
+
+	curr_time = time(NULL);
+	localtime_s(curr_tm, &curr_time);
+
+	std::string rettime;
+	rettime += curr_tm->tm_hour + ":";
+	rettime += curr_tm->tm_min + ":";
+	rettime += curr_tm->tm_sec;
+
+	return rettime;
 }

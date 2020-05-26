@@ -18,7 +18,6 @@ bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
 		FindResult(stream);
 		break;
 	case (short)PACKET_ID::PCK_ADD_FRIEND_RES:
-		LOG("친구추가 완료!\n");
 		AddFriendResult(stream);
 		break;
 	default:
@@ -119,6 +118,15 @@ void ClientMainScene::CreateUI()
 	plc["tab"] << *m_pTabbar;
 	plc["tabframe"].fasten(*m_pFriendpanel).fasten(*m_pChattingRoompanel);
 	plc.collocate();
+
+	// 초기화
+	for (auto iter : m_User->GetFriendList())
+	{
+		std::string nickname = iter->GetUserNick();
+		std::string id = iter->GetUserID();
+		m_IDtoNick[id] = nickname;
+		m_NicktoID[nickname] = id;
+	}
 }
 
 void ClientMainScene::SetSearchtext(nana::textbox* tb, nana::listbox* lb)
@@ -140,7 +148,6 @@ void ClientMainScene::SetSearchtext(nana::textbox* tb, nana::listbox* lb)
 			if (nick.find(str) != std::string::npos)
 			{
 				searchlist.push_back(nick);
-				break;
 			}
 		}
 		else
@@ -200,7 +207,6 @@ void ClientMainScene::FrInFindIDBtn()
 
 	std::string sendtext;
 	convert_unicode_to_ansi_string(sendtext, m_pfindIDBox->caption_wstring().c_str(), m_pfindIDBox->caption_wstring().size());
-
 	Packet pck;
 	ZeroMemory(&pck, sizeof(pck));
 	pck.stream = new Stream();
@@ -250,12 +256,11 @@ void ClientMainScene::FindResult(Stream & stream)
 		button* _no = new button(_fr, charset("닫기").to_bytes(unicode::utf8));
 		_no->bgcolor(nana::colors::antique_white);
 		stream >> &foundID;
-		std::string capID = "ID : " + foundID;
+		std::string capID = "닉네임 : " + m_IDtoNick[foundID];
 		_lb->caption(charset(capID).to_bytes(unicode::utf8));
 		_ok->events().click([&]()
 		{
 			// 해당 유저에 친구 추가 쿼리 실행
-			std::cout << "find??" << std::endl;
 			Packet sendpack;
 			sendpack.stream = new Stream();
 			short pkid = static_cast<short>(PACKET_ID::PCK_ADD_FRIEND_REQ);
@@ -272,10 +277,6 @@ void ClientMainScene::FindResult(Stream & stream)
 			_no->close();
 			_ok->close();
 			_fr.close();
-
-			delete _lb;
-			delete _no;
-			delete _ok;
 		});
 
 		place _plc{ _fr };
@@ -373,9 +374,10 @@ void ClientMainScene::CreateChatUI()
 	_lb->append_header("");
 	_lb->show_header(false);
 	_lb->checkable(true);
+
 	for (auto iter : m_User->GetFriendList())
 	{
-		_lb->at(0).push_back(iter->GetUserNick());
+		_lb->at(0).push_back(charset(iter->GetUserNick()).to_bytes(unicode::utf8));
 	}
 
 	_tb->events().text_changed([&]()
@@ -383,7 +385,135 @@ void ClientMainScene::CreateChatUI()
 		SetSearchtext(_tb, _lb);
 	});
 
+	_ok->events().click([&]()
+	{
+		auto checkedbox = _lb->checked();
+		std::vector<std::string> names;
+		for (auto iter : checkedbox)
+		{
+			auto index = iter.item;
+			std::string name;
+			std::wstring wname;
+
+			// 해당 인덱스의 유저들을 찾고 대화창 만드는 함수로 넘겨주자
+			_lb->at(0).at(index).resolve_to(wname);
+			convert_unicode_to_ansi_string(name, wname.c_str(), wname.size());
+			names.push_back(name);
+		}
+		CreateChattingRoom(names);
+		_form.close();
+	});
+
+	_close->events().click([&]() {_form.close(); });
+
 	_plc.collocate();
 	_form.show();
 	exec();
+}
+
+void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& nicknames, int ChatRoomID, bool isCreatedRoom)
+{
+	for (auto iter : nicknames)
+		std::cout << iter << std::endl;
+
+	// 채팅방 만들기 , 기존 채팅방 ..
+	std::unique_ptr<ChatRoomUI> ui = std::make_unique<ChatRoomUI>();
+	std::unique_ptr<form> _fr = std::make_unique<nana::form>(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
+	std::unique_ptr<listbox> _chattings = std::make_unique<nana::listbox>(*_fr.get());
+	std::unique_ptr<textbox> _Input = std::make_unique<nana::textbox>(*_fr.get());
+	std::unique_ptr<button> _sendbtn = std::make_unique<nana::button>(*_fr.get(), charset("전송").to_bytes(unicode::utf8));
+	_fr->bgcolor(nana::colors::light_yellow);
+	_fr->events().destroy([&]()
+	{
+		for (auto iter = m_pChattingRooms.begin(); iter != m_pChattingRooms.end(); )
+		{
+		}
+	});
+	// 얘가 기존이 존재한 방인지 아닌지를 판단 해야함. 기존 존재방이면 정보 다 끌고 오자고
+
+	if (isCreatedRoom)
+	{
+		// 여기서 chatroonid는 룸id가 아니라 유저가 가지고 있는 채팅룸의 인덱스임
+		// 채팅룸 인덱스를 진짜번호로 바꿔야함.
+		for (auto iter : m_User->GetChattingRoomList()[ChatRoomID]->GetChattingDataList())
+		{
+			_chattings->at(0).push_back(iter.m_UserID);
+			std::string contentstime;
+			contentstime += iter.m_Contents;
+			contentstime += "  ";
+			contentstime += iter.m_Senddate;
+			_chattings->at(0).push_back(contentstime);
+		}
+	}
+	else
+	{
+		// 서버에 채팅방 만들어달라고 요청하고 룸넘버 받아야함.
+		short pkid = static_cast<short>(PACKET_ID::PCK_MAKE_CHATTING_ROOM_REQ);
+		Packet SendPacket;
+		SendPacket.stream = new Stream();
+		*SendPacket.stream << pkid;
+		m_tcpNetwork->SendPacket(SendPacket);
+	}
+
+	_chattings->bgcolor(nana::colors::antique_white);
+	_chattings->append_header("");
+	_chattings->show_header(false);
+
+	_Input->bgcolor(nana::colors::white);
+	_Input->multi_lines(true);
+	_Input->events().key_char([&](const nana::arg_keyboard& _arg)
+	{
+		if (_arg.key == keyboard::enter)
+		{
+			// send
+			std::cout << "Send!" << std::endl;
+			std::wstring ws = _Input->caption_wstring();
+			std::string s;
+			convert_unicode_to_ansi_string(s, ws.c_str(), ws.size());
+
+			if (!s.empty())
+			{
+				std::string date = ConvertCurrentDateTimeToString();
+				std::string id = m_User->GetUserID();
+				std::string nick = m_User->GetUserNick();
+				int RoomID = ChatRoomID;
+				std::string contents;
+				contents.assign(s.begin(), s.end());
+
+				Packet Sendpacket;
+				Sendpacket.stream = new Stream();
+				short pkid = static_cast<short>(PACKET_ID::PCK_SEND_CHATTING_DATA_REQ);
+				*Sendpacket.stream << pkid;
+				*Sendpacket.stream << ChatRoomID;
+				*Sendpacket.stream << date;
+				*Sendpacket.stream << id;
+				*Sendpacket.stream << nick;
+				*Sendpacket.stream << contents;
+
+				m_tcpNetwork->SendPacket(Sendpacket);
+			}
+		}
+	});
+
+	_sendbtn->bgcolor(nana::colors::antique_white);
+	_sendbtn->events().click([&]()
+	{
+		// send
+	});
+
+	std::unique_ptr<place> _plc = std::make_unique<place>(*_fr.get());
+	_plc->div("vert <><weight=10%><weight =60% chat><weight =30% gap = 10 arrange = [80%,20%] input>");
+	(*_plc)["chat"] << *_chattings.get();
+	(*_plc)["input"] << *_Input.get() << *_sendbtn.get();
+
+	_plc->collocate();
+	_fr->show();
+	exec();
+
+	ui->uiform = _fr.get();
+	ui->chatlist = _chattings.get();
+	ui->input = _Input.get();
+	ui->sendbtn = _sendbtn.get();
+
+	m_pChattingRooms.push_back(ui.get());
 }

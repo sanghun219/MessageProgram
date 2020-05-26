@@ -19,6 +19,8 @@ namespace PacketProc
 #pragma region ∏ﬁ¿Œ
 		ERR_PCK_CODE Process_PCK_FIND_ID_REQ(const Packet& RecvPacket);
 		ERR_PCK_CODE Process_PCK_ADD_ID_REQ(const Packet& RecvPacket);
+		ERR_PCK_CODE Process_PCK_FIND_NICKNAME_REQ(const Packet& RecvPacket);
+		ERR_PCK_CODE Process_PCK_MAKE_CHATTING_ROOM_REQ(const Packet& RecvPacket);
 #pragma endregion
 		std::recursive_mutex m_rm;
 	private:

@@ -5,6 +5,15 @@
 #include <nana/gui/widgets/panel.hpp>
 #include <nana/gui/widgets/group.hpp>
 #include <nana/gui/widgets/panel.hpp>
+
+struct ChatRoomUI
+{
+	nana::form* uiform;
+	nana::listbox* chatlist;
+	nana::textbox* input;
+	nana::button* sendbtn;
+};
+
 class ClientMainScene : public IClientScene
 {
 public:
@@ -27,8 +36,11 @@ private:
 
 	//Ã¤ÆÃ¹æ UI
 	void CreateChatUI();
-
+	void CreateChattingRoom(const std::vector<std::string>& nicknames, int ChatRoomID = -1, bool isCreatedRoom = false);
 private:
+	std::unordered_map<std::string, std::string> m_IDtoNick;
+	std::unordered_map<std::string, std::string> m_NicktoID;
+
 	std::string m_frSearchtext;
 
 	nana::textbox* m_pFriendSearchtBox;
@@ -53,4 +65,6 @@ private:
 	nana::listbox* m_pChatRoomList;
 	nana::button* m_pMakeChattingRoomBtn;
 	nana::label* m_pChatComment;
+
+	std::vector<ChatRoomUI*> m_pChattingRooms;
 };
