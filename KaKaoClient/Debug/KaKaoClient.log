@@ -1,9 +1,1 @@
-﻿  ClientMainScene.cpp
-c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoclient\src\clientmainscene.cpp(455): warning C4010: 한 줄로 된 주석에 줄 연속 문자가 있습니다.
-  ClientSceenLogin.cpp
-  IClientScene.cpp
-  MainForm.cpp
-  ClienMain.cpp
-  SceneMgr.cpp
-  코드를 생성하고 있습니다...
-  KaKaoClient.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\Debug\KaKaoClient.exe
+﻿  KaKaoClient.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\Debug\KaKaoClient.exe

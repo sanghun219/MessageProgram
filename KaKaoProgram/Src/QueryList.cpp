@@ -71,13 +71,19 @@ const std::string QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(INT64 ID)
 
 const string QUERY_FIND_NICKNAME_FROM_ID(string ID)
 {
-	std::string retval = QUERY_SET_VA_LIST("SELECT NickName FROM userinfo WHERE ID = '%s'", ID);
+	std::string retval = QUERY_SET_VA_LIST("SELECT NickName FROM userinfo WHERE ID = '%s';", ID);
 	return retval;
 }
 
-const string QUERY_MAKE_CHATTING_ROOM(string RommID)
+const string QUERY_MAKE_CHATTING_ROOM()
 {
-	std::string retval = QUERY_SET_VA_LIST("INSERT INTO chattingroom(roomID,RoomName)  \
-SELECT IFNULL(MAX(a.roomID),0)+1, '%s' FROM chattingroom AS a; ", RommID);
+	std::string retval = "CALL CreateGetRoomID();";
+	return retval;
+}
+
+const string QUERY_ROOMID_TO_USERID_INCHATTINGROOM(std::string roomID, std::string UserID)
+{
+	std::string retval = QUERY_SET_VA_LIST("INSERT INTO userinchatroom(roomID,UserID) SELECT %s ,'%s'", roomID.c_str(), UserID.c_str());
+	std::cout << retval << std::endl;
 	return retval;
 }

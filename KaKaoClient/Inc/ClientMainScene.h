@@ -33,13 +33,13 @@ private:
 	void FrMainOpenChatUI();
 	void FindResult(Stream& stream);
 	void AddFriendResult(Stream& stream);
+	void AddChattingRoom();
 
 	//Ã¤ÆÃ¹æ UI
 	void CreateChatUI();
-	void CreateChattingRoom(const std::vector<std::string>& nicknames, int ChatRoomID = -1, bool isCreatedRoom = false);
+	void CreateChattingRoom(const std::vector<std::string>& ids, int ChatRoomID = -1, bool isCreatedRoom = false);
 private:
 	std::unordered_map<std::string, std::string> m_IDtoNick;
-	std::unordered_map<std::string, std::string> m_NicktoID;
 
 	std::string m_frSearchtext;
 

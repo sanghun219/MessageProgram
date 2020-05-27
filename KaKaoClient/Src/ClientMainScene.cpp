@@ -20,6 +20,9 @@ bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
 	case (short)PACKET_ID::PCK_ADD_FRIEND_RES:
 		AddFriendResult(stream);
 		break;
+	case (short)PACKET_ID::PCK_MAKE_CHATTING_ROOM_RES:
+		AddChattingRoom();
+		// 방에대한처리
 	default:
 		break;
 	}
@@ -125,7 +128,6 @@ void ClientMainScene::CreateUI()
 		std::string nickname = iter->GetUserNick();
 		std::string id = iter->GetUserID();
 		m_IDtoNick[id] = nickname;
-		m_NicktoID[nickname] = id;
 	}
 }
 
@@ -346,6 +348,10 @@ void ClientMainScene::AddFriendResult(Stream & stream)
 	}
 }
 
+void ClientMainScene::AddChattingRoom()
+{
+}
+
 void ClientMainScene::CreateChatUI()
 {
 	form _form = form(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
@@ -374,10 +380,11 @@ void ClientMainScene::CreateChatUI()
 	_lb->append_header("");
 	_lb->show_header(false);
 	_lb->checkable(true);
-
+	std::vector<std::string> _vm;
 	for (auto iter : m_User->GetFriendList())
 	{
 		_lb->at(0).push_back(charset(iter->GetUserNick()).to_bytes(unicode::utf8));
+		_vm.push_back(iter->GetUserID());
 	}
 
 	_tb->events().text_changed([&]()
@@ -388,19 +395,14 @@ void ClientMainScene::CreateChatUI()
 	_ok->events().click([&]()
 	{
 		auto checkedbox = _lb->checked();
-		std::vector<std::string> names;
+		std::vector<std::string> ids;
 		for (auto iter : checkedbox)
 		{
 			auto index = iter.item;
-			std::string name;
-			std::wstring wname;
-
-			// 해당 인덱스의 유저들을 찾고 대화창 만드는 함수로 넘겨주자
-			_lb->at(0).at(index).resolve_to(wname);
-			convert_unicode_to_ansi_string(name, wname.c_str(), wname.size());
-			names.push_back(name);
+			std::string id = _vm[index];
+			ids.push_back(id);
 		}
-		CreateChattingRoom(names);
+		CreateChattingRoom(ids);
 		_form.close();
 	});
 
@@ -411,9 +413,9 @@ void ClientMainScene::CreateChatUI()
 	exec();
 }
 
-void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& nicknames, int ChatRoomID, bool isCreatedRoom)
+void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, int ChatRoomID, bool isCreatedRoom)
 {
-	for (auto iter : nicknames)
+	for (auto iter : ids)
 		std::cout << iter << std::endl;
 
 	// 채팅방 만들기 , 기존 채팅방 ..
@@ -434,9 +436,10 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& nicknam
 	if (isCreatedRoom)
 	{
 		// 여기서 chatroonid는 룸id가 아니라 유저가 가지고 있는 채팅룸의 인덱스임
-		// 채팅룸 인덱스를 진짜번호로 바꿔야함.
+		// 채팅룸 인덱스를 진짜번호로 바꿔야함. db상 조인했을때 나타나는순서대로 기입될것
 		for (auto iter : m_User->GetChattingRoomList()[ChatRoomID]->GetChattingDataList())
 		{
+			// Userid + data + 날짜
 			_chattings->at(0).push_back(iter.m_UserID);
 			std::string contentstime;
 			contentstime += iter.m_Contents;
@@ -452,6 +455,12 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& nicknam
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
 		*SendPacket.stream << pkid;
+		*SendPacket.stream << ids.size();
+		for (auto iter : ids)
+		{
+			*SendPacket.stream << iter;
+		}
+
 		m_tcpNetwork->SendPacket(SendPacket);
 	}
 
@@ -498,7 +507,32 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& nicknam
 	_sendbtn->bgcolor(nana::colors::antique_white);
 	_sendbtn->events().click([&]()
 	{
-		// send
+		std::cout << "Send!" << std::endl;
+		std::wstring ws = _Input->caption_wstring();
+		std::string s;
+		convert_unicode_to_ansi_string(s, ws.c_str(), ws.size());
+
+		if (!s.empty())
+		{
+			std::string date = ConvertCurrentDateTimeToString();
+			std::string id = m_User->GetUserID();
+			std::string nick = m_User->GetUserNick();
+			int RoomID = ChatRoomID;
+			std::string contents;
+			contents.assign(s.begin(), s.end());
+
+			Packet Sendpacket;
+			Sendpacket.stream = new Stream();
+			short pkid = static_cast<short>(PACKET_ID::PCK_SEND_CHATTING_DATA_REQ);
+			*Sendpacket.stream << pkid;
+			*Sendpacket.stream << ChatRoomID;
+			*Sendpacket.stream << date;
+			*Sendpacket.stream << id;
+			*Sendpacket.stream << nick;
+			*Sendpacket.stream << contents;
+
+			m_tcpNetwork->SendPacket(Sendpacket);
+		}
 	});
 
 	std::unique_ptr<place> _plc = std::make_unique<place>(*_fr.get());

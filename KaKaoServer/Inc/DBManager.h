@@ -20,6 +20,7 @@ public:
 	std::string GetQuery(const char* query, ...);
 	MYSQL_ROW GetsqlRow()const { return sql_row; }
 	MYSQL_RES* GetsqlRes()const;
+	MYSQL* GetConn()const { return connection; }
 private:
 	MYSQL* connection;
 	MYSQL conn;

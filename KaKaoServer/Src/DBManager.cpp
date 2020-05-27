@@ -31,8 +31,8 @@ int DBManager::InitDBManager()
 		LOG("mysql_init ERROR!");
 		return -1;
 	}
-
-	connection = mysql_real_connect(&conn, host, user, pw, db, 3306, (const char*)nullptr, 0);
+	mysql_set_server_option(&conn, enum_mysql_set_option::MYSQL_OPTION_MULTI_STATEMENTS_ON);
+	connection = mysql_real_connect(&conn, host, user, pw, db, 3306, (const char*)nullptr, CLIENT_MULTI_STATEMENTS);
 	if (connection == nullptr)
 	{
 		LOG("%d ERROR : %s, %d\n", mysql_errno(&conn), mysql_errno(&conn));
@@ -71,7 +71,7 @@ int DBManager::ProcessQuery(const char* query, ...)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 
-	static char copyQuery[1024];
+	static char copyQuery[5096] = { 0, };
 	va_list ap;
 	va_start(ap, query);
 	vsprintf_s(copyQuery + strlen(copyQuery), sizeof(copyQuery), query, ap);
