@@ -78,7 +78,8 @@ bool TCPNetwork::ReceviePacket()
 
 	if (FD_ISSET(m_PTCPSocket->GetSocket(), &readset))
 	{
-		UCHAR data[1500];
+		// TODO : 잠정적 문제.. 데이터가 150000을 넘어가면 어떻게할것인가?
+		UCHAR data[150000];
 
 		ZeroMemory(data, sizeof(data));
 		int recvret = m_PTCPSocket->Recv(data, sizeof(data));

@@ -8,6 +8,9 @@ void ClientMainScene::Update()
 {
 	if (Singleton<SceneMgr>::GetInst()->GetSceen()->GetCurSceenType() != CLIENT_SCENE_TYPE::MAIN)
 		return;
+
+	// 클라이언트가 접속했다면 모든 채팅방 , 유저 정보를 실시간으로 받아야함. 쿼리를 계속 요청해서 변화가
+	// 있으면 계속 추가하도록하자.
 }
 
 bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
@@ -21,7 +24,7 @@ bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
 		AddFriendResult(stream);
 		break;
 	case (short)PACKET_ID::PCK_MAKE_CHATTING_ROOM_RES:
-		AddChattingRoom();
+		AddChattingRoom(stream);
 		// 방에대한처리
 	default:
 		break;
@@ -32,6 +35,20 @@ bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
 
 void ClientMainScene::CreateUI()
 {
+	// 초기화
+	for (auto iter : m_User->GetFriendList())
+	{
+		std::string nickname = iter->GetUserNick();
+		std::string id = iter->GetUserID();
+		m_IDtoNick[id] = nickname;
+	}
+
+	for (int i = 0; i < m_User->GetChattingRoomList().size(); i++)
+	{
+		m_RoomListIdxtoRoomID[i] = m_User->GetChattingRoomList().at(i)->GetRoomID();
+		m_RoomIDtoRoomListIdx[m_User->GetChattingRoomList().at(i)->GetRoomID()] = i;
+	}
+
 	m_pform = new form(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
 	m_pform->bgcolor(colors::light_yellow);
 	// 패널을 2개두고 탭바에의해서 전환되도록해야함. 탭바에 탭패이지를 붙여야함.
@@ -51,7 +68,7 @@ void ClientMainScene::CreateUI()
 	m_pTabbar->append(charset("채팅").to_bytes(unicode::utf8), *m_pChattingRoompanel);
 	m_pFriendSearchtBox->multi_lines(false);
 
-	m_pFriendSearchtBox->events().text_changed([&]() {SetSearchtext(m_pFriendSearchtBox, m_pFriendListBox); });
+	m_pFriendSearchtBox->events().text_changed([&]() {SetSearchtextInFriendList(m_pFriendSearchtBox, m_pFriendListBox); });
 
 	m_pFriendpanel->bgcolor(colors::light_yellow);
 	m_pFriendSearchtBox->tip_string(charset("친구찾기").to_bytes(unicode::utf8));
@@ -67,6 +84,11 @@ void ClientMainScene::CreateUI()
 	m_pSearchChatRoom->multi_lines(false).tip_string(charset("참여자 검색").to_bytes(unicode::utf8));
 	m_pMakeChattingRoomBtn->bgcolor(nana::colors::antique_white);
 	m_pChatRoomList->bgcolor(nana::colors::antique_white);
+
+	m_pSearchChatRoom->events().text_changed([&]()
+	{
+		SetSearchtextInChattingList(m_pSearchChatRoom, m_pChatRoomList);
+	});
 
 	m_pChatRoomList->append_header("");
 	m_pChatRoomList->show_header(false);
@@ -87,13 +109,25 @@ void ClientMainScene::CreateUI()
 			}
 			chatroomname.pop_back();
 			m_pChatRoomList->at(0).push_back(charset(chatroomname).to_bytes(unicode::utf8));
+			chatroomname.clear();
 		}
 		else
 		{
 			m_pChatRoomList->at(0).push_back(charset(iter->GetRoomName()).to_bytes(unicode::utf8));
+			chatroomname.clear();
 		}
 	}
 
+	auto a = m_pChatRoomList->events().dbl_click([&](const nana::arg_mouse& arg)
+	{
+		for (auto iter : m_pChatRoomList->selected())
+		{
+			std::vector<std::string> vs;
+			int chatroomid = m_RoomListIdxtoRoomID[iter.item];
+			CreateChattingRoom(vs, chatroomid, true);
+			// 이제 해야하는게 이거 제대로 적용됐는지 볼려면 채팅시스템만들어야함
+		}
+	});
 	place chatplc{ *m_pChattingRoompanel };
 	chatplc.div("vert<margin = [20,15,20,15] weight = 18% gap =10 search><margin = [20,0,20,0] chat>");
 	chatplc["search"] << *m_pSearchChatRoom << *m_pMakeChattingRoomBtn;
@@ -107,7 +141,17 @@ void ClientMainScene::CreateUI()
 		m_pFriendListBox->at(0).append(charset(iter->GetUserNick()).to_bytes(unicode::utf8));
 	}
 
-	m_pFriendListBox->events().dbl_click([&]() {FrMainOpenChatUI(); });
+	m_pFriendListBox->events().dbl_click([&]()
+	{
+		std::vector<std::string> vs;
+		for (auto iter : m_pFriendListBox->selected())
+		{
+			int idx = iter.item;
+			vs.push_back(m_User->GetFriendList()[idx]->GetUserID());
+			CreateChattingRoom(vs);
+			// 친구 아이디 누르면 해당 인덱스의 유저아이디를 통해서 채팅방을열도록함.
+		}
+	});
 
 	place friendplc{ *m_pFriendpanel };
 
@@ -121,17 +165,9 @@ void ClientMainScene::CreateUI()
 	plc["tab"] << *m_pTabbar;
 	plc["tabframe"].fasten(*m_pFriendpanel).fasten(*m_pChattingRoompanel);
 	plc.collocate();
-
-	// 초기화
-	for (auto iter : m_User->GetFriendList())
-	{
-		std::string nickname = iter->GetUserNick();
-		std::string id = iter->GetUserID();
-		m_IDtoNick[id] = nickname;
-	}
 }
 
-void ClientMainScene::SetSearchtext(nana::textbox* tb, nana::listbox* lb)
+void ClientMainScene::SetSearchtextInFriendList(nana::textbox* tb, nana::listbox* lb)
 {
 	std::string str;
 	std::wstring wstr = tb->caption_wstring();
@@ -174,6 +210,68 @@ void ClientMainScene::SetSearchtext(nana::textbox* tb, nana::listbox* lb)
 	searchlist.clear();
 }
 
+void ClientMainScene::SetSearchtextInChattingList(nana::textbox * tb, nana::listbox * lb)
+{
+	std::string str;
+	std::wstring wstr = tb->caption_wstring();
+	std::list<std::string> searchlist;
+
+	if (convert_unicode_to_ansi_string(str, wstr.c_str(), wstr.size()) != 0)
+	{
+		str.clear();
+	}
+
+	for (auto iter : m_User->GetChattingRoomList())
+	{
+		std::string RoomName = iter->GetRoomName();
+		if (RoomName.empty())
+		{
+			std::string caption;
+			for (auto iter2 : iter->GetJoinnedUsers())
+			{
+				caption.append(iter2);
+				caption.push_back(',');
+			}
+			caption.pop_back();
+
+			if (!str.empty())
+			{
+				if (caption.find(str) != std::string::npos)
+				{
+					searchlist.push_back(caption);
+				}
+			}
+			else
+				searchlist.clear();
+		}
+	}
+	lb->clear();
+	if (!searchlist.empty())
+	{
+		for (auto iter : searchlist)
+		{
+			lb->at(0).push_back(charset(iter).to_bytes(unicode::utf8));
+		}
+	}
+	else
+	{
+		if (str.length() == 0)
+			for (auto iter : m_User->GetChattingRoomList())
+			{
+				std::string caption;
+				for (auto iter2 : iter->GetJoinnedUsers())
+				{
+					caption.append(iter2);
+					caption.push_back(',');
+				}
+				caption.pop_back();
+				lb->at(0).push_back(charset(caption).to_bytes(unicode::utf8));
+				caption.clear();
+			}
+	}
+	searchlist.clear();
+}
+
 void ClientMainScene::FrMainFindIDBtn()
 {
 	m_pFindIDuiForm = new nana::form(API::make_center(250, 200), nana::appear::decorate<appear::taskbar, appear::sizable>());
@@ -208,7 +306,8 @@ void ClientMainScene::FrInFindIDBtn()
 	// ID 있는지 검색 쿼리 진행
 
 	std::string sendtext;
-	convert_unicode_to_ansi_string(sendtext, m_pfindIDBox->caption_wstring().c_str(), m_pfindIDBox->caption_wstring().size());
+	std::wstring wtext = m_pfindIDBox->caption_wstring();
+	convert_unicode_to_ansi_string(sendtext, wtext.c_str(), wtext.size());
 	Packet pck;
 	ZeroMemory(&pck, sizeof(pck));
 	pck.stream = new Stream();
@@ -229,7 +328,8 @@ void ClientMainScene::FrInCloseFindIDFormBtn()
 void ClientMainScene::FrInIDBox()
 {
 	std::string convertedText;
-	convert_unicode_to_ansi_string(convertedText, m_pfindIDBox->caption_wstring().c_str(), m_pfindIDBox->caption_wstring().size());
+	std::wstring wtext = m_pfindIDBox->caption_wstring();
+	convert_unicode_to_ansi_string(convertedText, wtext.c_str(), wtext.size());
 	if (convertedText.length() < 1)return;
 	if (!m_pfrInOkBtn->enabled())
 		m_pfrInOkBtn->enabled(true);
@@ -249,6 +349,31 @@ void ClientMainScene::FindResult(Stream & stream)
 	stream >> &isfind;
 	if (isfind)
 	{
+		stream >> &foundID;
+		if (foundID == m_User->GetUserID())
+		{
+			// 자기자신은 친구로할수없음
+			form _fr = form(API::make_center(200, 150), nana::appear::decorate<appear::taskbar, appear::sizable>());
+			_fr.bgcolor(nana::colors::light_yellow);
+			label* _lb = new label(_fr, charset("자기 자신은 추가할 수 없습니다").to_bytes(nana::unicode::utf8));
+
+			button* _ok = new button(_fr, charset("확인").to_bytes(unicode::utf8));
+			_ok->bgcolor(nana::colors::antique_white);
+			_ok->events().click([&]()
+			{
+				_fr.close();
+			});
+			place _plc{ _fr };
+			_plc.div("vert maring = [20,10,20]< ><<weight = 10 >lb<weight = 10>><><weight = 30% gap = 10 btn>");
+			_plc["lb"] << *_lb;
+			_plc["btn"] << *_ok;
+			_plc.collocate();
+
+			_fr.show();
+			exec();
+			return;
+		}
+
 		// 창하나 띄워서 찾은 아이디 텍스트로 띄워주고 친구추가 할거냐고 물어보기
 		form _fr = form(API::make_center(200, 150), nana::appear::decorate<appear::taskbar, appear::sizable>());
 		_fr.bgcolor(nana::colors::light_yellow);
@@ -257,7 +382,7 @@ void ClientMainScene::FindResult(Stream & stream)
 		_ok->bgcolor(nana::colors::antique_white);
 		button* _no = new button(_fr, charset("닫기").to_bytes(unicode::utf8));
 		_no->bgcolor(nana::colors::antique_white);
-		stream >> &foundID;
+
 		std::string capID = "닉네임 : " + m_IDtoNick[foundID];
 		_lb->caption(charset(capID).to_bytes(unicode::utf8));
 		_ok->events().click([&]()
@@ -348,8 +473,24 @@ void ClientMainScene::AddFriendResult(Stream & stream)
 	}
 }
 
-void ClientMainScene::AddChattingRoom()
+void ClientMainScene::AddChattingRoom(Stream& stream)
 {
+	// 채팅방 친구 목록 받아오니 이걸로 ui에 추가
+	int numrows = -1;
+	stream >> &numrows;
+	std::string nicks;
+	nicks.append(m_User->GetUserNick());
+	nicks.push_back(',');
+	for (int i = 0; i < numrows - 1; i++)
+	{
+		std::string id;
+		stream >> &id;
+
+		nicks.append(m_IDtoNick[id]);
+		nicks.push_back(',');
+	}
+	nicks.pop_back();
+	m_pChatRoomList->at(0).push_back(charset(nicks).to_bytes(nana::unicode::utf8));
 }
 
 void ClientMainScene::CreateChatUI()
@@ -389,7 +530,7 @@ void ClientMainScene::CreateChatUI()
 
 	_tb->events().text_changed([&]()
 	{
-		SetSearchtext(_tb, _lb);
+		SetSearchtextInFriendList(_tb, _lb);
 	});
 
 	_ok->events().click([&]()
@@ -415,13 +556,13 @@ void ClientMainScene::CreateChatUI()
 
 void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, int ChatRoomID, bool isCreatedRoom)
 {
-	for (auto iter : ids)
-		std::cout << iter << std::endl;
-
 	// 채팅방 만들기 , 기존 채팅방 ..
 	std::unique_ptr<ChatRoomUI> ui = std::make_unique<ChatRoomUI>();
 	std::unique_ptr<form> _fr = std::make_unique<nana::form>(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
 	std::unique_ptr<listbox> _chattings = std::make_unique<nana::listbox>(*_fr.get());
+
+	_chattings->fgcolor(nana::colors::black);
+
 	std::unique_ptr<textbox> _Input = std::make_unique<nana::textbox>(*_fr.get());
 	std::unique_ptr<button> _sendbtn = std::make_unique<nana::button>(*_fr.get(), charset("전송").to_bytes(unicode::utf8));
 	_fr->bgcolor(nana::colors::light_yellow);
@@ -437,15 +578,42 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 	{
 		// 여기서 chatroonid는 룸id가 아니라 유저가 가지고 있는 채팅룸의 인덱스임
 		// 채팅룸 인덱스를 진짜번호로 바꿔야함. db상 조인했을때 나타나는순서대로 기입될것
-		for (auto iter : m_User->GetChattingRoomList()[ChatRoomID]->GetChattingDataList())
+
+		for (auto iter : m_User->GetChattingRoomList()[m_RoomIDtoRoomListIdx[ChatRoomID]]->GetChattingDataList())
 		{
 			// Userid + data + 날짜
-			_chattings->at(0).push_back(iter.m_UserID);
-			std::string contentstime;
-			contentstime += iter.m_Contents;
-			contentstime += "  ";
-			contentstime += iter.m_Senddate;
-			_chattings->at(0).push_back(contentstime);
+			std::string id = "보낸 사람 : ";
+			id.append(iter.m_UserID);
+			_chattings->at(0).push_back(charset(id).to_bytes(nana::unicode::utf8));
+			std::string contentstime = "[";
+			if (iter.m_Contents.length() > 25)
+			{
+				int count = iter.m_Contents.length() / 25;
+				for (int i = 0; i < count; i++)
+				{
+					char copydata[25] = { 0, };
+					memcpy(copydata, iter.m_Contents.c_str(), 25 - 1);
+					contentstime.append(copydata);
+					if (i != count - 1)
+					{
+						_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+						contentstime.clear();
+					}
+					else
+					{
+						contentstime.append("]  ");
+						contentstime += iter.m_Senddate;
+					}
+				}
+			}
+			else
+			{
+				contentstime.append(iter.m_Contents);
+				contentstime += "]  ";
+				contentstime += iter.m_Senddate;
+			}
+
+			_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
 		}
 	}
 	else
@@ -460,16 +628,18 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 		{
 			*SendPacket.stream << iter;
 		}
-
+		std::string myID = m_User->GetUserID();
+		*SendPacket.stream << myID;
 		m_tcpNetwork->SendPacket(SendPacket);
 	}
 
 	_chattings->bgcolor(nana::colors::antique_white);
 	_chattings->append_header("");
 	_chattings->show_header(false);
-
+	_chattings->column_at(0).fit_content(300);
+	_chattings->scroll(true);
 	_Input->bgcolor(nana::colors::white);
-	_Input->multi_lines(true);
+	_Input->line_wrapped(true);
 	_Input->events().key_char([&](const nana::arg_keyboard& _arg)
 	{
 		if (_arg.key == keyboard::enter)
@@ -479,7 +649,7 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 			std::wstring ws = _Input->caption_wstring();
 			std::string s;
 			convert_unicode_to_ansi_string(s, ws.c_str(), ws.size());
-
+			std::cout << s << std::endl;
 			if (!s.empty())
 			{
 				std::string date = ConvertCurrentDateTimeToString();
@@ -500,6 +670,41 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 				*Sendpacket.stream << contents;
 
 				m_tcpNetwork->SendPacket(Sendpacket);
+
+				std::string _id = "보낸 사람 : ";
+				_id.append(id);
+				_chattings->at(0).push_back(charset(_id).to_bytes(nana::unicode::utf8));
+				std::string contentstime = "[";
+				if (contents.length() > 25)
+				{
+					int count = contents.length() / 25;
+					for (int i = 0; i < count; i++)
+					{
+						char copydata[25] = { 0, };
+						memcpy(copydata, contents.c_str(), 25 - 1);
+						contentstime.append(copydata);
+						if (i != count - 1)
+						{
+							_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+							contentstime.clear();
+						}
+						else
+						{
+							contentstime.append("]  ");
+							contentstime += date;
+						}
+					}
+				}
+				else
+				{
+					contentstime.append(contents);
+					contentstime += "]  ";
+					contentstime += date;
+				}
+
+				_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+				_Input->reset();
+				_chattings->scroll(true);
 			}
 		}
 	});
@@ -532,6 +737,40 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 			*Sendpacket.stream << contents;
 
 			m_tcpNetwork->SendPacket(Sendpacket);
+			std::string _id = "보낸 사람 : ";
+			_id.append(id);
+			_chattings->at(0).push_back(charset(_id).to_bytes(nana::unicode::utf8));
+			std::string contentstime = "[";
+			if (contents.length() > 25)
+			{
+				int count = contents.length() / 25;
+				for (int i = 0; i < count; i++)
+				{
+					char copydata[25] = { 0, };
+					memcpy(copydata, contents.c_str(), 25 - 1);
+					contentstime.append(copydata);
+					if (i != count - 1)
+					{
+						_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+						contentstime.clear();
+					}
+					else
+					{
+						contentstime.append("]  ");
+						contentstime += date;
+					}
+				}
+			}
+			else
+			{
+				contentstime.append(contents);
+				contentstime += "]  ";
+				contentstime += date;
+			}
+
+			_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+			_chattings->scroll(true);
+			_Input->reset();
 		}
 	});
 

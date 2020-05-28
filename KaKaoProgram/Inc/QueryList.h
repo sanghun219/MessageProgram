@@ -10,4 +10,4 @@ const  string QUERY_FIND_JOINNEDUSERS_FROM_ROOMID(INT64 ID);
 const  string QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(INT64 ID);
 const string QUERY_FIND_NICKNAME_FROM_ID(string ID);
 const string QUERY_MAKE_CHATTING_ROOM();
-const string QUERY_ROOMID_TO_USERID_INCHATTINGROOM(std::string roomID, std::string UserID);
+const string QUERY_ROOMID_TO_USERID_INCHATTINGROOM(const int roomID, const std::string UserID);

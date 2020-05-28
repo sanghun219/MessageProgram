@@ -102,10 +102,13 @@ namespace PacketProc
 			{
 				ChattingRoom* room = new ChattingRoom();
 				INT64 RoomID = atoi(row[0]);
-				std::string RoomName = row[1];
+				// 룸 네임이 없으면
+				if (row[1] != nullptr)
+				{
+					std::string RoomName = row[1];
+					room->SetRoomName(RoomName);
+				}
 				room->SetRoomID(RoomID);
-				room->SetRoomName(RoomName);
-
 				chattingRoomList.push_back(room);
 			}
 
@@ -122,7 +125,7 @@ namespace PacketProc
 				res = Singleton<DBManager>::GetInst()->GetsqlRes();
 				fieldCount = mysql_num_fields(res);
 
-				for (size_t i = 0; i < fieldCount; i++)
+				while (row = mysql_fetch_row(res))
 				{
 					iter->SetJoinnedUser(row[0]);
 				}
@@ -134,22 +137,24 @@ namespace PacketProc
 				{
 					return ERR_PCK_CODE::ERR_PCK_NOTEXISTQUERY;
 				}
-				fieldCount = mysql_num_fields(res);
-
+				fieldCount = mysql_num_rows(res);
+				res = Singleton<DBManager>::GetInst()->GetsqlRes();
 				if (fieldCount == 0)
 				{
 				}
 				else
 				{
-					ChattingData chatdata;
-					chatdata.m_RoomID = atoi(row[0]);
-					chatdata.m_Sequence = atoi(row[1]);
-					chatdata.m_Senddate = row[2];
-					chatdata.m_UserID = row[3];
-					chatdata.m_Nickname = row[4];
-					chatdata.m_Contents = row[5];
-
-					iter->SetChatData(chatdata);
+					while (row = mysql_fetch_row(res))
+					{
+						ChattingData chatdata;
+						chatdata.m_RoomID = atoi(row[0]);
+						chatdata.m_Sequence = atoi(row[1]);
+						chatdata.m_Senddate = row[2];
+						chatdata.m_UserID = row[3];
+						chatdata.m_Nickname = row[4];
+						chatdata.m_Contents = row[5];
+						iter->SetChatData(chatdata);
+					}
 				}
 			}
 

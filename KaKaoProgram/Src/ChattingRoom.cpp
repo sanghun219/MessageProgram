@@ -45,6 +45,7 @@ void ChattingRoom::Read(Stream& instream)
 	}
 
 	instream >> &size;
+	std::cout << "read size : " << size << std::endl;
 	for (INT32 i = 0; i < size; i++)
 	{
 		ChattingData chatdata;
@@ -54,6 +55,7 @@ void ChattingRoom::Read(Stream& instream)
 		instream >> &chatdata.m_UserID;
 		instream >> &chatdata.m_Nickname;
 		instream >> &chatdata.m_Contents;
+		m_ChattingDataList.push_back(chatdata);
 	}
 }
 

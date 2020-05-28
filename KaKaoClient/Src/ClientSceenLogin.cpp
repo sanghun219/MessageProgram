@@ -175,6 +175,12 @@ void ClientSceenLogin::LoginResult(Stream& stream)
 		return;
 	}
 	m_User->Read(stream);
+
+	for (auto iter : m_User->GetChattingRoomList())
+	{
+		std::cout << iter->GetChattingDataList().size() << std::endl;
+	}
+
 	m_loginBtn->caption(charset("로그인 완료!").to_bytes(unicode::utf8));
 	Singleton<SceneMgr>::GetInst()->SetSceen(CLIENT_SCENE_TYPE::MAIN);
 

@@ -24,7 +24,8 @@ public:
 
 	virtual void CreateUI()override;
 
-	void SetSearchtext(nana::textbox* tb, nana::listbox* lb);
+	void SetSearchtextInFriendList(nana::textbox* tb, nana::listbox* lb);
+	void SetSearchtextInChattingList(nana::textbox* tb, nana::listbox* lb);
 private:
 	void FrMainFindIDBtn();
 	void FrInFindIDBtn();
@@ -33,14 +34,15 @@ private:
 	void FrMainOpenChatUI();
 	void FindResult(Stream& stream);
 	void AddFriendResult(Stream& stream);
-	void AddChattingRoom();
+	void AddChattingRoom(Stream& stream);
 
 	//Ã¤ÆÃ¹æ UI
 	void CreateChatUI();
 	void CreateChattingRoom(const std::vector<std::string>& ids, int ChatRoomID = -1, bool isCreatedRoom = false);
 private:
 	std::unordered_map<std::string, std::string> m_IDtoNick;
-
+	std::unordered_map<int, int> m_RoomIDtoRoomListIdx;
+	std::unordered_map<int, int> m_RoomListIdxtoRoomID;
 	std::string m_frSearchtext;
 
 	nana::textbox* m_pFriendSearchtBox;

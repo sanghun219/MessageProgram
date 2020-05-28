@@ -121,6 +121,7 @@ ERR_CODE NetworkLogic::ConnectSessionNClient(SockAddress& addr, TCPSocket& clien
 
 	m_pdequeSession.push_back(session);
 	LOG("%d번 세션이 연결되었습니다", session->idx);
+
 	return ERR_CODE::ERR_NONE;
 }
 

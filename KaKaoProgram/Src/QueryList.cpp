@@ -41,7 +41,8 @@ const std::string QUERY_FIND_FRIENDS_INFO(std::string ID)
 
 const std::string QUERY_FIND_CHATTINGROOM_FROM_USERID(std::string ID)
 {
-	std::string retstr = "SELECT * FROM chattingroom WHERE RoomID IN ("
+	std::string retstr =
+		"SELECT * FROM chattingroom WHERE RoomID IN ("
 		"SELECT uicr.roomID FROM userinchatroom AS uicr "
 		"WHERE uicr.UserID = '";
 	retstr += ID;
@@ -51,20 +52,18 @@ const std::string QUERY_FIND_CHATTINGROOM_FROM_USERID(std::string ID)
 
 const std::string QUERY_FIND_JOINNEDUSERS_FROM_ROOMID(INT64 ID)
 {
-	std::string retstr = " SELECT NickName FROM userinfo WHERE ID IN "
-		"( SELECT UserID FROM userinchatroom WHERE roomID IN ( "
-		"SELECT chr.RoomID FROM chattingroom AS chr "
-		"WHERE chr.roomID = ";
-	retstr += static_cast<int>(ID);
-	retstr += "))";
+	std::string retstr = QUERY_SET_VA_LIST(" SELECT NickName FROM userinfo WHERE ID IN \
+		( SELECT UserID FROM userinchatroom WHERE roomID IN ( \
+		SELECT chr.RoomID FROM chattingroom AS chr \
+		WHERE chr.roomID = %d ))", ID);
+
 	return retstr;
 }
 
 const std::string QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(INT64 ID)
 {
-	std::string retstr = "SELECT RoomID, Sequence, SendDate, ID, Nickname, Contents FROM chattingdata"
-		"WHERE RoomID = ";
-	retstr += static_cast<int>(ID);
+	std::string retstr = QUERY_SET_VA_LIST("SELECT RoomID, Sequence, SendDate, ID, \
+		Nickname, Contents FROM chattingdata WHERE RoomID = %d", ID);
 
 	return retstr;
 }
@@ -81,9 +80,9 @@ const string QUERY_MAKE_CHATTING_ROOM()
 	return retval;
 }
 
-const string QUERY_ROOMID_TO_USERID_INCHATTINGROOM(std::string roomID, std::string UserID)
+const string QUERY_ROOMID_TO_USERID_INCHATTINGROOM(int roomID, std::string UserID)
 {
-	std::string retval = QUERY_SET_VA_LIST("INSERT INTO userinchatroom(roomID,UserID) SELECT %s ,'%s'", roomID.c_str(), UserID.c_str());
+	std::string retval = QUERY_SET_VA_LIST("INSERT INTO userinchatroom(roomID,UserID) SELECT %d ,'%s'", roomID, UserID.c_str());
 	std::cout << retval << std::endl;
 	return retval;
 }
