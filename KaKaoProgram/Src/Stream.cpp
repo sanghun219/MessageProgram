@@ -69,6 +69,7 @@ bool Stream::checkWriteBound(INT32 len)
 	if (m_offset + len > sizeof(m_stream))
 	{
 		LOG("Write Socket over bufsize!");
+
 		assert(FALSE);
 		return false;
 	}

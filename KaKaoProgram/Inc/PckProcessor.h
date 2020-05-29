@@ -28,6 +28,8 @@ namespace PacketProc
 	private:
 		typedef ERR_PCK_CODE(PckProcessor::*PckProcessFunction)(const Packet&);
 		std::unordered_map < short, PckProcessFunction> m_PckIDtoFunc;
+		std::unordered_map <std::string, size_t> m_UserIDtoSocketIdx;
+		std::unordered_map <size_t, std::string > m_SocketIdxTOuserID;
 		std::queue<Packet> m_sendpckQueue;
 	public:
 		~PckProcessor() {};

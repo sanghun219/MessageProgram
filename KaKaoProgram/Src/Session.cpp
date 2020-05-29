@@ -5,8 +5,6 @@ void Session::Clear()
 	seq = 0;
 	fd.release();
 	stream.release();
-	/*ZeroMemory(&fd, sizeof(fd));
-	ZeroMemory(&stream, sizeof(stream));*/
 }
 
 bool Session::IsConnect()

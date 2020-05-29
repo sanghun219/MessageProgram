@@ -22,7 +22,7 @@ private:
 	ERR_CODE ReceiveSession();
 	ERR_CODE ReadWriteProcess(fd_set& readset, fd_set& writeset);
 	ERR_CODE ReceiveSocket(fd_set& readset, const size_t idx);
-	void ReceivePacket(Stream* stream);
+	void ReceivePacket(Stream* stream, const size_t idx);
 	void ProcessRecvQueue();
 	ERR_CODE ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx);
 	int GetSessionIdx();

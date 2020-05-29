@@ -26,6 +26,10 @@ enum class PACKET_ID : INT16
 	PCK_FIND_USERS_IN_CHATTING_ROOM_REQ,
 	PCK_FIND_USERS_IN_CHATTING_ROOM_RES,
 
+	// UPDATE ±¸¹®
+	PCK_UPDATE_CHATTING_DATA_REQ,
+	PCK_UPDATE_CHATTING_DATA_RES,
+
 	PCK_END,
 };
 
@@ -34,6 +38,7 @@ enum class PACKET_ID : INT16
 struct PacketHeader
 {
 	short PacketID;
+	unsigned int SessionIdx;
 	UINT32 CRC;
 };
 

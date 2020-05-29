@@ -45,7 +45,7 @@ void ChattingRoom::Read(Stream& instream)
 	}
 
 	instream >> &size;
-	std::cout << "read size : " << size << std::endl;
+
 	for (INT32 i = 0; i < size; i++)
 	{
 		ChattingData chatdata;

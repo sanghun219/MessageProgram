@@ -19,6 +19,7 @@ ERR_CODE NetworkLogic::ReceiveSession()
 		}
 	}
 	int ClientIdx = GetSessionIdx();
+
 	if (ClientIdx < 0)
 	{
 		LOG("최대로 연결할 수 있는 세션의 크기를 넘어섰습니다!");
@@ -41,13 +42,14 @@ ERR_CODE NetworkLogic::ReadWriteProcess(fd_set & readset, fd_set & writeset)
 		if (IsMakeError(retErr))
 		{
 			CloseSession(CLOSE_TYPE::FORCING, i);
-			return retErr;
+			continue;
 		}
 		else
 			ProcessRecvQueue();
 
 		// WRITE PROCESS
-		SendPacket(writeset, i);
+		if (FD_ISSET(session->fd.get()->GetSocket(), &writeset))
+			SendPacket(writeset, i);
 	}
 
 	return ERR_CODE::ERR_NONE;
@@ -79,15 +81,16 @@ ERR_CODE NetworkLogic::ReceiveSocket(fd_set & readset, size_t idx)
 		}
 	}
 
-	ReceivePacket(session->stream.get());
+	ReceivePacket(session->stream.get(), idx);
 	return ERR_CODE::ERR_NONE;
 }
 
-void NetworkLogic::ReceivePacket(Stream* stream)
+void NetworkLogic::ReceivePacket(Stream* stream, const size_t Sessionidx)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	Packet rcvpkt;
 	ZeroMemory(&rcvpkt, sizeof(rcvpkt));
+	rcvpkt.pkHeader.SessionIdx = Sessionidx;
 	rcvpkt.stream = new Stream(*stream);
 	m_queueRecvPacketData.push(rcvpkt);
 }
@@ -151,22 +154,23 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 {
 	if (type == CLOSE_TYPE::FORCING)
 	{
-		closesocket(m_pdequeSession[Sessionidx]->fd->GetSocket());
 		FD_CLR(m_pdequeSession[Sessionidx]->fd->GetSocket(), &m_Readfds);
+		closesocket(m_pdequeSession[Sessionidx]->fd->GetSocket());
 		m_pdequeSession[Sessionidx]->Clear();
 
 		for (auto iter = m_pdequeSession.begin(); iter != m_pdequeSession.end();)
 		{
 			if ((*iter)->idx == Sessionidx)
 			{
-				iter = m_pdequeSession.erase(iter);
+				m_pdequeSession.erase(iter);
 				break;
 			}
-
 			else
 				++iter;
 		}
-		m_dequeSessionIndex.push_back(Sessionidx);
+
+		m_dequeSessionIndex.push_front(Sessionidx);
+
 		LOG("%d번 세션의 연결이 해제되었습니다.", Sessionidx);
 		return;
 	}
@@ -195,7 +199,7 @@ ERR_CODE NetworkLogic::SendPacket(fd_set& wr, const int idx)
 
 		m_queueSendPacketData->pop();
 
-		auto retErr = ProcessSendPacket(*packet, idx);
+		auto retErr = ProcessSendPacket(*packet, packet->pkHeader.SessionIdx);
 		if (IsMakeError(retErr))
 		{
 			SocketUtil::ReportError("NetworLogic::SndPacket");
@@ -207,7 +211,12 @@ ERR_CODE NetworkLogic::SendPacket(fd_set& wr, const int idx)
 
 ERR_CODE NetworkLogic::ProcessSendPacket(const Packet& packet, const int idx)
 {
+	if (packet.pkHeader.SessionIdx != idx)
+	{
+		return ERR_CODE::ERR_NONE;
+	}
 	const auto fd = m_pdequeSession[idx]->fd.get();
+
 	const auto sendpacket = packet.stream->data();
 	const size_t sendpacketSize = packet.stream->size();
 

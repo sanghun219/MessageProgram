@@ -14,8 +14,7 @@ namespace PacketProc
 	ERR_PCK_CODE PckProcessor::Process_PCK_SEND_DATA_REQ(const Packet& RecvPacket)
 	{
 		// 클라이언트 2개로 진행해야할듯? 일단 서버에 데이터가 올라가는지 부터 확인한다
-		Packet SendPacket;
-		SendPacket.stream = new Stream();
+
 		int roomid = -1;
 		std::string senddate;
 		std::string id;
@@ -31,6 +30,45 @@ namespace PacketProc
 			SendDate,ID,Nickname,Contents) SELECT %d ,'%s','%s','%s','%s'", roomid,
 			senddate.c_str(), id.c_str(), nick.c_str(), contents.c_str());
 
+		// room에 있는 모든 이에게 데이터를 전송할거임.
+
+		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT UserID FROM userinchatroom WHERE roomID = %d AND Userid <> '%s'", roomid, id.c_str());
+		std::vector<std::string> usersInRoom;
+		auto res = Singleton<DBManager>::GetInst()->GetsqlRes();
+
+		while (auto row = mysql_fetch_row(res))
+		{
+			usersInRoom.push_back(row[0]);
+			std::cout << "UserID : " << row[0] << std::endl;
+		}
+		short pkid = static_cast<short>(PACKET_ID::PCK_UPDATE_CHATTING_DATA_RES);
+
+		for (auto iter : m_UserIDtoSocketIdx)
+		{
+			std::cout << "접속한놈들 : " << iter.first << std::endl;
+		}
+
+		for (auto iter : usersInRoom)
+		{
+			std::unordered_map<std::string, size_t>::const_iterator it = m_UserIDtoSocketIdx.find(iter);
+			if (it == m_UserIDtoSocketIdx.end())continue;
+			std::lock_guard<std::recursive_mutex> lock(m_rm);
+			size_t sessionidx = m_UserIDtoSocketIdx[iter];
+
+			Packet SendPacket;
+			SendPacket.stream = new Stream();
+			SendPacket.pkHeader.SessionIdx = sessionidx;
+
+			*SendPacket.stream << pkid;
+			*SendPacket.stream << roomid;
+			*SendPacket.stream << senddate;
+			*SendPacket.stream << id;
+			*SendPacket.stream << nick;
+			*SendPacket.stream << contents;
+
+			m_sendpckQueue.push(SendPacket);
+		}
+
 		return ERR_PCK_CODE::ERR_NONE;
 	}
 
@@ -43,7 +81,7 @@ namespace PacketProc
 
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
-
+		SendPacket.pkHeader.SessionIdx = RecvPacket.pkHeader.SessionIdx;
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_MAKE_CHATTING_ROOM().c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
 
@@ -95,6 +133,7 @@ namespace PacketProc
 		*RecvPacket.stream >> &UserID;
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
+		SendPacket.pkHeader.SessionIdx = RecvPacket.pkHeader.SessionIdx;
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_FIND_NICKNAME_FROM_ID(UserID).c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
 
@@ -126,6 +165,7 @@ namespace PacketProc
 		*RecvPacket.stream >> &UserId;
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
+		SendPacket.pkHeader.SessionIdx = RecvPacket.pkHeader.SessionIdx;
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_FIND_USERID(UserId).c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
 
@@ -157,11 +197,12 @@ namespace PacketProc
 		std::string UserID, FrID;
 		User user;
 		Packet SendPacket;
+
+		SendPacket.stream = new Stream();
+		SendPacket.pkHeader.SessionIdx = RecvPacket.pkHeader.SessionIdx;
 		short pkid = static_cast<short>(PACKET_ID::PCK_ADD_FRIEND_RES);
 		*RecvPacket.stream >> &UserID;
 		*RecvPacket.stream >> &FrID;
-		SendPacket.stream = new Stream();
-
 		*SendPacket.stream << pkid;
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT FriendID FROM friendsinfo WHERE ID ='%s';", UserID.c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();

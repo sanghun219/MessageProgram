@@ -89,7 +89,6 @@ int DBManager::ProcessQuery(const char* query, ...)
 		sql_result = mysql_store_result(connection);
 		if (sql_result)
 		{
-			LOG("sql query execute");
 			return 0;
 		}
 		else

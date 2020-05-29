@@ -9,8 +9,7 @@ void ClientMainScene::Update()
 	if (Singleton<SceneMgr>::GetInst()->GetSceen()->GetCurSceenType() != CLIENT_SCENE_TYPE::MAIN)
 		return;
 
-	// 클라이언트가 접속했다면 모든 채팅방 , 유저 정보를 실시간으로 받아야함. 쿼리를 계속 요청해서 변화가
-	// 있으면 계속 추가하도록하자.
+	// 변경사항을 요구하는 경우가 있을수 있다.
 }
 
 bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
@@ -25,7 +24,10 @@ bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
 		break;
 	case (short)PACKET_ID::PCK_MAKE_CHATTING_ROOM_RES:
 		AddChattingRoom(stream);
+		break;
 		// 방에대한처리
+	case (short)PACKET_ID::PCK_UPDATE_CHATTING_DATA_RES:
+		UpdateChattingRoom(stream);
 	default:
 		break;
 	}
@@ -557,63 +559,71 @@ void ClientMainScene::CreateChatUI()
 void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, int ChatRoomID, bool isCreatedRoom)
 {
 	// 채팅방 만들기 , 기존 채팅방 ..
-	std::unique_ptr<ChatRoomUI> ui = std::make_unique<ChatRoomUI>();
-	std::unique_ptr<form> _fr = std::make_unique<nana::form>(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
-	std::unique_ptr<listbox> _chattings = std::make_unique<nana::listbox>(*_fr.get());
+	ChatRoomUI ui;
+	form* _fr = new nana::form(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
+	listbox* _chattings = new nana::listbox(*_fr);
 
 	_chattings->fgcolor(nana::colors::black);
 
-	std::unique_ptr<textbox> _Input = std::make_unique<nana::textbox>(*_fr.get());
-	std::unique_ptr<button> _sendbtn = std::make_unique<nana::button>(*_fr.get(), charset("전송").to_bytes(unicode::utf8));
+	textbox* _Input = new nana::textbox(*_fr);
+
+	_chattings->bgcolor(nana::colors::antique_white);
+	_chattings->append_header("");
+	_chattings->show_header(false);
+	// 리스트박스 항목들의 가로폭을 조정함 (최대 300)
+
+	_Input->multi_lines(false);
+	_Input->bgcolor(nana::colors::white);
+	// 라인을 벗어나면 다음 라인으로 이동함.
+	_Input->line_wrapped(true);
+	_Input->multi_lines(false);
+	button* _sendbtn = new nana::button(*_fr, charset("전송").to_bytes(unicode::utf8));
 	_fr->bgcolor(nana::colors::light_yellow);
-	_fr->events().destroy([&]()
-	{
-		for (auto iter = m_pChattingRooms.begin(); iter != m_pChattingRooms.end(); )
-		{
-		}
-	});
-	// 얘가 기존이 존재한 방인지 아닌지를 판단 해야함. 기존 존재방이면 정보 다 끌고 오자고
 
 	if (isCreatedRoom)
 	{
 		// 여기서 chatroonid는 룸id가 아니라 유저가 가지고 있는 채팅룸의 인덱스임
 		// 채팅룸 인덱스를 진짜번호로 바꿔야함. db상 조인했을때 나타나는순서대로 기입될것
 
-		for (auto iter : m_User->GetChattingRoomList()[m_RoomIDtoRoomListIdx[ChatRoomID]]->GetChattingDataList())
+		if (!m_User->GetChattingRoomList()[m_RoomIDtoRoomListIdx[ChatRoomID]]
+			->GetChattingDataList().empty())
 		{
-			// Userid + data + 날짜
-			std::string id = "보낸 사람 : ";
-			id.append(iter.m_UserID);
-			_chattings->at(0).push_back(charset(id).to_bytes(nana::unicode::utf8));
-			std::string contentstime = "[";
-			if (iter.m_Contents.length() > 25)
+			for (auto iter : m_User->GetChattingRoomList()[m_RoomIDtoRoomListIdx[ChatRoomID]]->GetChattingDataList())
 			{
-				int count = iter.m_Contents.length() / 25;
-				for (int i = 0; i < count; i++)
+				// Userid + data + 날짜
+				std::string id = "보낸 사람 : ";
+				id.append(iter.m_Nickname);
+				_chattings->at(0).push_back(charset(id).to_bytes(nana::unicode::utf8));
+				std::string contentstime = "[";
+				if (iter.m_Contents.length() > 25)
 				{
-					char copydata[25] = { 0, };
-					memcpy(copydata, iter.m_Contents.c_str(), 25 - 1);
-					contentstime.append(copydata);
-					if (i != count - 1)
+					int count = iter.m_Contents.length() / 25;
+					for (int i = 0; i < count; i++)
 					{
-						_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
-						contentstime.clear();
-					}
-					else
-					{
-						contentstime.append("]  ");
-						contentstime += iter.m_Senddate;
+						char copydata[25] = { 0, };
+						memcpy(copydata, iter.m_Contents.c_str(), 25 - 1);
+						contentstime.append(copydata);
+						if (i != count - 1)
+						{
+							_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+							contentstime.clear();
+						}
+						else
+						{
+							contentstime.append("]  ");
+							contentstime += iter.m_Senddate;
+						}
 					}
 				}
-			}
-			else
-			{
-				contentstime.append(iter.m_Contents);
-				contentstime += "]  ";
-				contentstime += iter.m_Senddate;
-			}
+				else
+				{
+					contentstime.append(iter.m_Contents);
+					contentstime += "]  ";
+					contentstime += iter.m_Senddate;
+				}
 
-			_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+				_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+			}
 		}
 	}
 	else
@@ -633,160 +643,170 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 		m_tcpNetwork->SendPacket(SendPacket);
 	}
 
-	_chattings->bgcolor(nana::colors::antique_white);
-	_chattings->append_header("");
-	_chattings->show_header(false);
-	_chattings->column_at(0).fit_content(300);
-	_chattings->scroll(true);
-	_Input->bgcolor(nana::colors::white);
-	_Input->line_wrapped(true);
 	_Input->events().key_char([&](const nana::arg_keyboard& _arg)
 	{
 		if (_arg.key == keyboard::enter)
 		{
 			// send
-			std::cout << "Send!" << std::endl;
-			std::wstring ws = _Input->caption_wstring();
-			std::string s;
-			convert_unicode_to_ansi_string(s, ws.c_str(), ws.size());
-			std::cout << s << std::endl;
-			if (!s.empty())
-			{
-				std::string date = ConvertCurrentDateTimeToString();
-				std::string id = m_User->GetUserID();
-				std::string nick = m_User->GetUserNick();
-				int RoomID = ChatRoomID;
-				std::string contents;
-				contents.assign(s.begin(), s.end());
-
-				Packet Sendpacket;
-				Sendpacket.stream = new Stream();
-				short pkid = static_cast<short>(PACKET_ID::PCK_SEND_CHATTING_DATA_REQ);
-				*Sendpacket.stream << pkid;
-				*Sendpacket.stream << ChatRoomID;
-				*Sendpacket.stream << date;
-				*Sendpacket.stream << id;
-				*Sendpacket.stream << nick;
-				*Sendpacket.stream << contents;
-
-				m_tcpNetwork->SendPacket(Sendpacket);
-
-				std::string _id = "보낸 사람 : ";
-				_id.append(id);
-				_chattings->at(0).push_back(charset(_id).to_bytes(nana::unicode::utf8));
-				std::string contentstime = "[";
-				if (contents.length() > 25)
-				{
-					int count = contents.length() / 25;
-					for (int i = 0; i < count; i++)
-					{
-						char copydata[25] = { 0, };
-						memcpy(copydata, contents.c_str(), 25 - 1);
-						contentstime.append(copydata);
-						if (i != count - 1)
-						{
-							_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
-							contentstime.clear();
-						}
-						else
-						{
-							contentstime.append("]  ");
-							contentstime += date;
-						}
-					}
-				}
-				else
-				{
-					contentstime.append(contents);
-					contentstime += "]  ";
-					contentstime += date;
-				}
-
-				_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
-				_Input->reset();
-				_chattings->scroll(true);
-			}
-		}
+			SendChatData(_Input, _chattings, ChatRoomID);
+		};
 	});
-
 	_sendbtn->bgcolor(nana::colors::antique_white);
 	_sendbtn->events().click([&]()
 	{
-		std::cout << "Send!" << std::endl;
-		std::wstring ws = _Input->caption_wstring();
-		std::string s;
-		convert_unicode_to_ansi_string(s, ws.c_str(), ws.size());
-
-		if (!s.empty())
-		{
-			std::string date = ConvertCurrentDateTimeToString();
-			std::string id = m_User->GetUserID();
-			std::string nick = m_User->GetUserNick();
-			int RoomID = ChatRoomID;
-			std::string contents;
-			contents.assign(s.begin(), s.end());
-
-			Packet Sendpacket;
-			Sendpacket.stream = new Stream();
-			short pkid = static_cast<short>(PACKET_ID::PCK_SEND_CHATTING_DATA_REQ);
-			*Sendpacket.stream << pkid;
-			*Sendpacket.stream << ChatRoomID;
-			*Sendpacket.stream << date;
-			*Sendpacket.stream << id;
-			*Sendpacket.stream << nick;
-			*Sendpacket.stream << contents;
-
-			m_tcpNetwork->SendPacket(Sendpacket);
-			std::string _id = "보낸 사람 : ";
-			_id.append(id);
-			_chattings->at(0).push_back(charset(_id).to_bytes(nana::unicode::utf8));
-			std::string contentstime = "[";
-			if (contents.length() > 25)
-			{
-				int count = contents.length() / 25;
-				for (int i = 0; i < count; i++)
-				{
-					char copydata[25] = { 0, };
-					memcpy(copydata, contents.c_str(), 25 - 1);
-					contentstime.append(copydata);
-					if (i != count - 1)
-					{
-						_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
-						contentstime.clear();
-					}
-					else
-					{
-						contentstime.append("]  ");
-						contentstime += date;
-					}
-				}
-			}
-			else
-			{
-				contentstime.append(contents);
-				contentstime += "]  ";
-				contentstime += date;
-			}
-
-			_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
-			_chattings->scroll(true);
-			_Input->reset();
-		}
+		SendChatData(_Input, _chattings, ChatRoomID);
 	});
 
-	std::unique_ptr<place> _plc = std::make_unique<place>(*_fr.get());
+	_chattings->column_at(0).width(300);
+	_chattings->column_at(0).fit_content(300);
+	_chattings->auto_draw(true);
+
+	std::unique_ptr<place> _plc = std::make_unique<place>(*_fr);
 	_plc->div("vert <><weight=10%><weight =60% chat><weight =30% gap = 10 arrange = [80%,20%] input>");
-	(*_plc)["chat"] << *_chattings.get();
-	(*_plc)["input"] << *_Input.get() << *_sendbtn.get();
+	(*_plc)["chat"] << *_chattings;
+	(*_plc)["input"] << *_Input << *_sendbtn;
+
+	ui.uiform = _fr;
+	ui.chatlist = _chattings;
+	ui.input = _Input;
+	ui.sendbtn = _sendbtn;
+	ui.roomkey = ChatRoomID;
+
+	m_pChattingRooms.push_back(&ui);
 
 	_plc->collocate();
 	_fr->show();
 	exec();
+}
 
-	ui->uiform = _fr.get();
-	ui->chatlist = _chattings.get();
-	ui->input = _Input.get();
-	ui->sendbtn = _sendbtn.get();
+void ClientMainScene::SendChatData(textbox* _Input, listbox* _chattings, const int ChatRoomID)
+{
+	std::wstring ws = _Input->caption_wstring();
+	std::string s;
+	convert_unicode_to_ansi_string(s, ws.c_str(), ws.size());
 
-	m_pChattingRooms.push_back(ui.get());
+	if (!s.empty())
+	{
+		std::string date = ConvertCurrentDateTimeToString();
+		std::string id = m_User->GetUserID();
+		std::string nick = m_User->GetUserNick();
+		int RoomID = ChatRoomID;
+		std::string contents;
+		contents.assign(s.begin(), s.end());
+
+		Packet Sendpacket;
+		Sendpacket.stream = new Stream();
+		short pkid = static_cast<short>(PACKET_ID::PCK_SEND_CHATTING_DATA_REQ);
+		*Sendpacket.stream << pkid;
+		*Sendpacket.stream << ChatRoomID;
+		*Sendpacket.stream << date;
+		*Sendpacket.stream << id;
+		*Sendpacket.stream << nick;
+		*Sendpacket.stream << contents;
+
+		m_tcpNetwork->SendPacket(Sendpacket);
+		std::string _id = "보낸 사람 : ";
+		_id.append("나");
+		_chattings->at(0).push_back(charset(_id).to_bytes(nana::unicode::utf8));
+		std::string contentstime = "[";
+		if (contents.length() > 25)
+		{
+			int count = contents.length() / 25;
+			for (int i = 0; i < count; i++)
+			{
+				char copydata[25] = { 0, };
+				memcpy(copydata, contents.c_str(), 25 - 1);
+				contentstime.append(copydata);
+				if (i != count - 1)
+				{
+					_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+					contentstime.clear();
+				}
+				else
+				{
+					contentstime.append("]  ");
+					contentstime += date;
+				}
+			}
+		}
+		else
+		{
+			contentstime.append(contents);
+			contentstime += "]  ";
+			contentstime += date;
+		}
+
+		_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+		_Input->reset();
+	}
+}
+
+void ClientMainScene::UpdateChattingRoom(Stream & stream)
+{
+	int roomid;
+	std::string senddate;
+	std::string id;
+	std::string nick;
+	std::string contents;
+
+	stream >> &roomid;
+	stream >> &senddate;
+	stream >> &id;
+	stream >> &nick;
+	stream >> &contents;
+	std::cout << contents << std::endl;
+	int idx = m_RoomIDtoRoomListIdx[roomid];
+	std::cout << m_pChattingRooms.size() << std::endl;
+	// 기존의 채팅방 번호를 알아야함.
+	for (int i = 0; i < m_pChattingRooms.size(); i++)
+	{
+		std::cout << "roomkey : " << m_pChattingRooms[i]->roomkey << std::endl;
+		std::cout << "roomid : " << roomid << std::endl;
+		if (m_pChattingRooms[i]->roomkey == roomid)
+		{
+			std::cout << "확인" << std::endl;
+			UpdateReadData(m_pChattingRooms[i]->input, m_pChattingRooms[i]->chatlist, roomid, senddate, id
+				, nick, contents);
+		}
+	}
+}
+
+void ClientMainScene::UpdateReadData(nana::textbox* _Input, nana::listbox* _chattings, const int ChatRoomID,
+	const std::string senddate, const std::string id, const std::string nick, const std::string contents)
+{
+	int RoomID = ChatRoomID;
+
+	std::string _id = "보낸 사람 : ";
+	_id.append(id);
+	_chattings->at(0).push_back(charset(_id).to_bytes(nana::unicode::utf8));
+	std::string contentstime = "[";
+	if (contents.length() > 25)
+	{
+		int count = contents.length() / 25;
+		for (int i = 0; i < count; i++)
+		{
+			char copydata[25] = { 0, };
+			memcpy(copydata, contents.c_str(), 25 - 1);
+			contentstime.append(copydata);
+			if (i != count - 1)
+			{
+				_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+				contentstime.clear();
+			}
+			else
+			{
+				contentstime.append("]  ");
+				contentstime += senddate;
+			}
+		}
+	}
+	else
+	{
+		contentstime.append(contents);
+		contentstime += "]  ";
+		contentstime += senddate;
+	}
+
+	_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+	_Input->reset();
 }

@@ -8,6 +8,7 @@
 
 struct ChatRoomUI
 {
+	int roomkey;
 	nana::form* uiform;
 	nana::listbox* chatlist;
 	nana::textbox* input;
@@ -39,6 +40,18 @@ private:
 	//Ã¤ÆÃ¹æ UI
 	void CreateChatUI();
 	void CreateChattingRoom(const std::vector<std::string>& ids, int ChatRoomID = -1, bool isCreatedRoom = false);
+	void SendChatData(nana::textbox* _Input, nana::listbox* _chattings, const int ChatRoomID);
+
+	// UPDATE
+	void UpdateChattingRoom(Stream& stream);
+	/*
+		senddate;
+		id;
+		nick;
+		contents;
+	*/
+	void UpdateReadData(nana::textbox* _Input, nana::listbox* _chattings, const int ChatRoomID,
+		const std::string senddate, const std::string id, const std::string nick, const std::string contents);
 private:
 	std::unordered_map<std::string, std::string> m_IDtoNick;
 	std::unordered_map<int, int> m_RoomIDtoRoomListIdx;
