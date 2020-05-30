@@ -34,6 +34,7 @@ private:
 	// Config는 Read기능 뿐이다. 여러 클라이언트가 접근해야하니 unique_ptr은 불가능
 	std::shared_ptr<Config> m_pConfig;
 	fd_set m_Readfds;
+	fd_set m_Writefds;
 	SOCKET m_servSocket;
 
 	std::deque<int> m_dequeSessionIndex;
@@ -46,6 +47,7 @@ private:
 public:
 	bool InitNetworkLogic(Config* pConfig);
 	bool DoRunLoop();
+
 public:
 	NetworkLogic();
 	~NetworkLogic();

@@ -1,7 +1,7 @@
 #include "Session.h"
 void Session::Clear()
 {
-	idx = 0;
+	idx = -1;
 	seq = 0;
 	fd.release();
 	stream.release();

@@ -33,9 +33,10 @@ int SocketUtil::GetLastError()
 
 void SocketUtil::SetSocketOption(SOCKET & socket)
 {
+	// TCP에 사용되는 Linger
 	linger lg;
 	lg.l_onoff = 1;
-	lg.l_linger = 0;
+	lg.l_linger = 10;
 
 	auto reuse = 1;
 

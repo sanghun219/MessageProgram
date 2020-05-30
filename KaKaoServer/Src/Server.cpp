@@ -25,7 +25,7 @@ void Server::Run()
 {
 	while (isOver)
 	{
-		m_pNetworkLogic->DoRunLoop();
+		isOver = m_pNetworkLogic->DoRunLoop();
 	}
 
 	LOG("서버가 종료되었습니다.");

@@ -169,8 +169,6 @@ namespace PacketProc
 		}
 		m_SocketIdxTOuserID[RecvPacket.pkHeader.SessionIdx] = UserID;
 		m_UserIDtoSocketIdx[UserID] = RecvPacket.pkHeader.SessionIdx;
-		std::cout << "유저 ID : " << UserID << std::endl;
-		std::cout << "크기 : " << m_SocketIdxTOuserID.size() << std::endl;
 
 		return ERR_PCK_CODE::ERR_NONE;
 	}

@@ -570,6 +570,7 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 	_chattings->bgcolor(nana::colors::antique_white);
 	_chattings->append_header("");
 	_chattings->show_header(false);
+
 	// 리스트박스 항목들의 가로폭을 조정함 (최대 300)
 
 	_Input->multi_lines(false);
@@ -577,6 +578,7 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 	// 라인을 벗어나면 다음 라인으로 이동함.
 	_Input->line_wrapped(true);
 	_Input->multi_lines(false);
+
 	button* _sendbtn = new nana::button(*_fr, charset("전송").to_bytes(unicode::utf8));
 	_fr->bgcolor(nana::colors::light_yellow);
 
@@ -649,12 +651,14 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 		{
 			// send
 			SendChatData(_Input, _chattings, ChatRoomID);
+			_chattings->scroll(true);
 		};
 	});
 	_sendbtn->bgcolor(nana::colors::antique_white);
 	_sendbtn->events().click([&]()
 	{
 		SendChatData(_Input, _chattings, ChatRoomID);
+		_chattings->scroll(true);
 	});
 
 	_chattings->column_at(0).width(300);
@@ -754,17 +758,14 @@ void ClientMainScene::UpdateChattingRoom(Stream & stream)
 	stream >> &id;
 	stream >> &nick;
 	stream >> &contents;
-	std::cout << contents << std::endl;
+
 	int idx = m_RoomIDtoRoomListIdx[roomid];
-	std::cout << m_pChattingRooms.size() << std::endl;
+
 	// 기존의 채팅방 번호를 알아야함.
 	for (int i = 0; i < m_pChattingRooms.size(); i++)
 	{
-		std::cout << "roomkey : " << m_pChattingRooms[i]->roomkey << std::endl;
-		std::cout << "roomid : " << roomid << std::endl;
 		if (m_pChattingRooms[i]->roomkey == roomid)
 		{
-			std::cout << "확인" << std::endl;
 			UpdateReadData(m_pChattingRooms[i]->input, m_pChattingRooms[i]->chatlist, roomid, senddate, id
 				, nick, contents);
 		}
@@ -808,5 +809,7 @@ void ClientMainScene::UpdateReadData(nana::textbox* _Input, nana::listbox* _chat
 	}
 
 	_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
+	// TODO : 이건 개발자 성향에 따라서 메시지 받으면 바로 스크롤내릴지 결정하길
+	_chattings->scroll(true);
 	_Input->reset();
 }

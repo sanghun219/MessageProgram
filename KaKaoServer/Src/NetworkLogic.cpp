@@ -31,17 +31,19 @@ ERR_CODE NetworkLogic::ReceiveSession()
 
 ERR_CODE NetworkLogic::ReadWriteProcess(fd_set & readset, fd_set & writeset)
 {
-	for (size_t i = 0; i < m_pdequeSession.size(); i++)
+	for (auto iter : m_pdequeSession)
 	{
-		Session* session = m_pdequeSession[i];
+		if (iter == nullptr)continue;
+		auto session = iter;
 
 		if (session->IsConnect() == false)
 			continue;
 
-		auto retErr = ReceiveSocket(readset, i);
+		auto retErr = ReceiveSocket(readset, session->idx);
 		if (IsMakeError(retErr))
 		{
-			CloseSession(CLOSE_TYPE::FORCING, i);
+			std::cout << session->idx << std::endl;
+			CloseSession(CLOSE_TYPE::FORCING, session->idx);
 			continue;
 		}
 		else
@@ -49,7 +51,7 @@ ERR_CODE NetworkLogic::ReadWriteProcess(fd_set & readset, fd_set & writeset)
 
 		// WRITE PROCESS
 		if (FD_ISSET(session->fd.get()->GetSocket(), &writeset))
-			SendPacket(writeset, i);
+			SendPacket(writeset, session->idx);
 	}
 
 	return ERR_CODE::ERR_NONE;
@@ -60,7 +62,6 @@ ERR_CODE NetworkLogic::ReceiveSocket(fd_set & readset, size_t idx)
 	auto session = m_pdequeSession[idx];
 	if (!FD_ISSET(session->fd->GetSocket(), &readset))
 		return ERR_CODE::ERR_NONE;
-	session->seq++;
 
 	auto fd = session->fd.get();
 	UCHAR readPacket[BUFSIZE];
@@ -82,6 +83,7 @@ ERR_CODE NetworkLogic::ReceiveSocket(fd_set & readset, size_t idx)
 	}
 
 	ReceivePacket(session->stream.get(), idx);
+	session->seq++;
 	return ERR_CODE::ERR_NONE;
 }
 
@@ -111,12 +113,19 @@ void NetworkLogic::ProcessRecvQueue()
 ERR_CODE NetworkLogic::ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
+	//Session* session = m_pdequeSession[idx];
 	Session* session = new Session();
 	session->idx = idx;
 	session->fd = std::make_unique<TCPSocket>(client.GetSocket(), client.GetSockAddr());
 
 	FD_SET(session->fd->GetSocket(), &m_Readfds);
+	FD_SET(session->fd->GetSocket(), &m_Writefds);
 	if (!FD_ISSET(session->fd->GetSocket(), &m_Readfds))
+	{
+		SocketUtil::ReportError("NetworkLogic::ConnectSessionNClient!");
+		return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
+	}
+	if (!FD_ISSET(session->fd->GetSocket(), &m_Writefds))
 	{
 		SocketUtil::ReportError("NetworkLogic::ConnectSessionNClient!");
 		return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
@@ -155,24 +164,47 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 	if (type == CLOSE_TYPE::FORCING)
 	{
 		FD_CLR(m_pdequeSession[Sessionidx]->fd->GetSocket(), &m_Readfds);
+		FD_CLR(m_pdequeSession[Sessionidx]->fd->GetSocket(), &m_Writefds);
 		closesocket(m_pdequeSession[Sessionidx]->fd->GetSocket());
 		m_pdequeSession[Sessionidx]->Clear();
 
-		for (auto iter = m_pdequeSession.begin(); iter != m_pdequeSession.end();)
+		// 모든 맵 청소
+		for (auto iter = m_pckProcessor->m_SocketIdxTOuserID.begin();
+			iter != m_pckProcessor->m_SocketIdxTOuserID.end();)
 		{
-			if ((*iter)->idx == Sessionidx)
+			if (iter->first == Sessionidx)
+				iter = m_pckProcessor->m_SocketIdxTOuserID.erase(iter);
+			else
+				++iter;
+		}
+		for (auto iter = m_pckProcessor->m_UserIDtoSocketIdx.begin();
+			iter != m_pckProcessor->m_UserIDtoSocketIdx.end();)
+		{
+			if (iter->second == Sessionidx)
 			{
-				m_pdequeSession.erase(iter);
+				iter = m_pckProcessor->m_UserIDtoSocketIdx.erase(iter);
 				break;
 			}
 			else
 				++iter;
 		}
 
+		// 해당 번호
+		for (auto iter = m_pdequeSession.begin(); iter != m_pdequeSession.end();)
+		{
+			if ((*iter)->idx == Sessionidx)
+			{
+				delete *iter;
+				break;
+			}
+			else
+				++iter;
+		}
+		// Session index - login id가 묶여있음
+
 		m_dequeSessionIndex.push_front(Sessionidx);
 
 		LOG("%d번 세션의 연결이 해제되었습니다.", Sessionidx);
-		return;
 	}
 	else if (type == CLOSE_TYPE::ALL_SESSION)
 	{
@@ -290,7 +322,7 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 bool NetworkLogic::DoRunLoop()
 {
 	auto fd_read = m_Readfds;
-	auto fd_write = m_Readfds;
+	auto fd_write = m_Writefds;
 
 	timeval tv{ 0,1000 };
 	auto retErr = select(0, &fd_read, &fd_write, NULL, &tv);
@@ -302,7 +334,7 @@ bool NetworkLogic::DoRunLoop()
 			return true;
 		}
 		SocketUtil::ReportError("NetworkLogic::Select");
-		CloseSession(CLOSE_TYPE::FORCING, 0);
+		CloseSession(CLOSE_TYPE::ALL_SESSION, 0);
 		return false;
 	}
 

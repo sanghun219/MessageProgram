@@ -2,6 +2,7 @@
 #include "ServLibrary.h"
 #include "PacketInfo.h"
 class TCPSocket;
+class NetworkLogic;
 namespace PacketProc
 {
 	class PckProcessor
@@ -33,5 +34,6 @@ namespace PacketProc
 		std::queue<Packet> m_sendpckQueue;
 	public:
 		~PckProcessor() {};
+		friend NetworkLogic;
 	};
 }
