@@ -144,7 +144,7 @@ namespace PacketProc
 	ERR_PCK_CODE PckProcessor::Process_PCK_SEND_DATA_REQ(const Packet& RecvPacket)
 	{
 		// 클라이언트 2개로 진행해야할듯? 일단 서버에 데이터가 올라가는지 부터 확인한다
-
+		std::lock_guard<std::recursive_mutex> lock(m_rm);
 		int roomid = -1;
 		std::string senddate;
 		std::string id;
@@ -183,6 +183,8 @@ namespace PacketProc
 			Packet SendPacket;
 			ZeroMemory(&SendPacket, sizeof(SendPacket));
 			SendPacket.stream = new Stream();
+			SendPacket.SessionIdx = new int();
+			*SendPacket.SessionIdx = sessionidx;
 			SendPacket.pkHeader = new PacketHeader();
 			SendPacket.pkHeader->SessionIdx = sessionidx;
 			std::cout << "주소 : " << &SendPacket.pkHeader << std::endl;
@@ -206,7 +208,9 @@ namespace PacketProc
 
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
+		SendPacket.SessionIdx = new int();
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
+		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_MAKE_CHATTING_ROOM().c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
 
@@ -259,6 +263,8 @@ namespace PacketProc
 		*RecvPacket.stream >> &UserID;
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
+		SendPacket.SessionIdx = new int();
+		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_FIND_NICKNAME_FROM_ID(UserID).c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
@@ -293,6 +299,8 @@ namespace PacketProc
 		*RecvPacket.stream >> &UserId;
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
+		SendPacket.SessionIdx = new int();
+		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_FIND_USERID(UserId).c_str());
@@ -330,6 +338,8 @@ namespace PacketProc
 		Packet SendPacket;
 
 		SendPacket.stream = new Stream();
+		SendPacket.SessionIdx = new int();
+		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		SendPacket.pkHeader = new PacketHeader();
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		short pkid = static_cast<short>(PACKET_ID::PCK_ADD_FRIEND_RES);

@@ -92,6 +92,8 @@ void NetworkLogic::ReceivePacket(Stream* stream, const size_t Sessionidx)
 	ZeroMemory(&rcvpkt, sizeof(rcvpkt));
 	rcvpkt.pkHeader = new PacketHeader();
 	rcvpkt.pkHeader->SessionIdx = Sessionidx;
+	rcvpkt.SessionIdx = new int();
+	*rcvpkt.SessionIdx = Sessionidx;
 	rcvpkt.stream = new Stream(*stream);
 	m_queueRecvPacketData.push(rcvpkt);
 }
@@ -231,11 +233,9 @@ ERR_CODE NetworkLogic::SendPacket(fd_set& wr, const int idx)
 	{
 		if (!FD_ISSET(fd->GetSocket(), &wr))
 			return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
+		Packet* packet = &m_queueSendPacketData->front();
 
-		Packet* packet = &m_queueSendPacketData->back();
-		std::cout << &packet->pkHeader << std::endl;
-		std::cout << "index : " << packet->pkHeader->SessionIdx << std::endl;
-		auto retErr = ProcessSendPacket(*packet, packet->pkHeader->SessionIdx);
+		auto retErr = ProcessSendPacket(*packet, *packet->SessionIdx);
 		if (IsMakeError(retErr))
 		{
 			SocketUtil::ReportError("NetworLogic::SndPacket");
@@ -294,6 +294,7 @@ bool NetworkLogic::InitNetworkLogic(Config * pConfig)
 
 	SocketUtil::SetSocketOption(m_servSocket);
 	SocketUtil::SetSocketNonblock(m_servSocket, true);
+	SocketUtil::SetSocketBufferSize(m_servSocket, 5096, 5096);
 
 	m_PtcpSocket = std::make_unique<TCPSocket>(m_servSocket, serv_sockaddr);
 	auto retErr = m_PtcpSocket->Bind();

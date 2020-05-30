@@ -44,5 +44,6 @@ struct PacketHeader
 struct Packet
 {
 	PacketHeader* pkHeader = nullptr;
+	int* SessionIdx = nullptr;
 	Stream* stream = nullptr;
 };
