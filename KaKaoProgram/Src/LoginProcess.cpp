@@ -16,7 +16,8 @@ namespace PacketProc
 
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
-		SendPacket.pkHeader.SessionIdx = RecvPacket.pkHeader.SessionIdx;
+		SendPacket.pkHeader = new PacketHeader();
+		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 
 		// id찾는 쿼리 없을시 생성, 있을시 데이터 로딩 후 user에 다 집어놓고 해당 데이터와 함께 send
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM userinfo WHERE ID = '%s'", UserID.data());
@@ -46,6 +47,7 @@ namespace PacketProc
 			if (mysql_num_rows(res) == 0)
 			{
 				short pkID = static_cast<short>(PACKET_ID::PCK_LOGIN_WRONG_PASS_RES);
+
 				*SendPacket.stream << pkID;
 				m_sendpckQueue.push(SendPacket);
 				return ERR_PCK_CODE::ERR_NONE;
@@ -163,13 +165,14 @@ namespace PacketProc
 			user->SetChattingRoomList(chattingRoomList);
 			short pkid = static_cast<short>(PACKET_ID::PCK_LOGIN_RES);
 			*SendPacket.stream << pkid;
-
+			std::cout << pkid << std::endl;
 			user->Write(*SendPacket.stream);
 			m_sendpckQueue.push(SendPacket);
 		}
-		m_SocketIdxTOuserID[RecvPacket.pkHeader.SessionIdx] = UserID;
-		m_UserIDtoSocketIdx[UserID] = RecvPacket.pkHeader.SessionIdx;
 
+		m_SocketIdxTOuserID[RecvPacket.pkHeader->SessionIdx] = UserID;
+		m_UserIDtoSocketIdx[UserID] = RecvPacket.pkHeader->SessionIdx;
+		std::cout << RecvPacket.pkHeader->SessionIdx << " : " << UserID << std::endl;
 		return ERR_PCK_CODE::ERR_NONE;
 	}
 	ERR_PCK_CODE PckProcessor::Process_SIGN_UP_REQ(const Packet& RecvPacket)
@@ -193,7 +196,7 @@ namespace PacketProc
 
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
-		SendPacket.pkHeader.SessionIdx = RecvPacket.pkHeader.SessionIdx;
+		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		// 중복 ID가 발생한경우 다시 가입하라고 보냄
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT ID FROM userinfo WHERE ID = '%s';", ID.c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
@@ -202,6 +205,7 @@ namespace PacketProc
 			// 다시 만들라는 메시지
 			short pkid = static_cast<short>(PACKET_ID::PCK_SIGN_UP_RES);
 			int value = -1;
+
 			*SendPacket.stream << pkid;
 			*SendPacket.stream << value;
 			m_sendpckQueue.push(SendPacket);
@@ -211,6 +215,7 @@ namespace PacketProc
 			// 회원가입 됐다는 메시지
 			short pkid = static_cast<short>(PACKET_ID::PCK_SIGN_UP_RES);
 			int value = 1;
+
 			*SendPacket.stream << pkid;
 			*SendPacket.stream << value;
 			m_sendpckQueue.push(SendPacket);

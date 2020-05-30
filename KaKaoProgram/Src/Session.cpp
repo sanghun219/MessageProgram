@@ -9,5 +9,8 @@ void Session::Clear()
 
 bool Session::IsConnect()
 {
-	return (fd->GetSocket() != 0) ? true : false;
+	if (fd != nullptr)
+		return (fd->GetSocket() != 0) ? true : false;
+	else
+		return false;
 }

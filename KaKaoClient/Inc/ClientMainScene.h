@@ -44,12 +44,7 @@ private:
 
 	// UPDATE
 	void UpdateChattingRoom(Stream& stream);
-	/*
-		senddate;
-		id;
-		nick;
-		contents;
-	*/
+	void UpdateClient(Stream& stream);
 	void UpdateReadData(nana::textbox* _Input, nana::listbox* _chattings, const int ChatRoomID,
 		const std::string senddate, const std::string id, const std::string nick, const std::string contents);
 private:
@@ -82,4 +77,5 @@ private:
 	nana::label* m_pChatComment;
 
 	std::vector<ChatRoomUI*> m_pChattingRooms;
+	int ReceiveRoomkey = -1;
 };

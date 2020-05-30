@@ -29,22 +29,20 @@ enum class PACKET_ID : INT16
 	// UPDATE ±¸¹®
 	PCK_UPDATE_CHATTING_DATA_REQ,
 	PCK_UPDATE_CHATTING_DATA_RES,
+	PCK_UPDATE_CLIENT,
 
 	PCK_END,
 };
 
-#pragma pack(push,1)
-
 struct PacketHeader
 {
-	short PacketID;
-	unsigned int SessionIdx;
-	UINT32 CRC;
+	short PacketID = -1;
+	int SessionIdx = -1;
+	UINT32 CRC = -1;
 };
 
 struct Packet
 {
-	PacketHeader pkHeader;
+	PacketHeader* pkHeader = nullptr;
 	Stream* stream = nullptr;
 };
-#pragma pack(pop)

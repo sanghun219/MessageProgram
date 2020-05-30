@@ -83,6 +83,6 @@ const string QUERY_MAKE_CHATTING_ROOM()
 const string QUERY_ROOMID_TO_USERID_INCHATTINGROOM(int roomID, std::string UserID)
 {
 	std::string retval = QUERY_SET_VA_LIST("INSERT INTO userinchatroom(roomID,UserID) SELECT %d ,'%s'", roomID, UserID.c_str());
-	std::cout << retval << std::endl;
+
 	return retval;
 }

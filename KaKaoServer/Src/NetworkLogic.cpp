@@ -31,18 +31,16 @@ ERR_CODE NetworkLogic::ReceiveSession()
 
 ERR_CODE NetworkLogic::ReadWriteProcess(fd_set & readset, fd_set & writeset)
 {
-	for (auto iter : m_pdequeSession)
+	for (auto& iter : m_pdequeSession)
 	{
-		if (iter == nullptr)continue;
-		auto session = iter;
-
+		auto session = iter.get();
+		if (session == nullptr) continue;
 		if (session->IsConnect() == false)
 			continue;
 
 		auto retErr = ReceiveSocket(readset, session->idx);
 		if (IsMakeError(retErr))
 		{
-			std::cout << session->idx << std::endl;
 			CloseSession(CLOSE_TYPE::FORCING, session->idx);
 			continue;
 		}
@@ -59,7 +57,7 @@ ERR_CODE NetworkLogic::ReadWriteProcess(fd_set & readset, fd_set & writeset)
 
 ERR_CODE NetworkLogic::ReceiveSocket(fd_set & readset, size_t idx)
 {
-	auto session = m_pdequeSession[idx];
+	auto session = m_pdequeSession[idx].get();
 	if (!FD_ISSET(session->fd->GetSocket(), &readset))
 		return ERR_CODE::ERR_NONE;
 
@@ -92,7 +90,8 @@ void NetworkLogic::ReceivePacket(Stream* stream, const size_t Sessionidx)
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	Packet rcvpkt;
 	ZeroMemory(&rcvpkt, sizeof(rcvpkt));
-	rcvpkt.pkHeader.SessionIdx = Sessionidx;
+	rcvpkt.pkHeader = new PacketHeader();
+	rcvpkt.pkHeader->SessionIdx = Sessionidx;
 	rcvpkt.stream = new Stream(*stream);
 	m_queueRecvPacketData.push(rcvpkt);
 }
@@ -113,9 +112,11 @@ void NetworkLogic::ProcessRecvQueue()
 ERR_CODE NetworkLogic::ConnectSessionNClient(SockAddress& addr, TCPSocket& client, const int idx)
 {
 	std::lock_guard<std::recursive_mutex> lock(m_rm);
-	//Session* session = m_pdequeSession[idx];
-	Session* session = new Session();
+	Session* session;
+
+	session = m_pdequeSession[idx].get();
 	session->idx = idx;
+
 	session->fd = std::make_unique<TCPSocket>(client.GetSocket(), client.GetSockAddr());
 
 	FD_SET(session->fd->GetSocket(), &m_Readfds);
@@ -131,7 +132,6 @@ ERR_CODE NetworkLogic::ConnectSessionNClient(SockAddress& addr, TCPSocket& clien
 		return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
 	}
 
-	m_pdequeSession.push_back(session);
 	LOG("%d번 세션이 연결되었습니다", session->idx);
 
 	return ERR_CODE::ERR_NONE;
@@ -155,6 +155,10 @@ void NetworkLogic::CreateSessionIdx()
 	int maxConnection = m_pConfig->maxConnectSession;
 	for (int i = 0; i < maxConnection; i++)
 	{
+		std::unique_ptr<Session> copy = std::make_unique<Session>();
+		copy->Clear();
+		copy->idx = i;
+		m_pdequeSession.push_back(std::move(copy));
 		m_dequeSessionIndex.push_back(i);
 	}
 }
@@ -194,7 +198,7 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 		{
 			if ((*iter)->idx == Sessionidx)
 			{
-				delete *iter;
+				(*iter)->Clear();
 				break;
 			}
 			else
@@ -210,7 +214,7 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 	{
 		for (size_t idx = 0; idx < m_pdequeSession.size(); idx++)
 		{
-			auto clnt = m_pdequeSession.at(idx);
+			auto clnt = m_pdequeSession.at(idx).get();
 			m_dequeSessionIndex.push_back(idx);
 			closesocket(clnt->fd->GetSocket());
 			clnt->Clear();
@@ -221,32 +225,31 @@ void NetworkLogic::CloseSession(CLOSE_TYPE type, const int Sessionidx)
 
 ERR_CODE NetworkLogic::SendPacket(fd_set& wr, const int idx)
 {
-	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	auto fd = m_pdequeSession[idx]->fd.get();
+	std::lock_guard<std::recursive_mutex> lock(m_rm);
 	while (!m_queueSendPacketData->empty())
 	{
-		Packet* packet = &m_queueSendPacketData->back();
 		if (!FD_ISSET(fd->GetSocket(), &wr))
 			return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
 
-		m_queueSendPacketData->pop();
-
-		auto retErr = ProcessSendPacket(*packet, packet->pkHeader.SessionIdx);
+		Packet* packet = &m_queueSendPacketData->back();
+		std::cout << &packet->pkHeader << std::endl;
+		std::cout << "index : " << packet->pkHeader->SessionIdx << std::endl;
+		auto retErr = ProcessSendPacket(*packet, packet->pkHeader->SessionIdx);
 		if (IsMakeError(retErr))
 		{
 			SocketUtil::ReportError("NetworLogic::SndPacket");
 			return retErr;
 		}
+		// 비동기라서 바로바로 통과하지만 운영체제 내부에서 패킷을 처리하는중임
+		//delete packet;
+		m_queueSendPacketData->pop();
 	}
 	return ERR_CODE::ERR_NONE;
 }
 
 ERR_CODE NetworkLogic::ProcessSendPacket(const Packet& packet, const int idx)
 {
-	if (packet.pkHeader.SessionIdx != idx)
-	{
-		return ERR_CODE::ERR_NONE;
-	}
 	const auto fd = m_pdequeSession[idx]->fd.get();
 
 	const auto sendpacket = packet.stream->data();
@@ -265,7 +268,7 @@ ERR_CODE NetworkLogic::ProcessSendPacket(const Packet& packet, const int idx)
 			return ERR_CODE::ERR_SEND;
 		}
 	}
-
+	std::cout << "보낸 데이터 크기 : " << retErr << std::endl;
 	return ERR_CODE::ERR_NONE;
 }
 

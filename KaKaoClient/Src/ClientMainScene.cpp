@@ -9,6 +9,20 @@ void ClientMainScene::Update()
 	if (Singleton<SceneMgr>::GetInst()->GetSceen()->GetCurSceenType() != CLIENT_SCENE_TYPE::MAIN)
 		return;
 
+	// 서버에서 클라쪽에 계속 뿌려줘야하는것. 반대로 말하면 클라가 서버에 계속 요청해줘야하는것
+
+	{
+		/*Packet SendPacket;
+		short pkid = static_cast<short>(PACKET_ID::PCK_UPDATE_CLIENT);
+		std::string userid = m_User->GetUserID();
+
+		SendPacket.stream = new Stream();
+		*SendPacket.stream << pkid;
+		*SendPacket.stream << userid;
+		m_tcpNetwork->SendPacket(SendPacket);
+		std::cout << "!" << std::endl;*/
+	}
+
 	// 변경사항을 요구하는 경우가 있을수 있다.
 }
 
@@ -28,6 +42,10 @@ bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
 		// 방에대한처리
 	case (short)PACKET_ID::PCK_UPDATE_CHATTING_DATA_RES:
 		UpdateChattingRoom(stream);
+		break;
+		/*case (short)PACKET_ID::PCK_UPDATE_CLIENT:
+			UpdateClient(stream);
+			break;*/
 	default:
 		break;
 	}
@@ -127,7 +145,6 @@ void ClientMainScene::CreateUI()
 			std::vector<std::string> vs;
 			int chatroomid = m_RoomListIdxtoRoomID[iter.item];
 			CreateChattingRoom(vs, chatroomid, true);
-			// 이제 해야하는게 이거 제대로 적용됐는지 볼려면 채팅시스템만들어야함
 		}
 	});
 	place chatplc{ *m_pChattingRoompanel };
@@ -150,7 +167,9 @@ void ClientMainScene::CreateUI()
 		{
 			int idx = iter.item;
 			vs.push_back(m_User->GetFriendList()[idx]->GetUserID());
+
 			CreateChattingRoom(vs);
+			break;
 			// 친구 아이디 누르면 해당 인덱스의 유저아이디를 통해서 채팅방을열도록함.
 		}
 	});
@@ -479,20 +498,27 @@ void ClientMainScene::AddChattingRoom(Stream& stream)
 {
 	// 채팅방 친구 목록 받아오니 이걸로 ui에 추가
 	int numrows = -1;
+	int roomkey = -1;
+	stream >> &roomkey;
 	stream >> &numrows;
 	std::string nicks;
+
+	ChattingRoom* chatroom = new ChattingRoom();
+	chatroom->SetRoomID(roomkey);
 	nicks.append(m_User->GetUserNick());
 	nicks.push_back(',');
 	for (int i = 0; i < numrows - 1; i++)
 	{
 		std::string id;
 		stream >> &id;
-
+		chatroom->SetJoinnedUser(id);
 		nicks.append(m_IDtoNick[id]);
 		nicks.push_back(',');
 	}
 	nicks.pop_back();
 	m_pChatRoomList->at(0).push_back(charset(nicks).to_bytes(nana::unicode::utf8));
+	m_User->SetChattingRoomList(chatroom);
+	ReceiveRoomkey = roomkey;
 }
 
 void ClientMainScene::CreateChatUI()
@@ -558,6 +584,7 @@ void ClientMainScene::CreateChatUI()
 
 void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, int ChatRoomID, bool isCreatedRoom)
 {
+	ReceiveRoomkey = ChatRoomID;
 	// 채팅방 만들기 , 기존 채팅방 ..
 	ChatRoomUI ui;
 	form* _fr = new nana::form(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
@@ -587,10 +614,10 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 		// 여기서 chatroonid는 룸id가 아니라 유저가 가지고 있는 채팅룸의 인덱스임
 		// 채팅룸 인덱스를 진짜번호로 바꿔야함. db상 조인했을때 나타나는순서대로 기입될것
 
-		if (!m_User->GetChattingRoomList()[m_RoomIDtoRoomListIdx[ChatRoomID]]
+		if (!m_User->GetChattingRoomList()[m_RoomIDtoRoomListIdx[ReceiveRoomkey]]
 			->GetChattingDataList().empty())
 		{
-			for (auto iter : m_User->GetChattingRoomList()[m_RoomIDtoRoomListIdx[ChatRoomID]]->GetChattingDataList())
+			for (auto iter : m_User->GetChattingRoomList()[m_RoomIDtoRoomListIdx[ReceiveRoomkey]]->GetChattingDataList())
 			{
 				// Userid + data + 날짜
 				std::string id = "보낸 사람 : ";
@@ -650,20 +677,22 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 		if (_arg.key == keyboard::enter)
 		{
 			// send
-			SendChatData(_Input, _chattings, ChatRoomID);
+			SendChatData(_Input, _chattings, ReceiveRoomkey);
 			_chattings->scroll(true);
+			_chattings->column_at(0).width(300);
+			_chattings->column_at(0).fit_content(300);
+			_chattings->auto_draw(true);
 		};
 	});
 	_sendbtn->bgcolor(nana::colors::antique_white);
 	_sendbtn->events().click([&]()
 	{
-		SendChatData(_Input, _chattings, ChatRoomID);
+		SendChatData(_Input, _chattings, ReceiveRoomkey);
 		_chattings->scroll(true);
+		_chattings->column_at(0).width(300);
+		_chattings->column_at(0).fit_content(300);
+		_chattings->auto_draw(true);
 	});
-
-	_chattings->column_at(0).width(300);
-	_chattings->column_at(0).fit_content(300);
-	_chattings->auto_draw(true);
 
 	std::unique_ptr<place> _plc = std::make_unique<place>(*_fr);
 	_plc->div("vert <><weight=10%><weight =60% chat><weight =30% gap = 10 arrange = [80%,20%] input>");
@@ -674,10 +703,12 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 	ui.chatlist = _chattings;
 	ui.input = _Input;
 	ui.sendbtn = _sendbtn;
-	ui.roomkey = ChatRoomID;
+	ui.roomkey = ReceiveRoomkey;
 
 	m_pChattingRooms.push_back(&ui);
-
+	_chattings->column_at(0).width(300);
+	_chattings->column_at(0).fit_content(300);
+	_chattings->auto_draw(true);
 	_plc->collocate();
 	_fr->show();
 	exec();
@@ -766,10 +797,16 @@ void ClientMainScene::UpdateChattingRoom(Stream & stream)
 	{
 		if (m_pChattingRooms[i]->roomkey == roomid)
 		{
+			std::cout << "보낸 이 : " << nick << std::endl;
+			std::cout << "User : " << m_User->GetUserID() << "제대로 도착!" << std::endl;
 			UpdateReadData(m_pChattingRooms[i]->input, m_pChattingRooms[i]->chatlist, roomid, senddate, id
 				, nick, contents);
 		}
 	}
+}
+
+void ClientMainScene::UpdateClient(Stream & stream)
+{
 }
 
 void ClientMainScene::UpdateReadData(nana::textbox* _Input, nana::listbox* _chattings, const int ChatRoomID,
@@ -811,5 +848,7 @@ void ClientMainScene::UpdateReadData(nana::textbox* _Input, nana::listbox* _chat
 	_chattings->at(0).push_back(charset(contentstime).to_bytes(nana::unicode::utf8));
 	// TODO : 이건 개발자 성향에 따라서 메시지 받으면 바로 스크롤내릴지 결정하길
 	_chattings->scroll(true);
+	_chattings->column_at(0).width(300);
+	_chattings->column_at(0).fit_content(300);
 	_Input->reset();
 }

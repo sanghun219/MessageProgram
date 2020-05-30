@@ -24,6 +24,7 @@ namespace PacketProc
 		ERR_PCK_CODE Process_PCK_MAKE_CHATTING_ROOM_REQ(const Packet& RecvPacket);
 		ERR_PCK_CODE Process_PCK_FIND_USERS_IN_ROOM_REQ(const Packet& RecvPacket);
 		ERR_PCK_CODE Process_PCK_SEND_DATA_REQ(const Packet& RecvPacket);
+		/*ERR_PCK_CODE Process_PCK_UPDATE_CLIENT(const Packet& RecvPacket);*/
 #pragma endregion
 		std::recursive_mutex m_rm;
 	private:

@@ -96,7 +96,6 @@ bool TCPNetwork::ReceviePacket()
 				return false;
 			}
 		}
-		std::lock_guard<std::recursive_mutex> lock(m_rm);
 		Packet packet;
 		ZeroMemory(&packet, sizeof(packet));
 		packet.stream = new Stream(data, recvret);

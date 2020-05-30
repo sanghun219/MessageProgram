@@ -38,7 +38,7 @@ private:
 	SOCKET m_servSocket;
 
 	std::deque<int> m_dequeSessionIndex;
-	std::deque<Session*> m_pdequeSession;
+	std::deque<std::unique_ptr<Session>> m_pdequeSession;
 	std::queue<Packet> m_queueRecvPacketData;
 	std::queue<Packet>* m_queueSendPacketData;
 	std::unique_ptr<TCPSocket> m_PtcpSocket;
