@@ -18,9 +18,6 @@
     <ClCompile Include="Src\ClienMain.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Src\PacketTest.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Src\MainForm.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -41,9 +38,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Inc\PacketTest.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Inc\TCPNetwork.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>

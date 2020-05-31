@@ -70,7 +70,7 @@ const std::string QUERY_FIND_CHATTINGDATAS_IN_CHATTINGROOM(INT64 ID)
 
 const string QUERY_FIND_NICKNAME_FROM_ID(string ID)
 {
-	std::string retval = QUERY_SET_VA_LIST("SELECT NickName FROM userinfo WHERE ID = '%s';", ID);
+	std::string retval = QUERY_SET_VA_LIST("SELECT NickName FROM userinfo WHERE ID = '%s'", ID.c_str());
 	return retval;
 }
 

@@ -1,4 +1,18 @@
-﻿  MainProcess.cpp
-c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\src\mainprocess.cpp(245): warning C4244: '초기화 중': 'my_ulonglong'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+﻿  ChattingRoom.cpp
+  Logger.cpp
+  LoginProcess.cpp
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\src\loginprocess.cpp(115): warning C4244: '인수': 'INT64'에서 'const int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+c:\users\sangh\desktop\프로젝트\kakaoprogram\kakaoprogram\src\loginprocess.cpp(144): warning C4244: '=': 'my_ulonglong'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  MainProcess.cpp
+  NetworkLib.cpp
+  PckProcessor.cpp
+  QueryList.cpp
+  Session.cpp
+  SockAddress.cpp
+  SocketUtil.cpp
+  Stream.cpp
+  TCPSocket.cpp
+  User.cpp
+  코드를 생성하고 있습니다...
 SockAddress.obj : warning LNK4221: 이 개체 파일은 이전에 정의되지 않은 공용 기호를 정의하지 않으므로 이 라이브러리를 사용하는 어떠한 링크 작업에도 사용되지 않습니다.
   KaKaoProgram.vcxproj -> C:\Users\sangh\Desktop\프로젝트\kakaoProgram\Debug\KaKaoProgram.lib

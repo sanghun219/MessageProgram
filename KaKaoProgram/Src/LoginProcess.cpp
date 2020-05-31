@@ -17,8 +17,7 @@ namespace PacketProc
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
 		SendPacket.pkHeader = new PacketHeader();
-		SendPacket.SessionIdx = new int();
-		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
+
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 
 		// id찾는 쿼리 없을시 생성, 있을시 데이터 로딩 후 user에 다 집어놓고 해당 데이터와 함께 send
@@ -58,7 +57,7 @@ namespace PacketProc
 			Singleton<DBManager>::GetInst()->ProcessQuery("SELECT * FROM userinfo WHERE ID = '%s'", UserID.data());
 			res = Singleton<DBManager>::GetInst()->GetsqlRes();
 			MYSQL_ROW row;
-			unsigned int fieldCount = mysql_num_fields(res);
+			auto fieldCount = mysql_num_fields(res);
 
 			row = mysql_fetch_row(res);
 
@@ -195,11 +194,10 @@ namespace PacketProc
 		*RecvPacket.stream >> &ID;
 		*RecvPacket.stream >> &Nickname;
 		*RecvPacket.stream >> &Password;
-
+		std::cout << "ID " << ID << std::endl;
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
-		SendPacket.SessionIdx = new int();
-		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
+		SendPacket.pkHeader = new PacketHeader();
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		// 중복 ID가 발생한경우 다시 가입하라고 보냄
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT ID FROM userinfo WHERE ID = '%s';", ID.c_str());

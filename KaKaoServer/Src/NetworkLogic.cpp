@@ -92,8 +92,6 @@ void NetworkLogic::ReceivePacket(Stream* stream, const size_t Sessionidx)
 	ZeroMemory(&rcvpkt, sizeof(rcvpkt));
 	rcvpkt.pkHeader = new PacketHeader();
 	rcvpkt.pkHeader->SessionIdx = Sessionidx;
-	rcvpkt.SessionIdx = new int();
-	*rcvpkt.SessionIdx = Sessionidx;
 	rcvpkt.stream = new Stream(*stream);
 	m_queueRecvPacketData.push(rcvpkt);
 }
@@ -235,14 +233,13 @@ ERR_CODE NetworkLogic::SendPacket(fd_set& wr, const int idx)
 			return ERR_CODE::ERR_SESSION_ISNT_CONNECTED;
 		Packet* packet = &m_queueSendPacketData->front();
 
-		auto retErr = ProcessSendPacket(*packet, *packet->SessionIdx);
+		auto retErr = ProcessSendPacket(*packet, packet->pkHeader->SessionIdx);
 		if (IsMakeError(retErr))
 		{
 			SocketUtil::ReportError("NetworLogic::SndPacket");
 			return retErr;
 		}
-		// 비동기라서 바로바로 통과하지만 운영체제 내부에서 패킷을 처리하는중임
-		//delete packet;
+
 		m_queueSendPacketData->pop();
 	}
 	return ERR_CODE::ERR_NONE;

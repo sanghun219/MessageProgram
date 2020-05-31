@@ -79,7 +79,6 @@ TCPSocket & TCPSocket::operator=(const TCPSocket & s)
 TCPSocket::TCPSocket(const SOCKET & inSocket, const SockAddress& addr)
 {
 	m_addr = std::make_unique<SockAddress>(addr);
-
 	m_Socket = std::make_unique<SOCKET>(inSocket);
 }
 

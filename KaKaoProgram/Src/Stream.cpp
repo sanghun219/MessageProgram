@@ -16,6 +16,7 @@ if (this->checkWriteBound(size) == false){	\
 }	\
 memcpy_s((void*)(m_stream.data()+m_offset),m_stream.size()-m_offset,(const void*)&value,	\
 size);m_offset += size;
+
 Stream::Stream()
 {
 	this->Init();

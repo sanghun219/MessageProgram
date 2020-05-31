@@ -116,6 +116,8 @@ void ClientSceenLogin::SignupResult(Stream & stream)
 	{
 		// 창띄운다 (회원가입이 완료 됐습니다!) - 동시에 회원가입 창 닫는다. (떼이터 다지우고)
 		form okform(API::make_center(170, 130), nana::appear::decorate<appear::taskbar, appear::sizable>());
+		okform.bgcolor(nana::colors::light_yellow);
+		okform.caption(charset("카카오톡").to_bytes(unicode::utf8));
 		label oklabel(okform, charset("회원가입 완료!").to_bytes(unicode::utf8));
 		button okbtn(okform, charset("확인").to_bytes(unicode::utf8));
 
@@ -142,6 +144,8 @@ void ClientSceenLogin::SignupResult(Stream & stream)
 	{
 		// 창띄운다 (이미 존재하는 ID 입니다!)  - 데이터 다지우고
 		form failform(API::make_center(170, 130), nana::appear::decorate<appear::taskbar, appear::sizable>());
+		failform.bgcolor(nana::colors::light_yellow);
+		failform.caption(charset("카카오톡").to_bytes(unicode::utf8));
 		label failabel(failform, charset("이미 존재하는 ID 입니다!").to_bytes(unicode::utf8));
 		button failbtn(failform, charset("확인").to_bytes(unicode::utf8));
 
@@ -242,9 +246,11 @@ void ClientSceenLogin::CreateMakeidUI()
 {
 	m_loginBtn->caption(charset("로그인").to_bytes(unicode::utf8));
 	form midform(API::make_center(170, 130), nana::appear::decorate<appear::taskbar, appear::sizable>());
+	midform.bgcolor(nana::colors::light_yellow);
+	midform.caption(charset("카카오톡").to_bytes(unicode::utf8));
 	label midlab(midform, charset("ID가 존재하지 않습니다.").to_bytes(unicode::utf8));
 	button midbtn(midform, charset("확인").to_bytes(unicode::utf8));
-
+	midbtn.bgcolor(nana::colors::antique_white);
 	midbtn.events().click([&]()
 	{
 		m_loginpassbox->reset();
@@ -267,6 +273,7 @@ void ClientSceenLogin::CreateSingUpUI()
 {
 	m_signupform = new form(API::make_center(280, 280));
 	m_signupform->bgcolor(colors::light_yellow);
+	m_signupform->caption(charset("카카오톡").to_bytes(unicode::utf8));
 	m_idbox = new textbox(*m_signupform);
 	m_nicknamebox = new textbox(*m_signupform);
 	m_passbox = new textbox(*m_signupform);
@@ -307,8 +314,11 @@ void ClientSceenLogin::CreateWrongPassUI()
 {
 	m_loginBtn->caption(charset("로그인").to_bytes(unicode::utf8));
 	form wrongform(API::make_center(290, 160));
+	wrongform.bgcolor(nana::colors::light_yellow);
+	wrongform.caption(charset("카카오톡").to_bytes(unicode::utf8));
 	label wronglabel(wrongform, charset("계정 또는 비밀번호를 다시 확인해 주세요.").to_bytes(unicode::utf8));
 	button wrongbtn(wrongform, charset("확인").to_bytes(unicode::utf8));
+	wrongbtn.bgcolor(nana::colors::antique_white);
 	wrongbtn.events().click([&]()
 	{
 		wrongform.close();

@@ -25,7 +25,7 @@ void ChattingRoom::SetRoomName(const std::string name)
 	m_RoomName.assign(name.begin(), name.end());
 }
 
-void ChattingRoom::SetRoomID(const INT64 roomID)
+void ChattingRoom::SetRoomID(const int roomID)
 {
 	m_RoomID = roomID;
 }

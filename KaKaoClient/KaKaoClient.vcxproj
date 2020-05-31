@@ -145,7 +145,6 @@
     <ClCompile Include="Src\ClientSceenLogin.cpp" />
     <ClCompile Include="Src\IClientScene.cpp" />
     <ClCompile Include="Src\MainForm.cpp" />
-    <ClCompile Include="Src\PacketTest.cpp" />
     <ClCompile Include="Src\ClienMain.cpp" />
     <ClCompile Include="Src\SceneMgr.cpp" />
     <ClCompile Include="Src\TCPNetwork.cpp" />
@@ -154,7 +153,6 @@
     <ClInclude Include="Inc\ClientMainScene.h" />
     <ClInclude Include="Inc\ClientSceenLogin.h" />
     <ClInclude Include="Inc\IClientScene.h" />
-    <ClInclude Include="Inc\PacketTest.h" />
     <ClInclude Include="Inc\MainForm.h" />
     <ClInclude Include="Inc\SceneMgr.h" />
     <ClInclude Include="Inc\TCPNetwork.h" />

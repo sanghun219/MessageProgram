@@ -49,10 +49,8 @@ void MainForm::PacketProcess()
 		short id = -1;
 		*_pPacket->stream >> &id;
 		m_pSceen->ProcessPacket(static_cast<PACKET_ID>(id), *_pPacket->stream);
-		//_pPacket.release();
 	}
 
-	//m_pSceen = Singleton<SceneMgr>::GetInst()->GetSceen();
 	m_pSceen->Update();
 }
 

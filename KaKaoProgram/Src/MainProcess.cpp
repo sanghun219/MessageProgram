@@ -183,8 +183,7 @@ namespace PacketProc
 			Packet SendPacket;
 			ZeroMemory(&SendPacket, sizeof(SendPacket));
 			SendPacket.stream = new Stream();
-			SendPacket.SessionIdx = new int();
-			*SendPacket.SessionIdx = sessionidx;
+
 			SendPacket.pkHeader = new PacketHeader();
 			SendPacket.pkHeader->SessionIdx = sessionidx;
 			std::cout << "аж╪р : " << &SendPacket.pkHeader << std::endl;
@@ -208,9 +207,9 @@ namespace PacketProc
 
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
-		SendPacket.SessionIdx = new int();
+		SendPacket.pkHeader = new PacketHeader();
+
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
-		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_MAKE_CHATTING_ROOM().c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
 
@@ -242,7 +241,7 @@ namespace PacketProc
 		Singleton<DBManager>::GetInst()->ProcessQuery("SELECT UserID FROM userinchatroom WHERE roomID = %d;", roomkey);
 		res = Singleton<DBManager>::GetInst()->GetsqlRes();
 		*SendPacket.stream << roomkey;
-		int rowcount = mysql_num_rows(res);
+		auto rowcount = mysql_num_rows(res);
 		*SendPacket.stream << rowcount;
 
 		while (row = mysql_fetch_row(res))
@@ -263,8 +262,6 @@ namespace PacketProc
 		*RecvPacket.stream >> &UserID;
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
-		SendPacket.SessionIdx = new int();
-		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_FIND_NICKNAME_FROM_ID(UserID).c_str());
 		MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
@@ -299,8 +296,7 @@ namespace PacketProc
 		*RecvPacket.stream >> &UserId;
 		Packet SendPacket;
 		SendPacket.stream = new Stream();
-		SendPacket.SessionIdx = new int();
-		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
+		SendPacket.pkHeader = new PacketHeader();
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 
 		Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_FIND_USERID(UserId).c_str());
@@ -317,6 +313,11 @@ namespace PacketProc
 			*SendPacket.stream << isExist;
 			*SendPacket.stream << id;
 
+			Singleton<DBManager>::GetInst()->ProcessQuery(QUERY_FIND_NICKNAME_FROM_ID(UserId).c_str());
+			MYSQL_RES* res = Singleton<DBManager>::GetInst()->GetsqlRes();
+			row = mysql_fetch_row(res);
+			std::string usernick = row[0];
+			*SendPacket.stream << usernick;
 			m_sendpckQueue.push(SendPacket);
 		}
 		else
@@ -327,6 +328,7 @@ namespace PacketProc
 			*SendPacket.stream << pkid;
 			*SendPacket.stream << isExist;
 			m_sendpckQueue.push(SendPacket);
+			return ERR_PCK_CODE::ERR_NONE;
 		}
 
 		return ERR_PCK_CODE::ERR_NONE;
@@ -338,8 +340,6 @@ namespace PacketProc
 		Packet SendPacket;
 
 		SendPacket.stream = new Stream();
-		SendPacket.SessionIdx = new int();
-		*SendPacket.SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		SendPacket.pkHeader = new PacketHeader();
 		SendPacket.pkHeader->SessionIdx = RecvPacket.pkHeader->SessionIdx;
 		short pkid = static_cast<short>(PACKET_ID::PCK_ADD_FRIEND_RES);

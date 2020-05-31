@@ -8,22 +8,6 @@ void ClientMainScene::Update()
 {
 	if (Singleton<SceneMgr>::GetInst()->GetSceen()->GetCurSceenType() != CLIENT_SCENE_TYPE::MAIN)
 		return;
-
-	// 서버에서 클라쪽에 계속 뿌려줘야하는것. 반대로 말하면 클라가 서버에 계속 요청해줘야하는것
-
-	{
-		/*Packet SendPacket;
-		short pkid = static_cast<short>(PACKET_ID::PCK_UPDATE_CLIENT);
-		std::string userid = m_User->GetUserID();
-
-		SendPacket.stream = new Stream();
-		*SendPacket.stream << pkid;
-		*SendPacket.stream << userid;
-		m_tcpNetwork->SendPacket(SendPacket);
-		std::cout << "!" << std::endl;*/
-	}
-
-	// 변경사항을 요구하는 경우가 있을수 있다.
 }
 
 bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
@@ -43,9 +27,6 @@ bool ClientMainScene::ProcessPacket(PACKET_ID pkID, Stream & stream)
 	case (short)PACKET_ID::PCK_UPDATE_CHATTING_DATA_RES:
 		UpdateChattingRoom(stream);
 		break;
-		/*case (short)PACKET_ID::PCK_UPDATE_CLIENT:
-			UpdateClient(stream);
-			break;*/
 	default:
 		break;
 	}
@@ -63,13 +44,14 @@ void ClientMainScene::CreateUI()
 		m_IDtoNick[id] = nickname;
 	}
 
-	for (int i = 0; i < m_User->GetChattingRoomList().size(); i++)
+	for (size_t i = 0; i < m_User->GetChattingRoomList().size(); i++)
 	{
 		m_RoomListIdxtoRoomID[i] = m_User->GetChattingRoomList().at(i)->GetRoomID();
 		m_RoomIDtoRoomListIdx[m_User->GetChattingRoomList().at(i)->GetRoomID()] = i;
 	}
 
 	m_pform = new form(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
+	m_pform->caption(charset("카카오톡").to_bytes(unicode::utf8));
 	m_pform->bgcolor(colors::light_yellow);
 	// 패널을 2개두고 탭바에의해서 전환되도록해야함. 탭바에 탭패이지를 붙여야함.
 	m_pFriendpanel = new nana::panel<false>(*m_pform);
@@ -297,6 +279,7 @@ void ClientMainScene::FrMainFindIDBtn()
 {
 	m_pFindIDuiForm = new nana::form(API::make_center(250, 200), nana::appear::decorate<appear::taskbar, appear::sizable>());
 	m_pFindIDuiForm->bgcolor(nana::colors::light_yellow);
+	m_pFindIDuiForm->caption(charset("카카오톡").to_bytes(unicode::utf8));
 	// label , textbox, btn(종료,추가)
 
 	m_pfrInlb = new label(*m_pFindIDuiForm, charset("친구 추가").to_bytes(unicode::utf8));
@@ -332,9 +315,9 @@ void ClientMainScene::FrInFindIDBtn()
 	Packet pck;
 	ZeroMemory(&pck, sizeof(pck));
 	pck.stream = new Stream();
+	pck.pkHeader = new PacketHeader();
 	short pkid = static_cast<short>(PACKET_ID::PCK_FIND_ID_REQ);
 	*pck.stream << pkid;
-
 	*pck.stream << sendtext;
 
 	m_tcpNetwork->SendPacket(pck);
@@ -375,6 +358,7 @@ void ClientMainScene::FindResult(Stream & stream)
 		{
 			// 자기자신은 친구로할수없음
 			form _fr = form(API::make_center(200, 150), nana::appear::decorate<appear::taskbar, appear::sizable>());
+			_fr.caption(charset("카카오톡").to_bytes(unicode::utf8));
 			_fr.bgcolor(nana::colors::light_yellow);
 			label* _lb = new label(_fr, charset("자기 자신은 추가할 수 없습니다").to_bytes(nana::unicode::utf8));
 
@@ -394,9 +378,11 @@ void ClientMainScene::FindResult(Stream & stream)
 			exec();
 			return;
 		}
-
+		std::string nick;
+		stream >> &nick;
 		// 창하나 띄워서 찾은 아이디 텍스트로 띄워주고 친구추가 할거냐고 물어보기
 		form _fr = form(API::make_center(200, 150), nana::appear::decorate<appear::taskbar, appear::sizable>());
+		_fr.caption(charset("카카오톡").to_bytes(unicode::utf8));
 		_fr.bgcolor(nana::colors::light_yellow);
 		label* _lb = new label(_fr);
 		button* _ok = new button(_fr, charset("친구 추가").to_bytes(unicode::utf8));
@@ -404,7 +390,8 @@ void ClientMainScene::FindResult(Stream & stream)
 		button* _no = new button(_fr, charset("닫기").to_bytes(unicode::utf8));
 		_no->bgcolor(nana::colors::antique_white);
 
-		std::string capID = "닉네임 : " + m_IDtoNick[foundID];
+		std::string capID = "닉네임 : " + nick;
+		m_IDtoNick[foundID] = nick;
 		_lb->caption(charset(capID).to_bytes(unicode::utf8));
 		_ok->events().click([&]()
 		{
@@ -441,6 +428,7 @@ void ClientMainScene::FindResult(Stream & stream)
 		// 창하나 띄워서 아이디를 잘못 입력했다하고 돌아가기
 
 		form _fr = form(API::make_center(200, 150), nana::appear::decorate<appear::taskbar, appear::sizable>());
+		_fr.caption(charset("카카오톡").to_bytes(unicode::utf8));
 		_fr.bgcolor(nana::colors::light_yellow);
 		label* _lb = new label(_fr);
 		button* _ok = new button(_fr, charset("확인").to_bytes(unicode::utf8));
@@ -477,6 +465,7 @@ void ClientMainScene::AddFriendResult(Stream & stream)
 	else
 	{
 		form _form = form(API::make_center(200, 150), nana::appear::decorate<appear::taskbar, appear::sizable>());
+		_form.caption(charset("카카오톡").to_bytes(unicode::utf8));
 		_form.bgcolor(nana::colors::light_yellow);
 		label* _lb = new label(_form);
 		_lb->caption(charset("이미 친구에요!").to_bytes(unicode::utf8));
@@ -507,10 +496,11 @@ void ClientMainScene::AddChattingRoom(Stream& stream)
 	chatroom->SetRoomID(roomkey);
 	nicks.append(m_User->GetUserNick());
 	nicks.push_back(',');
-	for (int i = 0; i < numrows - 1; i++)
+	for (int i = 0; i < numrows; i++)
 	{
 		std::string id;
 		stream >> &id;
+		if (id.empty())continue;
 		chatroom->SetJoinnedUser(id);
 		nicks.append(m_IDtoNick[id]);
 		nicks.push_back(',');
@@ -524,6 +514,7 @@ void ClientMainScene::AddChattingRoom(Stream& stream)
 void ClientMainScene::CreateChatUI()
 {
 	form _form = form(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
+	_form.caption(charset("카카오톡").to_bytes(unicode::utf8));
 	_form.bgcolor(nana::colors::light_yellow);
 	// 텍스트박스 하나 리스트박스 하나 확인 버튼 취소 버튼
 	textbox* _tb = new textbox(_form);
@@ -588,6 +579,8 @@ void ClientMainScene::CreateChattingRoom(const std::vector<std::string>& ids, in
 	// 채팅방 만들기 , 기존 채팅방 ..
 	ChatRoomUI ui;
 	form* _fr = new nana::form(API::make_center(250, 400), nana::appear::decorate<appear::taskbar, appear::sizable>());
+
+	_fr->caption(charset("카카오톡").to_bytes(unicode::utf8));
 	listbox* _chattings = new nana::listbox(*_fr);
 
 	_chattings->fgcolor(nana::colors::black);
@@ -793,7 +786,7 @@ void ClientMainScene::UpdateChattingRoom(Stream & stream)
 	int idx = m_RoomIDtoRoomListIdx[roomid];
 
 	// 기존의 채팅방 번호를 알아야함.
-	for (int i = 0; i < m_pChattingRooms.size(); i++)
+	for (size_t i = 0; i < m_pChattingRooms.size(); i++)
 	{
 		if (m_pChattingRooms[i]->roomkey == roomid)
 		{
